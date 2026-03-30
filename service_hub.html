@@ -6,54 +6,56 @@
   <title>服務中心</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; background: #f4f4f4; color: #333; padding-bottom: 80px; }
+    body { font-family: -apple-system, "Helvetica Neue", sans-serif; margin: 0; background: #f4f4f4; color: #333; padding-bottom: 80px; }
     header { background: #06C755; color: white; padding: 20px 15px; text-align: center; }
     header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
 
-    /* 用戶資訊區 - 模擬 LINE 原生資訊流 */
+    /* 用戶資訊區 */
     .user-profile { background: white; padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #eee; }
-    .user-avatar { width: 60px; height: 60px; border-radius: 50%; margin-right: 15px; background: #eee; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .user-avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 12px; background: #eee; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .user-info { flex: 1; }
-    .user-name { font-weight: bold; font-size: 18px; margin: 0; color: #000; }
-    .user-store-status { font-size: 13px; color: #06C755; margin: 5px 0 0 0; }
+    .user-name { font-weight: bold; font-size: 16px; margin: 0; color: #000; }
+    .user-store-status { font-size: 12px; color: #06C755; margin: 4px 0 0 0; display: flex; align-items: center; gap: 4px; }
 
-    .container { padding: 15px; }
-    .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
-    .card h3 { margin: 0 0 6px 0; font-size: 16px; color: #333; font-weight: normal; }
-    .card p { margin: 0; font-size: 13px; color: #888; line-height: 1.5; }
+    .container { padding: 12px; }
+    .card { background: white; padding: 16px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer; }
+    .card h3 { margin: 0 0 5px 0; font-size: 15px; color: #333; font-weight: 500; }
+    .card p { margin: 0; font-size: 12px; color: #888; line-height: 1.4; }
 
-    /* 管理員專屬標籤 */
-    .admin-badge { display: inline-block; background: #333; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; vertical-align: middle; }
+    /* Admin 樣式 */
+    .admin-label { background: #333; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    .btn-admin-add { background: #06C755; color: white; padding: 12px; border-radius: 10px; text-align: center; font-size: 14px; font-weight: bold; margin-bottom: 15px; display: none; }
 
-    /* 表單欄位 */
+    /* 表單與內容 */
     .field-group { margin-bottom: 15px; }
-    .field-label { font-size: 13px; color: #666; margin-bottom: 6px; display: block; }
-    .field-input, .field-textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; background: #fafafa; outline: none; }
-    .field-textarea { height: 120px; resize: none; }
+    .field-label { font-size: 12px; color: #666; margin-bottom: 4px; display: block; }
+    .field-input, .field-textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; background: #fafafa; }
+    .field-textarea { height: 100px; resize: none; }
+    .btn-submit { background: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-    .btn-submit { background: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-    /* 底部導航 */
-    .nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: rgba(255,255,255,0.95); display: flex; border-top: 1px solid #eee; height: 65px; backdrop-filter: blur(10px); left: 50%; transform: translateX(-50%); }
+    /* 底部導覽 */
+    .nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: white; display: flex; border-top: 1px solid #eee; height: 60px; left: 50%; transform: translateX(-50%); }
     .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #999; cursor: pointer; }
-    .nav-btn.active { color: #06C755; }
+    .nav-btn.active { color: #06C755; font-weight: bold; }
 
-    /* 活動列表 */
-    .activity-item { border-bottom: 1px solid #eee; padding: 15px 0; }
-    .activity-item:last-child { border-bottom: none; }
-    .activity-title { font-size: 16px; color: #333; }
-    .activity-desc { font-size: 13px; color: #666; margin-top: 5px; }
+    /* 活動清單風格 */
+    .activity-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #06C755; }
+    .activity-title { font-weight: bold; font-size: 15px; margin-bottom: 4px; }
+    .activity-desc { font-size: 12px; color: #666; }
   </style>
 </head>
 <body class="flex justify-center">
 
 <div class="w-full max-w-[450px] min-h-screen bg-[#f4f4f4] relative pb-20">
-  <header><h2 id="store-name">SaaS 服務中心</h2></header>
+  <header><h2 id="store-name">載入服務中...</h2></header>
 
   <div class="user-profile">
-    <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100">
+    <img id="user-avatar" class="user-avatar" src="">
     <div class="user-info">
-      <p id="user-display-name" class="user-name">載入中...</p>
+      <div class="flex items-center gap-2">
+        <p id="user-display-name" class="user-name">使用者</p>
+        <span id="role-badge" class="admin-label" style="display:none;">經銷商管理員</span>
+      </div>
       <p id="current-store-status" class="user-store-status">📍 正在驗證店家...</p>
     </div>
   </div>
@@ -61,24 +63,15 @@
   <div id="view-home" class="container">
     <div class="card" onclick="switchView('profile')">
       <h3>📇 數位名片設定</h3>
-      <p>更新您的個人資訊以利 AI 精準配對。</p>
+      <p>完善您的個人資訊，開啟 AI 配對功能。</p>
     </div>
     <div class="card" onclick="switchView('activity')">
       <h3>📅 活動報名中心</h3>
-      <p>查看最新活動並完成線上報名。</p>
+      <p>查看並報名此商店最新的活動。</p>
     </div>
     <div class="card" onclick="switchView('ai')">
       <h3>🤖 AI 智能配對</h3>
-      <p>自動推薦適合您的商務夥伴。</p>
-    </div>
-
-    <!-- 經銷商管理工具入口 -->
-    <div id="admin-tools" style="display:none;">
-      <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-      <div class="card" style="border: 1px solid #06C755; background: #f0fff4;" onclick="location.href='active.html?p='+p">
-        <h3>➕ 建立新活動 <span class="admin-badge">Admin</span></h3>
-        <p>點擊此處為您的商店發布新活動。</p>
-      </div>
+      <p>讓 AI 幫您在當前商店中尋找商機。</p>
     </div>
   </div>
 
@@ -91,9 +84,13 @@
   </div>
 
   <div id="view-activity" class="container" style="display:none;">
-    <div class="card">
-      <h3 style="color:#06C755">進行中的活動</h3>
-      <div id="activity-list"><p style="color:#999; text-align:center; padding:20px;">目前尚無活動</p></div>
+    <!-- 經銷商專屬活動入口 -->
+    <div id="activity-admin-btn" class="btn-admin-add" onclick="location.href='active.html?p='+p">
+      ➕ 建立新活動 (管理員)
+    </div>
+    <h3 class="text-sm text-gray-500 mb-3 px-1">進行中的活動</h3>
+    <div id="activity-list">
+      <p style="color:#999; text-align:center; padding:30px;">目前尚無活動</p>
     </div>
   </div>
 
@@ -101,7 +98,7 @@
     <div class="card">
       <h3 style="color:#06C755">AI 配對分析</h3>
       <div id="ai-loading" style="display:none; text-align:center; padding:20px;">AI 分析中...</div>
-      <div id="ai-result" style="font-size:15px; line-height:1.6; white-space:pre-wrap;"></div>
+      <div id="ai-result" style="font-size:14px; line-height:1.6; white-space:pre-wrap;"></div>
       <button class="btn-submit" style="background:#333; margin-top:15px;" onclick="getAiMatches()">重新獲取配對</button>
     </div>
   </div>
@@ -120,11 +117,11 @@
   let uid = '', p = '';
 
   const formConfig = [
-    { id: 'name', label: '真實姓名', type: 'text' },
-    { id: 'job', label: '公司職稱', type: 'text' },
-    { id: 'industry', label: '產業領域', type: 'text' },
-    { id: 'resource', label: '我的資源', type: 'textarea' },
-    { id: 'need', label: '我的需求', type: 'textarea' }
+    { id: 'name', label: '姓名', type: 'text' },
+    { id: 'job', label: '職稱', type: 'text' },
+    { id: 'industry', label: '產業', type: 'text' },
+    { id: 'resource', label: '資源', type: 'textarea' },
+    { id: 'need', label: '需求', type: 'textarea' }
   ];
 
   async function init() {
@@ -138,7 +135,7 @@
 
       const urlParams = new URLSearchParams(window.location.search);
       p = urlParams.get('p');
-      if (!p) { document.getElementById('store-name').innerText = '參數遺失'; return; }
+      if (!p) { document.getElementById('store-name').innerText = '無效連結'; return; }
 
       generateFormFields();
       loadHubData();
@@ -149,14 +146,14 @@
     const container = document.getElementById('profile-form');
     container.innerHTML = '';
     formConfig.forEach(field => {
-      const group = document.createElement('div');
-      group.className = 'field-group';
-      group.innerHTML = `<label class="field-label">${field.label}</label>`;
-      const input = (field.type === 'textarea') ? document.createElement('textarea') : document.createElement('input');
-      input.id = `f-${field.id}`;
-      input.className = (field.type === 'textarea') ? 'field-textarea' : 'field-input';
-      group.appendChild(input);
-      container.appendChild(group);
+      const g = document.createElement('div');
+      g.className = 'field-group';
+      g.innerHTML = `<label class="field-label">${field.label}</label>`;
+      const i = (field.type === 'textarea') ? document.createElement('textarea') : document.createElement('input');
+      i.id = `f-${field.id}`;
+      i.className = (field.type === 'textarea') ? 'field-textarea' : 'field-input';
+      g.appendChild(i);
+      container.appendChild(g);
     });
   }
 
@@ -169,13 +166,13 @@
       });
       const result = await res.json();
       if (result.status === 'success') {
-        const storeName = result.data.storeName;
-        document.getElementById('store-name').innerText = storeName;
-        document.getElementById('current-store-status').innerText = `📍 目前在：${storeName}`;
+        document.getElementById('store-name').innerText = result.data.storeName;
+        document.getElementById('current-store-status').innerText = `📍 目前在：${result.data.storeName}`;
         
-        // 重要：由後端回傳的 isAdmin 決定是否顯示建立活動按鈕
+        // 權限顯示邏輯
         if (result.data.isAdmin) {
-          document.getElementById('admin-tools').style.display = 'block';
+          document.getElementById('role-badge').style.display = 'inline-block';
+          document.getElementById('activity-admin-btn').style.display = 'block';
         }
 
         const prof = result.data.myProfile;
@@ -202,13 +199,8 @@
     const profileData = {};
     formConfig.forEach(f => { profileData[f.id] = document.getElementById(`f-${f.id}`).value; });
     try {
-      const res = await fetch(WORKER_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'save_profile', p, uid, profile: profileData }) 
-      });
-      const result = await res.json();
-      alert(result.message);
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: profileData }) });
+      alert((await res.json()).message);
       switchView('home');
     } catch (e) { alert('儲存失敗'); }
   }
@@ -219,14 +211,10 @@
     resBox.style.display = 'none';
     loading.style.display = 'block';
     try {
-      const res = await fetch(WORKER_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get_ai_matches', p, uid }) 
-      });
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
       resBox.innerText = await res.text();
       resBox.style.display = 'block';
-    } catch (e) { resBox.innerText = 'AI 配對異常'; resBox.style.display = 'block'; }
+    } catch (e) { resBox.innerText = 'AI 配對暫時無法運作'; resBox.style.display = 'block'; }
     loading.style.display = 'none';
   }
 
