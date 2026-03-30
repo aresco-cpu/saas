@@ -16,8 +16,9 @@
     input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: #0056b3; width: 100px; }
     button { padding: 8px 15px; background-color: #06C755; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; }
     .copy-btn { background-color: #007bff; margin-top: 10px; padding: 6px 12px; font-size: 13px; }
-    #message { color: #d9534f; font-weight: bold; padding: 0 20px; }
+    #message { color: #d9534f; font-weight: bold; padding: 0 20px; font-size: 14px; line-height: 1.5; }
     .link-box { margin-top: 10px; padding: 12px; background: #eef; word-break: break-all; font-size: 12px; display: none; border-radius: 4px; border: 1px solid #ddd; }
+    .error-detail { font-size: 11px; color: #999; margin-top: 5px; display: block; font-family: monospace; }
   </style>
 </head>
 <body>
@@ -46,13 +47,16 @@
         }
         const profile = await liff.getProfile();
         adminUid = profile.userId;
+        
+        // 嚴格比對管理員 UID
         if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
-          document.getElementById('message').innerText = '您沒有管理員權限。';
+          document.getElementById('message').innerText = '權限錯誤：您的 UID 不具備管理員權限。';
           return;
         }
+        
         loadDealers();
       } catch (err) {
-        document.getElementById('message').innerText = 'LIFF 初始化失敗：' + err.message;
+        showError('LIFF 初始化失敗', err);
       }
     }
 
@@ -64,23 +68,44 @@
     }
 
     async function loadDealers() {
-      document.getElementById('message').innerText = '載入中...';
-      document.getElementById('list-container').innerHTML = '';
+      const msgEl = document.getElementById('message');
+      const listEl = document.getElementById('list-container');
+      msgEl.innerText = '正在連線至後台伺服器...';
+      listEl.innerHTML = '';
+
       try {
         const response = await fetch(WORKER_URL, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'get_dealers', admin_uid: adminUid, targetStatus: currentTab })
         });
-        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(`伺服器回傳錯誤代碼: ${response.status}`);
+        }
+
+        const text = await response.text();
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error('後台回傳了非 JSON 格式的內容（可能是 GAS 報錯 HTML）');
+        }
+
         if (result.status === 'success') {
           renderList(result.data, result.suggestedSid);
-          document.getElementById('message').innerText = '';
+          msgEl.innerText = '';
         } else {
-          document.getElementById('message').innerText = result.message || '載入失敗';
+          msgEl.innerText = '系統提示：' + (result.message || '未知錯誤');
         }
       } catch (err) {
-        document.getElementById('message').innerText = '連線異常';
+        showError('連線異常，無法驗證身分', err);
       }
+    }
+
+    function showError(title, err) {
+      const msgEl = document.getElementById('message');
+      msgEl.innerHTML = `${title}<br><span class="error-detail">錯誤詳情: ${err.message}</span>`;
     }
 
     function renderList(data, suggestedSid) {
@@ -95,8 +120,6 @@
       data.forEach((item, index) => {
         const card = document.createElement('div');
         card.className = 'card';
-        
-        // 如果是已核准，優先顯示現有的 SID，否則建議下一個
         const displaySid = (currentTab === '已核准' && item.sid) ? item.sid : "ST_" + ("000" + (nextStNum + index)).slice(-3);
         const btnText = currentTab === '已核准' ? '更新/補發連結' : '核准並產生連結';
 
@@ -114,8 +137,8 @@
     }
 
     async function approve(targetUid) {
-      const sidInput = document.getElementById(`sid_${targetUid}`).value.trim();
       const resultBox = document.getElementById(`result_${targetUid}`);
+      const sidInput = document.getElementById(`sid_${targetUid}`).value.trim();
       if (!sidInput) return alert('請輸入 SID');
 
       resultBox.style.display = 'block';
@@ -124,6 +147,7 @@
       try {
         const response = await fetch(WORKER_URL, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'approve_dealer', admin_uid: adminUid, target_uid: targetUid, sid: sidInput })
         });
         const result = await response.json();
@@ -138,7 +162,9 @@
           resultBox.style.background = '#f8d7da';
           resultBox.innerText = result.message;
         }
-      } catch (err) { resultBox.innerText = '連線異常'; }
+      } catch (err) { 
+        resultBox.innerText = '更新失敗: ' + err.message; 
+      }
     }
 
     function copyText(elId) {
@@ -146,9 +172,8 @@
       const input = document.getElementById('copyInput');
       input.value = text;
       input.select();
-      input.setSelectionRange(0, 9999);
       document.execCommand('copy');
-      alert('已複製！');
+      alert('已複製到剪貼簿！');
     }
 
     initLiff();
