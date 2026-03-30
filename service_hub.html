@@ -6,100 +6,113 @@
   <title>服務中心</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, "Helvetica Neue", sans-serif; margin: 0; background: #f4f4f4; color: #333; padding-bottom: 80px; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #f4f4f4; color: #333; padding-bottom: 80px; }
     header { background: #06C755; color: white; padding: 20px 15px; text-align: center; }
     header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
+
+    /* 用戶資訊區 - 模擬 LINE 原生資訊流 */
     .user-profile { background: white; padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #eee; }
     .user-avatar { width: 60px; height: 60px; border-radius: 50%; margin-right: 15px; background: #eee; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     .user-info { flex: 1; }
     .user-name { font-weight: bold; font-size: 18px; margin: 0; color: #000; }
-    .user-store-status { font-size: 13px; color: #06C755; margin: 5px 0 0 0; display: flex; align-items: center; }
+    .user-store-status { font-size: 13px; color: #06C755; margin: 5px 0 0 0; }
+
     .container { padding: 15px; }
-    .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; border: 1px solid transparent; }
-    .card h3 { margin: 0 0 6px 0; font-size: 16px; color: #333; }
+    .card { background: white; padding: 18px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
+    .card h3 { margin: 0 0 6px 0; font-size: 16px; color: #333; font-weight: normal; }
     .card p { margin: 0; font-size: 13px; color: #888; line-height: 1.5; }
+
+    /* 管理員專屬標籤 */
     .admin-badge { display: inline-block; background: #333; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; vertical-align: middle; }
+
+    /* 表單欄位 */
     .field-group { margin-bottom: 15px; }
-    .field-label { font-size: 13px; color: #666; margin-bottom: 6px; display: block; font-weight: bold; }
-    .field-input, .field-textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; background: #fafafa; }
+    .field-label { font-size: 13px; color: #666; margin-bottom: 6px; display: block; }
+    .field-input, .field-textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; background: #fafafa; outline: none; }
     .field-textarea { height: 120px; resize: none; }
+
     .btn-submit { background: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-    .nav { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.95); display: flex; border-top: 1px solid #eee; height: 65px; backdrop-filter: blur(10px); }
+
+    /* 底部導航 */
+    .nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: rgba(255,255,255,0.95); display: flex; border-top: 1px solid #eee; height: 65px; backdrop-filter: blur(10px); left: 50%; transform: translateX(-50%); }
     .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #999; cursor: pointer; }
-    .nav-btn.active { color: #06C755; font-weight: bold; }
+    .nav-btn.active { color: #06C755; }
+
+    /* 活動列表 */
     .activity-item { border-bottom: 1px solid #eee; padding: 15px 0; }
     .activity-item:last-child { border-bottom: none; }
-    .activity-title { font-weight: bold; font-size: 16px; color: #333; }
+    .activity-title { font-size: 16px; color: #333; }
     .activity-desc { font-size: 13px; color: #666; margin-top: 5px; }
   </style>
 </head>
-<body>
+<body class="flex justify-center">
 
-<header><h2 id="store-name">SaaS 服務中心</h2></header>
+<div class="w-full max-w-[450px] min-h-screen bg-[#f4f4f4] relative pb-20">
+  <header><h2 id="store-name">SaaS 服務中心</h2></header>
 
-<div class="user-profile">
-  <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100">
-  <div class="user-info">
-    <p id="user-display-name" class="user-name">載入中...</p>
-    <p id="current-store-status" class="user-store-status">📍 驗證商店身分中...</p>
-  </div>
-</div>
-
-<div id="view-home" class="container">
-  <!-- 會員基本選單 -->
-  <div class="card" onclick="switchView('profile')">
-    <h3>📇 數位名片設定</h3>
-    <p>更新您的個人資訊以利 AI 精準配對。</p>
-  </div>
-  <div class="card" onclick="switchView('activity')">
-    <h3>📅 活動報名中心</h3>
-    <p>查看最新商店活動並線上完成報名。</p>
-  </div>
-  <div class="card" onclick="switchView('ai')">
-    <h3>🤖 AI 智能配對</h3>
-    <p>自動推薦適合您的商務夥伴。</p>
-  </div>
-  
-  <!-- 經銷商專屬功能 (僅當用戶是該 SID 的擁有者時顯示) -->
-  <div id="admin-tools" style="display:none;">
-    <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-    <div class="card" style="border: 1px solid #06C755; background: #f0fff4;" onclick="location.href='active.html?p='+p">
-      <h3>➕ 建立新活動 <span class="admin-badge">Admin</span></h3>
-      <p>身為經銷商，您可以直接發布新活動給會員。</p>
+  <div class="user-profile">
+    <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100">
+    <div class="user-info">
+      <p id="user-display-name" class="user-name">載入中...</p>
+      <p id="current-store-status" class="user-store-status">📍 正在驗證店家...</p>
     </div>
   </div>
-</div>
 
-<div id="view-profile" class="container" style="display:none;">
-  <div class="card">
-    <h3 style="color:#06C755">我的數位名片</h3>
-    <div id="profile-form"></div>
-    <button class="btn-submit" id="save-btn" onclick="saveProfile()">儲存並更新名片</button>
+  <div id="view-home" class="container">
+    <div class="card" onclick="switchView('profile')">
+      <h3>📇 數位名片設定</h3>
+      <p>更新您的個人資訊以利 AI 精準配對。</p>
+    </div>
+    <div class="card" onclick="switchView('activity')">
+      <h3>📅 活動報名中心</h3>
+      <p>查看最新活動並完成線上報名。</p>
+    </div>
+    <div class="card" onclick="switchView('ai')">
+      <h3>🤖 AI 智能配對</h3>
+      <p>自動推薦適合您的商務夥伴。</p>
+    </div>
+
+    <!-- 經銷商管理工具入口 -->
+    <div id="admin-tools" style="display:none;">
+      <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+      <div class="card" style="border: 1px solid #06C755; background: #f0fff4;" onclick="location.href='active.html?p='+p">
+        <h3>➕ 建立新活動 <span class="admin-badge">Admin</span></h3>
+        <p>點擊此處為您的商店發布新活動。</p>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="view-activity" class="container" style="display:none;">
-  <div class="card">
-    <h3 style="color:#06C755">進行中的活動</h3>
-    <div id="activity-list"><p style="color:#999; text-align:center; padding:20px;">目前尚無活動</p></div>
+  <div id="view-profile" class="container" style="display:none;">
+    <div class="card">
+      <h3 style="color:#06C755">我的數位名片</h3>
+      <div id="profile-form"></div>
+      <button class="btn-submit" id="save-btn" onclick="saveProfile()">儲存並更新名片</button>
+    </div>
   </div>
-</div>
 
-<div id="view-ai" class="container" style="display:none;">
-  <div class="card">
-    <h3 style="color:#06C755">AI 配對分析</h3>
-    <div id="ai-loading" style="display:none; text-align:center; padding:20px;">AI 分析中...</div>
-    <div id="ai-result" style="background:#fff; font-size:14px; white-space:pre-wrap;"></div>
-    <button class="btn-submit" style="background:#333; margin-top:15px;" onclick="getAiMatches()">重新獲取配對</button>
+  <div id="view-activity" class="container" style="display:none;">
+    <div class="card">
+      <h3 style="color:#06C755">進行中的活動</h3>
+      <div id="activity-list"><p style="color:#999; text-align:center; padding:20px;">目前尚無活動</p></div>
+    </div>
   </div>
-</div>
 
-<nav class="nav">
-  <div class="nav-btn active" id="nav-home" onclick="switchView('home')">首頁</div>
-  <div class="nav-btn" id="nav-profile" onclick="switchView('profile')">名片</div>
-  <div class="nav-btn" id="nav-activity" onclick="switchView('activity')">活動</div>
-  <div class="nav-btn" id="nav-ai" onclick="switchView('ai')">配對</div>
-</nav>
+  <div id="view-ai" class="container" style="display:none;">
+    <div class="card">
+      <h3 style="color:#06C755">AI 配對分析</h3>
+      <div id="ai-loading" style="display:none; text-align:center; padding:20px;">AI 分析中...</div>
+      <div id="ai-result" style="font-size:15px; line-height:1.6; white-space:pre-wrap;"></div>
+      <button class="btn-submit" style="background:#333; margin-top:15px;" onclick="getAiMatches()">重新獲取配對</button>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-btn active" id="nav-home" onclick="switchView('home')">首頁</div>
+    <div class="nav-btn" id="nav-profile" onclick="switchView('profile')">名片</div>
+    <div class="nav-btn" id="nav-activity" onclick="switchView('activity')">活動</div>
+    <div class="nav-btn" id="nav-ai" onclick="switchView('ai')">配對</div>
+  </nav>
+</div>
 
 <script>
   const LIFF_ID = '2009367829-5bIWGL8O';
@@ -107,11 +120,11 @@
   let uid = '', p = '';
 
   const formConfig = [
-    { id: 'name', label: '真實姓名', type: 'text', placeholder: '您的姓名' },
-    { id: 'job', label: '公司職稱', type: 'text', placeholder: '創辦人 / 經理' },
-    { id: 'industry', label: '產業領域', type: 'text', placeholder: '電商 / 數位行銷' },
-    { id: 'resource', label: '我的資源', type: 'textarea', placeholder: '我有什麼？' },
-    { id: 'need', label: '我的需求', type: 'textarea', placeholder: '我找什麼？' }
+    { id: 'name', label: '真實姓名', type: 'text' },
+    { id: 'job', label: '公司職稱', type: 'text' },
+    { id: 'industry', label: '產業領域', type: 'text' },
+    { id: 'resource', label: '我的資源', type: 'textarea' },
+    { id: 'need', label: '我的需求', type: 'textarea' }
   ];
 
   async function init() {
@@ -142,7 +155,6 @@
       const input = (field.type === 'textarea') ? document.createElement('textarea') : document.createElement('input');
       input.id = `f-${field.id}`;
       input.className = (field.type === 'textarea') ? 'field-textarea' : 'field-input';
-      if (field.type === 'text') input.type = 'text';
       group.appendChild(input);
       container.appendChild(group);
     });
@@ -161,17 +173,14 @@
         document.getElementById('store-name').innerText = storeName;
         document.getElementById('current-store-status').innerText = `📍 目前在：${storeName}`;
         
-        // 判斷是否為經銷商本人 (加密參數內的 uid 是否等於當前登入者 uid)
-        // 或是由後端回傳 isAdmin 標記
+        // 重要：由後端回傳的 isAdmin 決定是否顯示建立活動按鈕
         if (result.data.isAdmin) {
           document.getElementById('admin-tools').style.display = 'block';
         }
 
-        // 渲染名片
         const prof = result.data.myProfile;
         formConfig.forEach(f => { if (prof[f.id]) document.getElementById(`f-${f.id}`).value = prof[f.id]; });
 
-        // 渲染活動列表
         renderActivities(result.data.activities);
       }
     } catch (e) { document.getElementById('store-name').innerText = '連線失敗'; }
@@ -190,16 +199,18 @@
   }
 
   async function saveProfile() {
-    const btn = document.getElementById('save-btn');
-    btn.disabled = true;
     const profileData = {};
     formConfig.forEach(f => { profileData[f.id] = document.getElementById(`f-${f.id}`).value; });
     try {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: profileData }) });
-      alert((await res.json()).message);
+      const res = await fetch(WORKER_URL, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save_profile', p, uid, profile: profileData }) 
+      });
+      const result = await res.json();
+      alert(result.message);
       switchView('home');
     } catch (e) { alert('儲存失敗'); }
-    btn.disabled = false;
   }
 
   async function getAiMatches() {
@@ -208,7 +219,11 @@
     resBox.style.display = 'none';
     loading.style.display = 'block';
     try {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
+      const res = await fetch(WORKER_URL, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_ai_matches', p, uid }) 
+      });
       resBox.innerText = await res.text();
       resBox.style.display = 'block';
     } catch (e) { resBox.innerText = 'AI 配對異常'; resBox.style.display = 'block'; }
