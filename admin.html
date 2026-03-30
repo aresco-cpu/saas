@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>經銷商審核後台</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f5f7; }
+    .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card p { margin: 5px 0; font-size: 14px; }
+    input { padding: 8px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 8px 15px; background-color: #06C755; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #05a546; }
+    #message { color: #d9534f; font-weight: bold; margin-bottom: 15px; }
+    .link-box { margin-top: 10px; padding: 10px; background: #eef; word-break: break-all; font-size: 12px; display: none; }
+  </style>
+</head>
+<body>
+  <h2>經銷商審核後台</h2>
+  <div id="message">驗證身分中...</div>
+  <div id="list-container"></div>
+
+  <script>
+    const LIFF_ID = '2009367829-5bIWGL8O'; // 請確認與註冊用的是同一個 LIFF ID 或新增一個
+    const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
+    let adminUid = '';
+
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+          return;
+        }
+        const profile = await liff.getProfile();
+        adminUid = profile.userId;
+        
+        // 只有指定的 UID 可以看到畫面，否則阻擋
+        if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
+          document.getElementById('message').innerText = '您沒有管理員權限。';
+          return;
+        }
+        
+        document.getElementById('message').innerText = '身分驗證成功，載入名單中...';
+        loadPendingDealers();
+      } catch (err) {
+        document.getElementById('message').innerText = 'LIFF 初始化失敗：' + err.message;
+      }
+    }
+
+    async function loadPendingDealers() {
+      try {
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'get_pending', admin_uid: adminUid })
+        });
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          renderList(result.data);
+          document.getElementById('message').innerText = '';
+        } else {
+          document.getElementById('message').innerText = result.message || '載入失敗';
+        }
+      } catch (err) {
+        document.getElementById('message').innerText = '連線異常，請檢查網路或 Worker 狀態。';
+      }
+    }
+
+    function renderList(data) {
+      const container = document.getElementById('list-container');
+      container.innerHTML = '';
+      
+      if (data.length === 0) {
+        container.innerHTML = '<p>目前沒有待審核的申請。</p>';
+        return;
+      }
+
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <p><strong>申請時間：</strong> ${new Date(item.time).toLocaleString()}</p>
+          <p><strong>公司/團隊：</strong> ${item.company}</p>
+          <p><strong>申請人：</strong> ${item.name}</p>
+          <p><strong>聯絡電話：</strong> ${item.phone} | <strong>Email：</strong> ${item.email}</p>
+          <p><strong>推廣管道：</strong> ${item.channel}</p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+          <div>
+            <input type="text" id="sid_${item.uid}" placeholder="輸入指派的 SID (如 ST_001)">
+            <button onclick="approve('${item.uid}')">核准並產生連結</button>
+          </div>
+          <div id="result_${item.uid}" class="link-box"></div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function approve(targetUid) {
+      const sidInput = document.getElementById(`sid_${targetUid}`).value.trim();
+      const resultBox = document.getElementById(`result_${targetUid}`);
+      
+      if (!sidInput) {
+        alert('請輸入 SID！');
+        return;
+      }
+
+      resultBox.style.display = 'block';
+      resultBox.innerText = '處理中...';
+
+      try {
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          body: JSON.stringify({ 
+            action: 'approve_dealer', 
+            admin_uid: adminUid,
+            target_uid: targetUid,
+            sid: sidInput
+          })
+        });
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          resultBox.style.background = '#d4edda';
+          resultBox.innerHTML = `✅ ${result.message}<br><br>專屬連結 (請複製給經銷商)：<br><a href="${result.link}" target="_blank">${result.link}</a>`;
+          // 重新載入列表以移除已核准項目
+          setTimeout(loadPendingDealers, 3000); 
+        } else {
+          resultBox.style.background = '#f8d7da';
+          resultBox.innerText = '❌ ' + result.message;
+        }
+      } catch (err) {
+        resultBox.innerText = '❌ 連線異常';
+      }
+    }
+
+    initLiff();
+  </script>
+</body>
+</html>
