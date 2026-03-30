@@ -10,7 +10,8 @@
     .form-group { margin-bottom: 15px; }
     label { display: block; margin-bottom: 5px; }
     input { width: 100%; padding: 8px; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; background-color: #06C755; color: white; border: none; border-radius: 5px; font-size: 16px; }
+    button { width: 100%; padding: 10px; background-color: #06C755; color: white; border: none; border-radius: 5px; font-size: 16px; margin-top: 10px; }
+    .admin-btn { display: block; text-align: center; text-decoration: none; background-color: #333; color: white; padding: 10px; border-radius: 5px; margin-top: 20px; }
     #message { margin-top: 15px; color: red; }
   </style>
 </head>
@@ -55,8 +56,6 @@
         }
         const profile = await liff.getProfile();
         userUid = profile.userId;
-        
-        // 取得 UID 後先檢查註冊狀態
         await checkUserStatus();
       } catch (err) {
         document.getElementById('message').innerText = 'LIFF 初始化失敗：' + err.message;
@@ -72,11 +71,14 @@
         const result = await response.json();
         
         if (result.status === 'registered') {
-          // 已註冊或為管理員，顯示狀態並隱藏表單
-          document.getElementById('message').innerText = result.message;
           document.getElementById('form-container').style.display = 'none';
+          
+          if (result.message.indexOf('管理員') !== -1) {
+            document.getElementById('message').innerHTML = result.message + '<a href="admin.html" class="admin-btn">進入審核後台</a>';
+          } else {
+            document.getElementById('message').innerText = result.message;
+          }
         } else {
-          // 未註冊，清空訊息並顯示表單
           document.getElementById('message').innerText = '';
           document.getElementById('form-container').style.display = 'block';
         }
