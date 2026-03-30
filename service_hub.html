@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>經銷商服務中台</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 0; background-color: #f8f9fa; padding-bottom: 80px; }
+    header { background: #06C755; color: white; padding: 20px; text-align: center; }
+    .nav-bar { display: flex; position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #ddd; }
+    .nav-item { flex: 1; text-align: center; padding: 15px; font-size: 12px; cursor: pointer; color: #666; }
+    .nav-item.active { color: #06C755; font-weight: bold; }
+    .container { padding: 20px; }
+    .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    input, textarea { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #06C755; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    .tag { display: inline-block; background: #eef; padding: 5px 10px; border-radius: 20px; font-size: 12px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <header><h2 id="store-name">載入中...</h2></header>
+
+  <div class="container" id="view-menu">
+    <h3>服務選單</h3>
+    <div class="card" onclick="showView('card')">📇 數位名片 / 會員設定</div>
+    <div class="card" onclick="showView('activity')">📅 活動報名中心</div>
+    <div class="card" onclick="showView('match')">🤖 AI 業務智能配對</div>
+  </div>
+
+  <!-- 1. 數位名片模組 -->
+  <div class="container" id="view-card" style="display:none;">
+    <h3>我的數位名片</h3>
+    <div class="card">
+      <label>姓名</label><input type="text" id="m-name">
+      <label>職稱</label><input type="text" id="m-job">
+      <label>產業領域</label><input type="text" id="m-industry">
+      <label>我擁有的資源 (供配對)</label><textarea id="m-resource"></textarea>
+      <label>我目前的需求 (供配對)</label><textarea id="m-need"></textarea>
+      <button onclick="saveProfile()">儲存並更新名片</button>
+    </div>
+  </div>
+
+  <!-- 2. 活動報名模組 -->
+  <div class="container" id="view-activity" style="display:none;">
+    <h3>進行中的活動</h3>
+    <div id="activity-list"></div>
+  </div>
+
+  <!-- 3. AI 配對模組 -->
+  <div class="container" id="view-match" style="display:none;">
+    <h3>AI 業務配對</h3>
+    <div class="card" style="border-left: 5px solid #06C755;">
+      <p>根據您的資源與需求，AI 為您篩選了以下機會：</p>
+      <div id="match-results"><p style="color:#999;">正在分析數據...</p></div>
+    </div>
+  </div>
+
+  <div class="nav-bar">
+    <div class="nav-item active" onclick="showView('menu')">首頁</div>
+    <div class="nav-item" onclick="showView('card')">名片</div>
+    <div class="nav-item" onclick="showView('activity')">活動</div>
+    <div class="nav-item" onclick="showView('match')">配對</div>
+  </div>
+
+  <script>
+    const LIFF_ID = '2009367829-5bIWGL8O';
+    const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
+    let sid = '', uid = '';
+
+    async function init() {
+      // 1. 從 URL 解析 p 參數 (如果沒解密過，這裡要改為由 Worker 先解密再跳過來)
+      const urlParams = new URLSearchParams(window.location.search);
+      const p = urlParams.get('p');
+      
+      // 這裡假設跳轉中心已解密，或前端需先呼叫解密 API
+      // 為求簡化，我們直接向 Worker 拿資料 (由 Worker 內部解密)
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      const profile = await liff.getProfile();
+      uid = profile.userId;
+
+      loadServiceData(p);
+    }
+
+    async function loadServiceData(p) {
+      const response = await fetch(WORKER_URL + "?p=" + encodeURIComponent(p));
+      const text = await response.text();
+      // 解析由 GAS 回傳的 HTML 或 JSON 資料
+      // 此處建議 Worker 的 GET 路由直接返回解密後的 JSON 以供 SPA 渲染
+      // ... (實作資料載入邏輯)
+    }
+
+    function showView(view) {
+      document.querySelectorAll('.container').forEach(el => el.style.display = 'none');
+      document.getElementById('view-' + view).style.display = 'block';
+    }
+
+    init();
+  </script>
+</body>
+</html>
