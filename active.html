@@ -3,165 +3,250 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>建立新活動 - 服務中台</title>
+  <title>發布新活動 - 專業規格</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #f4f4f4; color: #333; }
-    .input-group { margin-bottom: 16px; }
+    body { font-family: -apple-system, sans-serif; background-color: #f8f9fa; color: #333; padding-bottom: 100px; }
+    .section-title { font-size: 14px; font-weight: 600; color: #06C755; margin-bottom: 12px; border-left: 4px solid #06C755; padding-left: 8px; }
+    .form-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .label-text { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
-    .form-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; background: #fff; }
-    .form-input:focus { border-color: #06C755; }
-    .tab-btn { flex: 1; text-align: center; padding: 10px; font-size: 14px; cursor: pointer; color: #999; border-bottom: 2px solid transparent; }
-    .tab-btn.active { color: #06C755; border-bottom-color: #06C755; font-weight: 500; }
-    .btn-main { background: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; cursor: pointer; }
-    .btn-ai { background: #333; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; float: right; margin-top: -24px; cursor: pointer; }
-    .batch-item { background: #fff; border: 1px solid #eee; padding: 12px; border-radius: 8px; margin-bottom: 10px; position: relative; }
-    .nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: white; display: flex; border-top: 1px solid #eee; height: 60px; }
-    .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #999; cursor: pointer; }
-    .nav-btn.active { color: #06C755; }
+    .form-input { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; background: #fff; transition: 0.2s; }
+    .form-input:focus { border-color: #06C755; box-shadow: 0 0 0 2px rgba(6,199,85,0.1); }
+    .img-placeholder { width: 100%; height: 180px; background: #f0f0f0; border: 2px dashed #ccc; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; cursor: pointer; overflow: hidden; position: relative; }
+    .img-preview { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+    .btn-ai { display: inline-block; background: #333; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; margin-bottom: 8px; }
+    .btn-submit { background: #06C755; color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(6,199,85,0.2); }
+    .tab-nav { display: flex; background: #eee; border-radius: 8px; padding: 4px; margin-bottom: 20px; }
+    .tab-item { flex: 1; text-align: center; padding: 8px; font-size: 14px; border-radius: 6px; cursor: pointer; color: #666; }
+    .tab-item.active { background: white; color: #06C755; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .batch-card { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 12px; position: relative; }
+    .batch-num { position: absolute; top: -10px; left: 10px; background: #06C755; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+    .batch-tools { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid #f9f9f9; pt-3; justify-content: flex-end; }
+    .tool-btn { font-size: 12px; padding: 4px 10px; border-radius: 5px; cursor: pointer; }
+    .btn-copy { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .btn-del { background: #fff1f0; color: #f5222d; border: 1px solid #ffa39e; }
   </style>
 </head>
 <body class="flex justify-center">
 
-<div class="w-full max-w-[450px] min-h-screen bg-white relative pb-20">
-  <header class="bg-[#06C755] text-white p-4 text-center">
-    <h2 class="text-lg font-medium">建立新活動</h2>
-  </header>
-
-  <div class="flex bg-gray-50 border-b border-gray-200">
-    <div onclick="switchTab('quick')" id="tab-quick" class="tab-btn active">快速匯入</div>
-    <div onclick="switchTab('detailed')" id="tab-detailed" class="tab-btn">詳細發佈</div>
-    <div onclick="switchTab('batch')" id="tab-batch" class="tab-btn">梯次建立</div>
+<div class="w-full max-w-[480px] p-4">
+  <div class="tab-nav">
+    <div onclick="switchMode('detailed')" id="t-detailed" class="tab-item active">正式活動</div>
+    <div onclick="switchMode('batch')" id="t-batch" class="tab-item">梯次建立</div>
+    <div onclick="switchMode('quick')" id="t-quick" class="tab-item">快速匯入</div>
   </div>
 
-  <main class="p-4">
-    <!-- 1. 快速模式 -->
-    <div id="form-quick" class="space-y-4">
-      <div class="input-group">
-        <span class="label-text">活動標題</span>
-        <input type="text" id="q-name" class="form-input" placeholder="例：每週例會">
+  <div id="view-detailed" class="space-y-4">
+    <div class="section-title">活動視覺</div>
+    <div class="form-card">
+      <div onclick="document.getElementById('file-in-d').click()" class="img-placeholder">
+        <span id="img-hint-d">📸 點擊上傳封面照片 (16:9)</span>
+        <img id="img-show-d" class="img-preview hidden">
+        <input type="file" id="file-in-d" class="hidden" accept="image/*" onchange="handleImg(this, 'd')">
       </div>
-      <div class="input-group">
-        <span class="label-text">名單內容 (每行一位)</span>
-        <textarea id="q-names" class="form-input h-40" placeholder="請貼上參與者姓名..."></textarea>
-      </div>
-      <button onclick="submitActivity('quick')" class="btn-main">立即建立並匯入</button>
+      <input type="hidden" id="d-image">
     </div>
 
-    <!-- 2. 詳細模式 -->
-    <div id="form-detailed" class="hidden space-y-4">
-      <div class="input-group">
-        <span class="label-text">正式活動標題</span>
-        <input type="text" id="d-name" class="form-input">
-      </div>
+    <div class="section-title">詳細資訊</div>
+    <div class="form-card space-y-4">
+      <input type="text" id="d-name" class="form-input" placeholder="活動標題">
       <div class="grid grid-cols-2 gap-3">
-        <div class="input-group">
-          <span class="label-text">開始時間</span>
-          <input type="datetime-local" id="d-start" class="form-input !text-xs">
-        </div>
-        <div class="input-group">
-          <span class="label-text">結束時間</span>
-          <input type="datetime-local" id="d-end" class="form-input !text-xs">
-        </div>
+        <input type="datetime-local" id="d-start" class="form-input !text-xs">
+        <input type="datetime-local" id="d-end" class="form-input !text-xs">
       </div>
-      <div class="input-group">
-        <span class="label-text">活動說明</span>
-        <div onclick="aiOptimizeDesc('d-desc')" class="btn-ai">🤖 AI 優化文案</div>
-        <textarea id="d-desc" class="form-input h-32" placeholder="輸入活動介紹..."></textarea>
+      <input type="text" id="d-loc" class="form-input" placeholder="地點 (地址或連結)">
+      <div class="grid grid-cols-2 gap-3">
+        <input type="number" id="d-price" class="form-input" placeholder="費用 (0 為免費)">
+        <input type="number" id="d-limit" class="form-input" placeholder="名額限制">
       </div>
-      <button onclick="submitActivity('detailed')" class="btn-main">發布正式活動</button>
+      <div class="pt-2">
+        <div onclick="aiBoost('d-desc')" class="btn-ai">🤖 AI 優化文案</div>
+        <textarea id="d-desc" class="form-input h-32" placeholder="詳細說明亮點..."></textarea>
+      </div>
     </div>
+    <button onclick="submit('detailed')" id="btn-d" class="btn-submit">確認發布活動</button>
+  </div>
 
-    <!-- 3. 梯次模式 -->
-    <div id="form-batch" class="hidden space-y-4">
-      <div class="input-group">
-        <span class="label-text">系列活動標題</span>
-        <input type="text" id="b-name" class="form-input">
+  <div id="view-batch" class="hidden space-y-4">
+    <div class="section-title">主活動資訊</div>
+    <div class="form-card space-y-4">
+      <input type="text" id="b-master-name" class="form-input" placeholder="系列課程總稱">
+      <div onclick="document.getElementById('file-in-b').click()" class="img-placeholder !h-32">
+        <span id="img-hint-b">📸 系列大圖</span>
+        <img id="img-show-b" class="img-preview hidden">
+        <input type="file" id="file-in-b" class="hidden" accept="image/*" onchange="handleImg(this, 'b')">
       </div>
-      <div id="batch-container">
-        <!-- 動態梯次 -->
-        <div class="batch-item">
-          <input type="text" class="form-input b-item-name mb-2" placeholder="梯次名稱 (例：第一梯)">
-          <input type="datetime-local" class="form-input b-item-start text-xs">
-        </div>
+      <input type="hidden" id="b-image">
+      <div class="pt-2">
+        <div onclick="aiBoost('b-desc')" class="btn-ai">🤖 AI 優化課程說明</div>
+        <textarea id="b-desc" class="form-input h-24" placeholder="主活動描述..."></textarea>
       </div>
-      <button onclick="addBatchRow()" class="w-full py-2 border-2 border-dashed border-gray-200 rounded text-gray-400 text-sm">+ 新增梯次</button>
-      <button onclick="submitActivity('batch')" class="btn-main mt-4">發布梯次活動</button>
     </div>
-  </main>
+    <div class="section-title">梯次列表</div>
+    <div id="batch-list"></div>
+    <button onclick="addBatchItem()" class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-400 text-sm font-medium">+ 新增全新梯次</button>
+    <button onclick="submit('batch')" id="btn-b" class="btn-submit mt-6">批次發布所有梯次</button>
+  </div>
 
-  <!-- 底部導覽 -->
-  <nav class="nav">
-    <div class="nav-btn" onclick="location.href='admin.html'"><span>後台</span></div>
-    <div class="nav-btn active"><span>建立</span></div>
-    <div class="nav-btn" onclick="location.href='service_hub.html?p='+p"><span>前台</span></div>
-  </nav>
+  <div id="view-quick" class="hidden">
+    <div class="form-card space-y-4">
+      <input type="text" id="q-name" class="form-input" placeholder="活動標題">
+      <textarea id="q-names" class="form-input h-64" placeholder="每行輸入一個姓名..."></textarea>
+      <button onclick="submit('quick')" id="btn-q" class="btn-submit">立即匯入</button>
+    </div>
+  </div>
 </div>
 
 <script>
   const LIFF_ID = '2009367829-5bIWGL8O';
   const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
   let uid = '', p = '';
+  let batchCounter = 0;
 
   async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     p = urlParams.get('p');
-
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login(); return; }
     const profile = await liff.getProfile();
     uid = profile.userId;
+    addBatchItem();
   }
 
-  function switchTab(m) {
-    ['quick', 'detailed', 'batch'].forEach(t => {
-      document.getElementById('tab-' + t).classList.toggle('active', t === m);
-      document.getElementById('form-' + t).classList.toggle('hidden', t !== m);
-    });
+  // 依照手冊：利用 canvas 進行圖片壓縮，寬度 800px，畫質 0.7
+  function handleImg(input, mode) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        const max = 800;
+        if (w > max) { h = Math.round(h * (max / w)); w = max; }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFF';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        const base64 = canvas.toDataURL('image/jpeg', 0.7);
+        
+        document.getElementById(`img-show-${mode}`).src = base64;
+        document.getElementById(`img-show-${mode}`).classList.remove('hidden');
+        document.getElementById(`img-hint-${mode}`).classList.add('hidden');
+        document.getElementById(`${mode}-image`).value = base64;
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 
-  function addBatchRow() {
-    const row = document.createElement('div');
-    row.className = 'batch-item';
-    row.innerHTML = `<input type="text" class="form-input b-item-name mb-2" placeholder="梯次名稱"><input type="datetime-local" class="form-input b-item-start text-xs">`;
-    document.getElementById('batch-container').appendChild(row);
+  function addBatchItem(copyFromId = null) {
+    batchCounter++;
+    const id = batchCounter;
+    const container = document.getElementById('batch-list');
+    const div = document.createElement('div');
+    div.className = 'batch-card';
+    div.id = `batch-item-${id}`;
+    let val = { name: '', start: '', end: '', price: '', limit: '' };
+    if (copyFromId) {
+      const source = document.getElementById(`batch-item-${copyFromId}`);
+      val.name = source.querySelector('.b-item-name').value;
+      val.price = source.querySelector('.b-item-price').value;
+      val.limit = source.querySelector('.b-item-limit').value;
+      if (val.name.includes('第')) val.name = val.name.replace(/第(\d+)梯/, (m, n) => `第${parseInt(n)+1}梯`);
+    }
+    div.innerHTML = `
+      <span class="batch-num">梯次 ${id}</span>
+      <input type="text" class="form-input b-item-name mb-3" placeholder="梯次名稱" value="${val.name}">
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <input type="datetime-local" class="form-input b-item-start !text-xs">
+        <input type="datetime-local" class="form-input b-item-end !text-xs">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input type="number" class="form-input b-item-price" placeholder="費用" value="${val.price}">
+        <input type="number" class="form-input b-item-limit" placeholder="名額" value="${val.limit}">
+      </div>
+      <div class="batch-tools">
+        <div class="tool-btn btn-copy" onclick="addBatchItem(${id})">👯 複製條件</div>
+        <div class="tool-btn btn-del" onclick="removeBatch(${id})">🗑 刪除</div>
+      </div>
+    `;
+    container.appendChild(div);
   }
 
-  async function aiOptimizeDesc(id) {
+  function removeBatch(id) {
+    const el = document.getElementById(`batch-item-${id}`);
+    if (document.querySelectorAll('.batch-card').length > 1) el.remove();
+  }
+
+  async function aiBoost(id) {
     const el = document.getElementById(id);
-    if (!el.value) return alert('請先輸入簡短大綱');
-    el.placeholder = 'AI 思考中...';
-    
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'ai_optimize_activity', p, content: el.value })
-    });
+    if(!el.value) return alert('請先輸入大綱');
+    const old = el.value;
+    el.value = 'AI 思考中...';
+    const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'ai_optimize_activity', p, content: old }) });
     el.value = await res.text();
   }
 
-  async function submitActivity(mode) {
-    let payload = { action: 'create_activity', mode, p, uid };
-    
-    if (mode === 'quick') {
-      payload.name = document.getElementById('q-name').value;
-      payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
-    } else if (mode === 'detailed') {
+  function switchMode(m) {
+    ['detailed', 'batch', 'quick'].forEach(mode => {
+      document.getElementById(`view-${mode}`).classList.toggle('hidden', m !== mode);
+      document.getElementById(`t-${mode}`).classList.toggle('active', m === mode);
+    });
+  }
+
+  async function submit(mode) {
+    const btnId = 'btn-' + mode.charAt(0);
+    const btn = document.getElementById(btnId);
+    btn.innerText = '處理中 (上傳圖片中)...';
+    btn.disabled = true;
+
+    const payload = { action: 'create_activity', mode, p, uid };
+    if (mode === 'detailed') {
       payload.name = document.getElementById('d-name').value;
       payload.start = document.getElementById('d-start').value;
       payload.end = document.getElementById('d-end').value;
+      payload.loc = document.getElementById('d-loc').value;
+      payload.price = document.getElementById('d-price').value || 0;
+      payload.limit = document.getElementById('d-limit').value || 0;
       payload.desc = document.getElementById('d-desc').value;
+      payload.image = document.getElementById('d-image').value;
+    } else if (mode === 'batch') {
+      payload.name = document.getElementById('b-master-name').value;
+      payload.image = document.getElementById('b-image').value;
+      payload.desc = document.getElementById('b-desc').value;
+      payload.batches = [];
+      document.querySelectorAll('.batch-card').forEach(card => {
+        payload.batches.push({
+          name: card.querySelector('.b-item-name').value,
+          start: card.querySelector('.b-item-start').value,
+          end: card.querySelector('.b-item-end').value,
+          price: card.querySelector('.b-item-price').value,
+          limit: card.querySelector('.b-item-limit').value
+        });
+      });
+    } else {
+      payload.name = document.getElementById('q-name').value;
+      payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
     }
-    
-    if (!payload.name) return alert('請填寫活動標題');
 
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-    const result = await res.json();
-    alert(result.message);
-    if (result.status === 'success') location.reload();
+    try {
+      const res = await fetch(WORKER_URL, { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload) 
+      });
+      const result = await res.json();
+      alert(result.message);
+      if (result.status === 'success') location.href = 'service_hub.html?p=' + p;
+    } catch(e) {
+      alert('上傳失敗，請確認網路與權限');
+    }
+    btn.innerText = '確認發布';
+    btn.disabled = false;
   }
 
   init();
