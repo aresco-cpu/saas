@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>行政審核後台</title>
+  <title>行政後台</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #fff; color: #333; }
-    .tab-item { flex: 1; text-align: center; padding: 14px 0; font-size: 14px; color: #999; cursor: pointer; border-bottom: 2px solid #f0f0f0; }
-    .tab-active { color: #06C755; border-bottom: 2px solid #06C755; }
-    .dealer-card { padding: 20px; border-bottom: 1px solid #f8f8f8; }
-    .btn-action { background: #06C755; color: white; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: none; }
-    .btn-copy { background: #f4f4f4; color: #666; padding: 4px 10px; border-radius: 4px; font-size: 11px; margin-top: 8px; border: none; }
-    .modal { background: rgba(0,0,0,0.6); display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    body { font-family: -apple-system, sans-serif; background: #fff; color: #333; }
+    .tab-item { flex: 1; text-align: center; padding: 15px 0; font-size: 14px; color: #999; cursor: pointer; border-bottom: 1.5px solid #f2f2f2; }
+    .tab-active { color: #06C755; border-bottom-color: #06C755; }
+    .dealer-card { padding: 20px; border-bottom: 1px solid #f9f9f9; }
+    .btn-approve { background: #06C755; color: white; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: none; }
+    .btn-copy { background: #f5f5f5; color: #666; padding: 5px 10px; border-radius: 4px; font-size: 11px; border: none; margin-top: 8px; }
+    .modal { background: rgba(0,0,0,0.5); display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
     .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 320px; padding: 24px; }
     input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 8px; font-size: 15px; margin-top: 10px; outline: none; background: #fafafa; }
-    .url-text { font-size: 11px; color: #007aff; word-break: break-all; margin-top: 6px; display: block; }
+    .url-link { font-size: 11px; color: #007aff; display: block; word-break: break-all; margin-top: 6px; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -24,7 +24,7 @@
 <div class="max-w-[480px] mx-auto min-h-screen">
   <header class="p-5 flex justify-between items-center">
     <h2 class="text-xl font-medium">經銷商審核</h2>
-    <span class="text-[11px] text-gray-300">ADMIN</span>
+    <span class="text-[10px] text-gray-300">ADMINISTRATOR</span>
   </header>
 
   <nav class="flex">
@@ -33,19 +33,19 @@
   </nav>
 
   <div id="dealer-list">
-    <!-- 名單動態渲染 -->
+    <div class="p-20 text-center text-gray-300 text-sm">載入名單中...</div>
   </div>
 </div>
 
-<!-- 核准視窗 -->
+<!-- 核准對話框 -->
 <div id="approve-modal" class="modal">
   <div class="modal-content">
-    <h3 class="text-lg font-medium">核准經銷商</h3>
-    <p class="text-xs text-gray-400 mt-1">請指定該店編號 (SID)</p>
-    <input type="text" id="assign-sid" placeholder="例: ST_001">
+    <h3 class="text-lg font-medium">指派商店編號</h3>
+    <p class="text-xs text-gray-400 mt-1">請為經銷商建立專屬 SID</p>
+    <input type="text" id="assign-sid" placeholder="例如: ST_001">
     <div class="flex gap-4 mt-8">
       <button onclick="closeModal()" class="flex-1 text-sm text-gray-400">取消</button>
-      <button onclick="confirmApprove()" class="flex-1 py-3 bg-[#06C755] text-white rounded-lg text-sm font-medium">確認核准</button>
+      <button onclick="confirmApprove()" class="flex-1 py-3 bg-[#06C755] text-white rounded-lg text-sm">確認核准</button>
     </div>
   </div>
 </div>
@@ -88,53 +88,49 @@
         container.innerHTML = `<div class="p-20 text-center text-red-300 text-sm">${result.message}</div>`;
       }
     } catch (e) {
-      container.innerHTML = '<div class="p-20 text-center text-red-400 text-sm">連線失敗</div>';
+      container.innerHTML = '<div class="p-20 text-center text-red-400 text-sm">網路連線異常</div>';
     }
   }
 
   function renderList(list) {
     const container = document.getElementById('dealer-list');
     if (!list || list.length === 0) {
-      container.innerHTML = `<div class="p-20 text-center text-gray-300 text-xs">目前沒有${currentTab}的名單</div>`;
+      container.innerHTML = `<div class="p-20 text-center text-gray-300 text-xs">暫無${currentTab}的名單</div>`;
       return;
     }
 
     container.innerHTML = list.map(item => {
-      const dealerUrl = `https://saas.ares-co2026.workers.dev/?p=${item.p}`;
+      const url = `https://saas.ares-co2026.workers.dev/?p=${item.p}`;
       return `
         <div class="dealer-card">
           <div class="flex justify-between items-start">
             <div class="flex-1">
-              <div class="text-[11px] text-gray-400 mb-1">${item.company || '個人'}</div>
+              <div class="text-[11px] text-gray-400 mb-0.5">${item.company || '個人申請'}</div>
               <div class="text-base font-medium">${item.name}</div>
               ${currentTab === '已核准' ? `
                 <div class="mt-2">
-                  <span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500">SID: ${item.sid}</span>
-                  <a href="${dealerUrl}" class="url-text">${dealerUrl}</a>
-                  <button onclick="copyToClipboard('${dealerUrl}')" class="btn-copy">複製專屬網址</button>
+                  <span class="text-[10px] bg-gray-50 px-2 py-0.5 rounded text-gray-500">ID: ${item.sid}</span>
+                  <a href="${url}" class="url-link">${url}</a>
+                  <button onclick="copyUrl('${url}')" class="btn-copy">複製專屬連結</button>
                 </div>
               ` : ''}
             </div>
-            ${currentTab === '待審核' ? 
-              `<button onclick="openModal('${item.uid}')" class="btn-action">核准</button>` : ''
-            }
+            ${currentTab === '待審核' ? `<button onclick="openModal('${item.uid}')" class="btn-approve">核准</button>` : ''}
           </div>
-          <div class="text-[10px] text-gray-300 mt-4">
-            ${item.phone} · ${new Date(item.time).toLocaleDateString()} 申請
-          </div>
+          <div class="text-[10px] text-gray-300 mt-3">${item.phone} · ${new Date(item.time).toLocaleDateString()} 申請</div>
         </div>
       `;
     }).join('');
   }
 
-  function copyToClipboard(text) {
-    const tempInput = document.createElement('input');
-    tempInput.value = text;
-    document.body.appendChild(tempInput);
-    tempInput.select();
+  function copyUrl(text) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
     document.execCommand('copy');
-    document.body.removeChild(tempInput);
-    alert('網址已複製到剪貼簿');
+    document.body.removeChild(el);
+    alert('連結已複製');
   }
 
   function openModal(targetUid) {
@@ -143,27 +139,19 @@
     document.getElementById('approve-modal').style.display = 'flex';
   }
 
-  function closeModal() {
-    document.getElementById('approve-modal').style.display = 'none';
-  }
+  function closeModal() { document.getElementById('approve-modal').style.display = 'none'; }
 
   async function confirmApprove() {
     const sid = document.getElementById('assign-sid').value;
     if (!sid) return;
-    
-    document.getElementById('approve-modal').style.display = 'none';
-    try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'approve_dealer', admin_uid: uid, target_uid: selectedUid, sid: sid })
-      });
-      const result = await res.json();
-      alert(result.message);
-      loadDealers();
-    } catch (e) {
-      alert('操作異常');
-    }
+    closeModal();
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'approve_dealer', admin_uid: uid, target_uid: selectedUid, sid: sid })
+    });
+    const result = await res.json();
+    alert(result.message);
+    loadDealers();
   }
 
   init();
