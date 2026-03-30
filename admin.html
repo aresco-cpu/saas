@@ -6,30 +6,36 @@
   <title>經銷商審核後台</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; background-color: #f4f5f7; }
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f5f7; margin: 0; }
+    .tabs { display: flex; background: #fff; margin-bottom: 15px; border-bottom: 1px solid #ddd; }
+    .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: #666; }
+    .tab.active { color: #06C755; border-bottom: 2px solid #06C755; font-weight: bold; }
     .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .card p { margin: 5px 0; font-size: 14px; }
-    input { padding: 8px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: #0056b3; }
-    button { padding: 8px 15px; background-color: #06C755; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:hover { background-color: #05a546; }
-    .copy-btn { background-color: #007bff; margin-top: 10px; padding: 5px 10px; font-size: 12px; }
-    .copy-btn:hover { background-color: #0056b3; }
-    #message { color: #d9534f; font-weight: bold; margin-bottom: 15px; }
-    .link-box { margin-top: 10px; padding: 15px; background: #eef; word-break: break-all; font-size: 12px; display: none; border-radius: 4px; border: 1px solid #ddd; }
+    .card p { margin: 5px 0; font-size: 14px; color: #333; }
+    .input-row { display: flex; align-items: center; margin-top: 10px; gap: 8px; }
+    input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: #0056b3; width: 100px; }
+    button { padding: 8px 15px; background-color: #06C755; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; }
+    .copy-btn { background-color: #007bff; margin-top: 10px; padding: 6px 12px; font-size: 13px; }
+    #message { color: #d9534f; font-weight: bold; padding: 0 20px; }
+    .link-box { margin-top: 10px; padding: 12px; background: #eef; word-break: break-all; font-size: 12px; display: none; border-radius: 4px; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
-  <h2>經銷商審核後台</h2>
+  <div class="tabs">
+    <div class="tab active" id="tab-pending" onclick="switchTab('待審核')">待審核</div>
+    <div class="tab" id="tab-approved" onclick="switchTab('已核准')">已核准</div>
+  </div>
+  
   <div id="message">驗證身分中...</div>
-  <div id="list-container"></div>
+  <div id="list-container" style="padding: 0 20px;"></div>
 
-  <!-- 用於複製功能的隱藏 input -->
   <input type="text" id="copyInput" style="position: absolute; left: -9999px;">
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
     let adminUid = '';
+    let currentTab = '待審核';
 
     async function initLiff() {
       try {
@@ -40,27 +46,32 @@
         }
         const profile = await liff.getProfile();
         adminUid = profile.userId;
-        
         if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
           document.getElementById('message').innerText = '您沒有管理員權限。';
           return;
         }
-        
-        document.getElementById('message').innerText = '身分驗證成功，載入名單中...';
-        loadPendingDealers();
+        loadDealers();
       } catch (err) {
         document.getElementById('message').innerText = 'LIFF 初始化失敗：' + err.message;
       }
     }
 
-    async function loadPendingDealers() {
+    function switchTab(status) {
+      currentTab = status;
+      document.getElementById('tab-pending').className = status === '待審核' ? 'tab active' : 'tab';
+      document.getElementById('tab-approved').className = status === '已核准' ? 'tab active' : 'tab';
+      loadDealers();
+    }
+
+    async function loadDealers() {
+      document.getElementById('message').innerText = '載入中...';
+      document.getElementById('list-container').innerHTML = '';
       try {
         const response = await fetch(WORKER_URL, {
           method: 'POST',
-          body: JSON.stringify({ action: 'get_pending', admin_uid: adminUid })
+          body: JSON.stringify({ action: 'get_dealers', admin_uid: adminUid, targetStatus: currentTab })
         });
         const result = await response.json();
-        
         if (result.status === 'success') {
           renderList(result.data, result.suggestedSid);
           document.getElementById('message').innerText = '';
@@ -68,35 +79,33 @@
           document.getElementById('message').innerText = result.message || '載入失敗';
         }
       } catch (err) {
-        document.getElementById('message').innerText = '連線異常，請檢查網路或 Worker 狀態。';
+        document.getElementById('message').innerText = '連線異常';
       }
     }
 
     function renderList(data, suggestedSid) {
       const container = document.getElementById('list-container');
-      container.innerHTML = '';
-      
       if (data.length === 0) {
-        container.innerHTML = '<p>目前沒有待審核的申請。</p>';
+        container.innerHTML = `<p style="text-align:center; color:#999; margin-top:50px;">目前沒有${currentTab}的申請。</p>`;
         return;
       }
 
-      let currentStNum = parseInt(suggestedSid.replace('ST_', ''), 10);
+      let nextStNum = parseInt(suggestedSid.replace('ST_', ''), 10);
 
       data.forEach((item, index) => {
-        let autoSid = "ST_" + ("000" + (currentStNum + index)).slice(-3);
-
         const card = document.createElement('div');
         card.className = 'card';
+        
+        // 如果是已核准，優先顯示現有的 SID，否則建議下一個
+        const displaySid = (currentTab === '已核准' && item.sid) ? item.sid : "ST_" + ("000" + (nextStNum + index)).slice(-3);
+        const btnText = currentTab === '已核准' ? '更新/補發連結' : '核准並產生連結';
+
         card.innerHTML = `
-          <p><strong>申請時間：</strong> ${new Date(item.time).toLocaleString()}</p>
-          <p><strong>公司/團隊：</strong> ${item.company}</p>
-          <p><strong>申請人：</strong> ${item.name}</p>
-          <p><strong>聯絡電話：</strong> ${item.phone}</p>
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
-          <div>
-            <input type="text" id="sid_${item.uid}" value="${autoSid}" style="width:80px">
-            <button onclick="approve('${item.uid}')">核准並產生連結</button>
+          <p><strong>公司：</strong> ${item.company} | <strong>姓名：</strong> ${item.name}</p>
+          <p><strong>電話：</strong> ${item.phone}</p>
+          <div class="input-row">
+            <input type="text" id="sid_${item.uid}" value="${displaySid}">
+            <button onclick="approve('${item.uid}')">${btnText}</button>
           </div>
           <div id="result_${item.uid}" class="link-box"></div>
         `;
@@ -107,11 +116,7 @@
     async function approve(targetUid) {
       const sidInput = document.getElementById(`sid_${targetUid}`).value.trim();
       const resultBox = document.getElementById(`result_${targetUid}`);
-      
-      if (!sidInput) {
-        alert('請輸入 SID！');
-        return;
-      }
+      if (!sidInput) return alert('請輸入 SID');
 
       resultBox.style.display = 'block';
       resultBox.innerText = '處理中...';
@@ -119,48 +124,31 @@
       try {
         const response = await fetch(WORKER_URL, {
           method: 'POST',
-          body: JSON.stringify({ 
-            action: 'approve_dealer', 
-            admin_uid: adminUid,
-            target_uid: targetUid,
-            sid: sidInput
-          })
+          body: JSON.stringify({ action: 'approve_dealer', admin_uid: adminUid, target_uid: targetUid, sid: sidInput })
         });
         const result = await response.json();
-        
         if (result.status === 'success') {
           resultBox.style.background = '#d4edda';
           resultBox.innerHTML = `
-            <div style="font-weight:bold; color:#155724; margin-bottom:5px;">✅ 核准成功</div>
-            <div style="color:#155724;">專屬連結：</div>
-            <div id="url_${targetUid}" style="color:#004085; font-family:monospace; margin:5px 0;">${result.link}</div>
+            <div style="font-weight:bold; color:#155724; margin-bottom:5px;">✅ 處理完成</div>
+            <div id="url_${targetUid}" style="color:#004085; font-size:11px;">${result.link}</div>
             <button class="copy-btn" onclick="copyText('url_${targetUid}')">複製連結</button>
-            <p style="font-size:11px; color:#666; margin-top:10px;">此畫面將於 10 秒後刷新名單</p>
           `;
-          // 複製後重新載入列表
-          setTimeout(loadPendingDealers, 10000); 
         } else {
           resultBox.style.background = '#f8d7da';
-          resultBox.innerText = '❌ ' + result.message;
+          resultBox.innerText = result.message;
         }
-      } catch (err) {
-        resultBox.innerText = '❌ 連線異常';
-      }
+      } catch (err) { resultBox.innerText = '連線異常'; }
     }
 
-    function copyText(elementId) {
-      const text = document.getElementById(elementId).innerText;
-      const copyInput = document.getElementById('copyInput');
-      copyInput.value = text;
-      copyInput.select();
-      copyInput.setSelectionRange(0, 99999); // 手機端相容
-      
-      try {
-        document.execCommand('copy');
-        alert('連結已複製到剪貼簿！');
-      } catch (err) {
-        alert('複製失敗，請手動選取文字複製。');
-      }
+    function copyText(elId) {
+      const text = document.getElementById(elId).innerText;
+      const input = document.getElementById('copyInput');
+      input.value = text;
+      input.select();
+      input.setSelectionRange(0, 9999);
+      document.execCommand('copy');
+      alert('已複製！');
     }
 
     initLiff();
