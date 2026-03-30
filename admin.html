@@ -12,14 +12,19 @@
     input { padding: 8px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: #0056b3; }
     button { padding: 8px 15px; background-color: #06C755; color: white; border: none; border-radius: 4px; cursor: pointer; }
     button:hover { background-color: #05a546; }
+    .copy-btn { background-color: #007bff; margin-top: 10px; padding: 5px 10px; font-size: 12px; }
+    .copy-btn:hover { background-color: #0056b3; }
     #message { color: #d9534f; font-weight: bold; margin-bottom: 15px; }
-    .link-box { margin-top: 10px; padding: 10px; background: #eef; word-break: break-all; font-size: 12px; display: none; }
+    .link-box { margin-top: 10px; padding: 15px; background: #eef; word-break: break-all; font-size: 12px; display: none; border-radius: 4px; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
   <h2>經銷商審核後台</h2>
   <div id="message">驗證身分中...</div>
   <div id="list-container"></div>
+
+  <!-- 用於複製功能的隱藏 input -->
+  <input type="text" id="copyInput" style="position: absolute; left: -9999px;">
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
@@ -76,11 +81,9 @@
         return;
       }
 
-      // 取得起算數字
       let currentStNum = parseInt(suggestedSid.replace('ST_', ''), 10);
 
       data.forEach((item, index) => {
-        // 如果有多筆待審核，會自動遞增分配 (ST_001, ST_002...)
         let autoSid = "ST_" + ("000" + (currentStNum + index)).slice(-3);
 
         const card = document.createElement('div');
@@ -89,11 +92,10 @@
           <p><strong>申請時間：</strong> ${new Date(item.time).toLocaleString()}</p>
           <p><strong>公司/團隊：</strong> ${item.company}</p>
           <p><strong>申請人：</strong> ${item.name}</p>
-          <p><strong>聯絡電話：</strong> ${item.phone} | <strong>Email：</strong> ${item.email}</p>
-          <p><strong>推廣管道：</strong> ${item.channel}</p>
+          <p><strong>聯絡電話：</strong> ${item.phone}</p>
           <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
           <div>
-            <input type="text" id="sid_${item.uid}" value="${autoSid}" placeholder="輸入指派的 SID">
+            <input type="text" id="sid_${item.uid}" value="${autoSid}" style="width:80px">
             <button onclick="approve('${item.uid}')">核准並產生連結</button>
           </div>
           <div id="result_${item.uid}" class="link-box"></div>
@@ -128,14 +130,36 @@
         
         if (result.status === 'success') {
           resultBox.style.background = '#d4edda';
-          resultBox.innerHTML = `✅ ${result.message}<br><br>專屬連結 (請複製給經銷商)：<br><a href="${result.link}" target="_blank">${result.link}</a>`;
-          setTimeout(loadPendingDealers, 3000); 
+          resultBox.innerHTML = `
+            <div style="font-weight:bold; color:#155724; margin-bottom:5px;">✅ 核准成功</div>
+            <div style="color:#155724;">專屬連結：</div>
+            <div id="url_${targetUid}" style="color:#004085; font-family:monospace; margin:5px 0;">${result.link}</div>
+            <button class="copy-btn" onclick="copyText('url_${targetUid}')">複製連結</button>
+            <p style="font-size:11px; color:#666; margin-top:10px;">此畫面將於 10 秒後刷新名單</p>
+          `;
+          // 複製後重新載入列表
+          setTimeout(loadPendingDealers, 10000); 
         } else {
           resultBox.style.background = '#f8d7da';
           resultBox.innerText = '❌ ' + result.message;
         }
       } catch (err) {
         resultBox.innerText = '❌ 連線異常';
+      }
+    }
+
+    function copyText(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      const copyInput = document.getElementById('copyInput');
+      copyInput.value = text;
+      copyInput.select();
+      copyInput.setSelectionRange(0, 99999); // 手機端相容
+      
+      try {
+        document.execCommand('copy');
+        alert('連結已複製到剪貼簿！');
+      } catch (err) {
+        alert('複製失敗，請手動選取文字複製。');
       }
     }
 
