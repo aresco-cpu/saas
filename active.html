@@ -3,119 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>發布新活動 - 專業規格</title>
+  <title>活動建立與管理</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #f8f9fa; color: #333; padding-bottom: 100px; }
-    .section-title { font-size: 14px; font-weight: 600; color: #06C755; margin-bottom: 12px; border-left: 4px solid #06C755; padding-left: 8px; }
-    .form-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .label-text { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
-    .form-input { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; background: #fff; transition: 0.2s; }
-    .form-input:focus { border-color: #06C755; box-shadow: 0 0 0 2px rgba(6,199,85,0.1); }
-    .img-placeholder { width: 100%; height: 180px; background: #f0f0f0; border: 2px dashed #ccc; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; cursor: pointer; overflow: hidden; position: relative; }
-    .img-preview { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
-    .btn-ai { display: inline-block; background: #333; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; margin-bottom: 8px; }
-    .btn-submit { background: #06C755; color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(6,199,85,0.2); }
-    .tab-nav { display: flex; background: #eee; border-radius: 8px; padding: 4px; margin-bottom: 20px; }
-    .tab-item { flex: 1; text-align: center; padding: 8px; font-size: 14px; border-radius: 6px; cursor: pointer; color: #666; }
-    .tab-item.active { background: white; color: #06C755; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .batch-card { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 12px; position: relative; }
-    .batch-num { position: absolute; top: -10px; left: 10px; background: #06C755; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 20px; }
-    .batch-tools { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid #f9f9f9; pt-3; justify-content: flex-end; }
-    .tool-btn { font-size: 12px; padding: 4px 10px; border-radius: 5px; cursor: pointer; }
-    .btn-copy { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-    .btn-del { background: #fff1f0; color: #f5222d; border: 1px solid #ffa39e; }
+    body { font-family: -apple-system, sans-serif; background-color: #f4f4f4; color: #333; padding-bottom: 80px; }
+    .nav-tab { display: flex; background: white; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
+    .tab-item { flex: 1; text-align: center; padding: 15px; font-size: 14px; color: #999; cursor: pointer; }
+    .tab-item.active { color: #06C755; border-bottom: 2px solid #06C755; }
+    .section { background: white; margin-top: 10px; padding: 15px; }
+    .label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; }
+    .input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 8px; font-size: 15px; outline: none; background: #fafafa; }
+    .btn-main { background: #06C755; color: white; width: 100%; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 500; cursor: pointer; border: none; margin-top: 20px; }
+    .img-upload { width: 100%; height: 160px; background: #f9f9f9; border: 1px dashed #ddd; border-radius: 10px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; }
+    .img-p { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+    .ai-btn { background: #333; color: white; font-size: 11px; padding: 4px 10px; border-radius: 20px; float: right; margin-top: -30px; cursor: pointer; }
   </style>
 </head>
-<body class="flex justify-center">
+<body>
 
-<div class="w-full max-w-[480px] p-4">
-  <div class="tab-nav">
-    <div onclick="switchMode('detailed')" id="t-detailed" class="tab-item active">正式活動</div>
-    <div onclick="switchMode('batch')" id="t-batch" class="tab-item">梯次建立</div>
-    <div onclick="switchMode('quick')" id="t-quick" class="tab-item">快速匯入</div>
-  </div>
-
-  <div id="view-detailed" class="space-y-4">
-    <div class="section-title">活動視覺</div>
-    <div class="form-card">
-      <div onclick="document.getElementById('file-in-d').click()" class="img-placeholder">
-        <span id="img-hint-d">📸 點擊上傳封面照片 (16:9)</span>
-        <img id="img-show-d" class="img-preview hidden">
-        <input type="file" id="file-in-d" class="hidden" accept="image/*" onchange="handleImg(this, 'd')">
-      </div>
-      <input type="hidden" id="d-image">
-    </div>
-
-    <div class="section-title">詳細資訊</div>
-    <div class="form-card space-y-4">
-      <input type="text" id="d-name" class="form-input" placeholder="活動標題">
-      <div class="grid grid-cols-2 gap-3">
-        <input type="datetime-local" id="d-start" class="form-input !text-xs">
-        <input type="datetime-local" id="d-end" class="form-input !text-xs">
-      </div>
-      <input type="text" id="d-loc" class="form-input" placeholder="地點 (地址或連結)">
-      <div class="grid grid-cols-2 gap-3">
-        <input type="number" id="d-price" class="form-input" placeholder="費用 (0 為免費)">
-        <input type="number" id="d-limit" class="form-input" placeholder="名額限制">
-      </div>
-      <div class="pt-2">
-        <div onclick="aiBoost('d-desc')" class="btn-ai">🤖 AI 優化文案</div>
-        <textarea id="d-desc" class="form-input h-32" placeholder="詳細說明亮點..."></textarea>
-      </div>
-    </div>
-    <button onclick="submit('detailed')" id="btn-d" class="btn-submit">確認發布活動</button>
-  </div>
-
-  <div id="view-batch" class="hidden space-y-4">
-    <div class="section-title">主活動資訊</div>
-    <div class="form-card space-y-4">
-      <input type="text" id="b-master-name" class="form-input" placeholder="系列課程總稱">
-      <div onclick="document.getElementById('file-in-b').click()" class="img-placeholder !h-32">
-        <span id="img-hint-b">📸 系列大圖</span>
-        <img id="img-show-b" class="img-preview hidden">
-        <input type="file" id="file-in-b" class="hidden" accept="image/*" onchange="handleImg(this, 'b')">
-      </div>
-      <input type="hidden" id="b-image">
-      <div class="pt-2">
-        <div onclick="aiBoost('b-desc')" class="btn-ai">🤖 AI 優化課程說明</div>
-        <textarea id="b-desc" class="form-input h-24" placeholder="主活動描述..."></textarea>
-      </div>
-    </div>
-    <div class="section-title">梯次列表</div>
-    <div id="batch-list"></div>
-    <button onclick="addBatchItem()" class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-400 text-sm font-medium">+ 新增全新梯次</button>
-    <button onclick="submit('batch')" id="btn-b" class="btn-submit mt-6">批次發布所有梯次</button>
-  </div>
-
-  <div id="view-quick" class="hidden">
-    <div class="form-card space-y-4">
-      <input type="text" id="q-name" class="form-input" placeholder="活動標題">
-      <textarea id="q-names" class="form-input h-64" placeholder="每行輸入一個姓名..."></textarea>
-      <button onclick="submit('quick')" id="btn-q" class="btn-submit">立即匯入</button>
-    </div>
-  </div>
+<div class="nav-tab">
+  <div onclick="switchTab('quick')" id="tab-quick" class="tab-item active">快速上架</div>
+  <div onclick="switchTab('detailed')" id="tab-detailed" class="tab-item">正式規格</div>
 </div>
+
+<main id="app" class="max-w-[450px] mx-auto">
+  <!-- 1. 快速上架：專業優化版 -->
+  <div id="view-quick" class="p-4 space-y-4">
+    <div class="section !mt-0 rounded-xl">
+      <span class="label">快速活動名稱</span>
+      <input type="text" id="q-name" class="input" placeholder="例如：第 88 次定期例會">
+      
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div>
+          <span class="label">預設身份</span>
+          <select id="q-identity" class="input">
+            <option value="會員">會員</option>
+            <option value="來賓">來賓</option>
+          </select>
+        </div>
+        <div>
+          <span class="label">開始時間</span>
+          <input type="datetime-local" id="q-start" class="input !text-xs">
+        </div>
+      </div>
+    </div>
+
+    <div class="section rounded-xl">
+      <div class="flex justify-between items-center mb-2">
+        <span class="label !mb-0">匯入預約名單</span>
+        <span class="text-[11px] color-gray-400">每行一人姓名</span>
+      </div>
+      <textarea id="q-names" class="input h-48" placeholder="王小明&#10;李大華..."></textarea>
+    </div>
+    <button onclick="submit('quick')" class="btn-main">立即發布並匯入名單</button>
+  </div>
+
+  <!-- 2. 正式規格 -->
+  <div id="view-detailed" class="hidden p-4 space-y-4">
+    <div class="section !mt-0 rounded-xl">
+      <span class="label">活動封面</span>
+      <div onclick="document.getElementById('file-in').click()" class="img-upload">
+        <span id="hint">📸 點擊選擇圖片</span>
+        <img id="prev" class="img-p hidden">
+        <input type="file" id="file-in" class="hidden" accept="image/*" onchange="handleImg(this)">
+      </div>
+      <input type="hidden" id="d-img">
+    </div>
+
+    <div class="section rounded-xl space-y-4">
+      <div>
+        <span class="label">活動標題</span>
+        <input type="text" id="d-name" class="input">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><span class="label">費用</span><input type="number" id="d-price" class="input" value="0"></div>
+        <div><span class="label">上限</span><input type="number" id="d-limit" class="input" placeholder="無限制"></div>
+      </div>
+      <div>
+        <div onclick="aiBoost()" class="ai-btn">🤖 AI 美化文案</div>
+        <span class="label">活動詳細介紹</span>
+        <textarea id="d-desc" class="input h-32" placeholder="輸入課程或活動重點..."></textarea>
+      </div>
+    </div>
+    <button onclick="submit('detailed')" class="btn-main">發布正式活動</button>
+  </div>
+</main>
 
 <script>
   const LIFF_ID = '2009367829-5bIWGL8O';
   const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-  let uid = '', p = '';
-  let batchCounter = 0;
+  let p = '', uid = '';
 
   async function init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    p = urlParams.get('p');
+    p = new URLSearchParams(window.location.search).get('p');
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login(); return; }
-    const profile = await liff.getProfile();
-    uid = profile.userId;
-    addBatchItem();
+    uid = (await liff.getProfile()).userId;
   }
 
-  // 依照手冊：利用 canvas 進行圖片壓縮，寬度 800px，畫質 0.7
-  function handleImg(input, mode) {
+  function handleImg(input) {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -124,129 +111,55 @@
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let w = img.width, h = img.height;
-        const max = 800;
-        if (w > max) { h = Math.round(h * (max / w)); w = max; }
+        if (w > 800) { h = Math.round(h * (800 / w)); w = 800; }
         canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#FFF';
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        const base64 = canvas.toDataURL('image/jpeg', 0.7);
-        
-        document.getElementById(`img-show-${mode}`).src = base64;
-        document.getElementById(`img-show-${mode}`).classList.remove('hidden');
-        document.getElementById(`img-hint-${mode}`).classList.add('hidden');
-        document.getElementById(`${mode}-image`).value = base64;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const b64 = canvas.toDataURL('image/jpeg', 0.7);
+        document.getElementById('prev').src = b64;
+        document.getElementById('prev').classList.remove('hidden');
+        document.getElementById('hint').classList.add('hidden');
+        document.getElementById('d-img').value = b64;
       };
       img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  function addBatchItem(copyFromId = null) {
-    batchCounter++;
-    const id = batchCounter;
-    const container = document.getElementById('batch-list');
-    const div = document.createElement('div');
-    div.className = 'batch-card';
-    div.id = `batch-item-${id}`;
-    let val = { name: '', start: '', end: '', price: '', limit: '' };
-    if (copyFromId) {
-      const source = document.getElementById(`batch-item-${copyFromId}`);
-      val.name = source.querySelector('.b-item-name').value;
-      val.price = source.querySelector('.b-item-price').value;
-      val.limit = source.querySelector('.b-item-limit').value;
-      if (val.name.includes('第')) val.name = val.name.replace(/第(\d+)梯/, (m, n) => `第${parseInt(n)+1}梯`);
-    }
-    div.innerHTML = `
-      <span class="batch-num">梯次 ${id}</span>
-      <input type="text" class="form-input b-item-name mb-3" placeholder="梯次名稱" value="${val.name}">
-      <div class="grid grid-cols-2 gap-2 mb-3">
-        <input type="datetime-local" class="form-input b-item-start !text-xs">
-        <input type="datetime-local" class="form-input b-item-end !text-xs">
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <input type="number" class="form-input b-item-price" placeholder="費用" value="${val.price}">
-        <input type="number" class="form-input b-item-limit" placeholder="名額" value="${val.limit}">
-      </div>
-      <div class="batch-tools">
-        <div class="tool-btn btn-copy" onclick="addBatchItem(${id})">👯 複製條件</div>
-        <div class="tool-btn btn-del" onclick="removeBatch(${id})">🗑 刪除</div>
-      </div>
-    `;
-    container.appendChild(div);
-  }
-
-  function removeBatch(id) {
-    const el = document.getElementById(`batch-item-${id}`);
-    if (document.querySelectorAll('.batch-card').length > 1) el.remove();
-  }
-
-  async function aiBoost(id) {
-    const el = document.getElementById(id);
-    if(!el.value) return alert('請先輸入大綱');
-    const old = el.value;
-    el.value = 'AI 思考中...';
-    const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'ai_optimize_activity', p, content: old }) });
-    el.value = await res.text();
-  }
-
-  function switchMode(m) {
-    ['detailed', 'batch', 'quick'].forEach(mode => {
-      document.getElementById(`view-${mode}`).classList.toggle('hidden', m !== mode);
-      document.getElementById(`t-${mode}`).classList.toggle('active', m === mode);
+  function switchTab(t) {
+    ['quick', 'detailed'].forEach(m => {
+      document.getElementById('view-' + m).classList.toggle('hidden', m !== t);
+      document.getElementById('tab-' + m).classList.toggle('active', m === t);
     });
   }
 
+  async function aiBoost() {
+    const el = document.getElementById('d-desc');
+    if(!el.value) return alert('請先輸入簡要大綱');
+    const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'ai_optimize_activity', p, content: el.value }) });
+    el.value = await res.text();
+  }
+
   async function submit(mode) {
-    const btnId = 'btn-' + mode.charAt(0);
-    const btn = document.getElementById(btnId);
-    btn.innerText = '處理中 (上傳圖片中)...';
-    btn.disabled = true;
-
     const payload = { action: 'create_activity', mode, p, uid };
-    if (mode === 'detailed') {
-      payload.name = document.getElementById('d-name').value;
-      payload.start = document.getElementById('d-start').value;
-      payload.end = document.getElementById('d-end').value;
-      payload.loc = document.getElementById('d-loc').value;
-      payload.price = document.getElementById('d-price').value || 0;
-      payload.limit = document.getElementById('d-limit').value || 0;
-      payload.desc = document.getElementById('d-desc').value;
-      payload.image = document.getElementById('d-image').value;
-    } else if (mode === 'batch') {
-      payload.name = document.getElementById('b-master-name').value;
-      payload.image = document.getElementById('b-image').value;
-      payload.desc = document.getElementById('b-desc').value;
-      payload.batches = [];
-      document.querySelectorAll('.batch-card').forEach(card => {
-        payload.batches.push({
-          name: card.querySelector('.b-item-name').value,
-          start: card.querySelector('.b-item-start').value,
-          end: card.querySelector('.b-item-end').value,
-          price: card.querySelector('.b-item-price').value,
-          limit: card.querySelector('.b-item-limit').value
-        });
-      });
-    } else {
+    if (mode === 'quick') {
       payload.name = document.getElementById('q-name').value;
+      payload.identity = document.getElementById('q-identity').value;
+      payload.start = document.getElementById('q-start').value;
       payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
+    } else {
+      payload.name = document.getElementById('d-name').value;
+      payload.price = document.getElementById('d-price').value;
+      payload.limit = document.getElementById('d-limit').value;
+      payload.desc = document.getElementById('d-desc').value;
+      payload.image = document.getElementById('d-img').value;
     }
 
-    try {
-      const res = await fetch(WORKER_URL, { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload) 
-      });
-      const result = await res.json();
-      alert(result.message);
-      if (result.status === 'success') location.href = 'service_hub.html?p=' + p;
-    } catch(e) {
-      alert('上傳失敗，請確認網路與權限');
-    }
-    btn.innerText = '確認發布';
-    btn.disabled = false;
+    if(!payload.name) return alert('請填寫活動標題');
+
+    const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const result = await res.json();
+    alert(result.message);
+    if(result.status === 'success') location.href = 'service_hub.html?p=' + p;
   }
 
   init();
