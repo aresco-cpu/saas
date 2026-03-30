@@ -12,23 +12,16 @@
     .container { padding: 15px; }
     .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .card h3 { margin: 0 0 10px 0; font-size: 16px; color: #06C755; }
-    
-    /* 表單樣式 */
     .field-group { margin-bottom: 12px; }
     .field-label { font-size: 13px; color: #666; margin-bottom: 4px; display: block; }
     .field-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
     .field-textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; height: 80px; resize: none; }
-    
     .btn-submit { background: #06C755; color: white; border: none; width: 100%; padding: 12px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    .btn-submit:disabled { background: #ccc; }
-
-    /* 導覽列 */
     .nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; height: 60px; }
     .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #999; cursor: pointer; }
     .nav-btn.active { color: #06C755; font-weight: bold; }
-    
-    .match-result { background: #fff; padding: 10px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
-    #ai-loading { text-align: center; color: #666; padding: 20px; }
+    .match-result { background: #fff; padding: 10px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: #444; }
+    #ai-loading { text-align: center; color: #666; padding: 20px; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -49,7 +42,7 @@
 <div id="view-profile" class="container" style="display:none;">
   <div class="card">
     <h3>我的數位名片</h3>
-    <div id="profile-form"><!-- 由程式自動生成欄位 --></div>
+    <div id="profile-form"></div>
     <button class="btn-submit" id="save-btn" onclick="saveProfile()">儲存並更新名片</button>
   </div>
 </div>
@@ -64,31 +57,30 @@
 </div>
 
 <nav class="nav">
-  <div class="nav-btn active" id="nav-home" onclick="switchView('home')"><span>🏠</span>首頁</div>
-  <div class="nav-btn" id="nav-profile" onclick="switchView('profile')"><span>👤</span>名片</div>
-  <div class="nav-btn" id="nav-ai" onclick="switchView('ai')"><span>💡</span>配對</div>
+  <div class="nav-btn active" id="nav-home" onclick="switchView('home')">首頁</div>
+  <div class="nav-btn" id="nav-profile" onclick="switchView('profile')">名片</div>
+  <div class="nav-btn" id="nav-ai" onclick="switchView('ai')">配對</div>
 </nav>
 
 <script>
   const LIFF_ID = '2009367829-5bIWGL8O';
   const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-  let sid = '', uid = '', p = '';
+  let uid = '', p = '';
 
-  // 定義表單欄位 (SaaS 擴充用)
   const formConfig = [
     { id: 'name', label: '真實姓名', type: 'text', placeholder: '您的姓名' },
     { id: 'job', label: '公司職稱', type: 'text', placeholder: '例：創辦人 / 業務經理' },
     { id: 'industry', label: '產業領域', type: 'text', placeholder: '例：電商 / 數位行銷' },
-    { id: 'resource', label: '我的資源 (我有什麼？)', type: 'textarea', placeholder: '例：熟悉電商物流、有5000人社群' },
+    { id: 'resource', label: '我的資源 (我有什麼？)', type: 'textarea', placeholder: '例：熟悉電商物流、有開發團隊' },
     { id: 'need', label: '我的需求 (我找什麼？)', type: 'textarea', placeholder: '例：尋找保養品供應商、異業結盟' }
   ];
 
   async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     p = urlParams.get('p');
-    if (!p) { document.body.innerHTML = '參數異常'; return; }
+    if (!p) { document.getElementById('store-name').innerText = '無效連結'; return; }
 
-    generateFormFields(); // 程式生成表單
+    generateFormFields();
 
     try {
       await liff.init({ liffId: LIFF_ID });
@@ -99,23 +91,16 @@
     } catch (e) { console.error(e); }
   }
 
-  // 程式生成表單欄位
   function generateFormFields() {
     const container = document.getElementById('profile-form');
     formConfig.forEach(field => {
       const group = document.createElement('div');
       group.className = 'field-group';
       group.innerHTML = `<label class="field-label">${field.label}</label>`;
-      
-      const input = (field.type === 'textarea') 
-        ? document.createElement('textarea') 
-        : document.createElement('input');
-      
+      const input = (field.type === 'textarea') ? document.createElement('textarea') : document.createElement('input');
       input.id = `f-${field.id}`;
-      input.placeholder = field.placeholder;
       input.className = (field.type === 'textarea') ? 'field-textarea' : 'field-input';
       if (field.type === 'text') input.type = 'text';
-      
       group.appendChild(input);
       container.appendChild(group);
     });
@@ -123,29 +108,26 @@
 
   async function loadHubData() {
     try {
-      const res = await fetch(`${WORKER_URL}?action=get_service_hub&p=${encodeURIComponent(p)}&uid=${uid}`);
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'get_service_hub', p, uid })
+      });
       const result = await res.json();
       if (result.status === 'success') {
-        sid = result.data.sid; // 後端需回傳 sid
         document.getElementById('store-name').innerText = result.data.storeName;
         const prof = result.data.myProfile;
-        // 自動填入現有資料
         formConfig.forEach(f => {
           if (prof[f.id]) document.getElementById(`f-${f.id}`).value = prof[f.id];
         });
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { document.getElementById('store-name').innerText = '連線失敗'; }
   }
 
   async function saveProfile() {
     const btn = document.getElementById('save-btn');
     btn.disabled = true;
-    btn.innerText = '儲存中...';
-
     const profileData = {};
-    formConfig.forEach(f => {
-      profileData[f.id] = document.getElementById(`f-${f.id}`).value;
-    });
+    formConfig.forEach(f => { profileData[f.id] = document.getElementById(`f-${f.id}`).value; });
 
     try {
       const res = await fetch(WORKER_URL, {
@@ -155,9 +137,8 @@
       const result = await res.json();
       alert(result.message);
       switchView('home');
-    } catch (e) { alert('儲存失敗'); }
+    } catch (e) { alert('儲存異常'); }
     btn.disabled = false;
-    btn.innerText = '儲存並更新名片';
   }
 
   async function getAiMatches() {
@@ -167,11 +148,13 @@
     loading.style.display = 'block';
 
     try {
-      const res = await fetch(`${WORKER_URL}?action=get_ai_matches&p=${encodeURIComponent(p)}&uid=${uid}`);
-      const text = await res.text();
-      resBox.innerText = text; // 這裡接收來自 Gemini 的純文字 (LINE 風格)
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'get_ai_matches', p, uid })
+      });
+      resBox.innerText = await res.text();
       resBox.style.display = 'block';
-    } catch (e) { resBox.innerText = '配對功能暫時無法連線'; resBox.style.display = 'block'; }
+    } catch (e) { resBox.innerText = '配對失敗'; resBox.style.display = 'block'; }
     loading.style.display = 'none';
   }
 
@@ -181,7 +164,6 @@
     document.getElementById('view-' + v).style.display = 'block';
     document.getElementById('nav-' + v).classList.add('active');
     if (v === 'ai') getAiMatches();
-    window.scrollTo(0, 0);
   }
 
   init();
