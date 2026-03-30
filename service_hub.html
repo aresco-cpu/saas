@@ -7,41 +7,68 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 0; background: #f4f4f4; color: #333; padding-bottom: 80px; }
-    header { background: #06C755; color: white; padding: 20px 15px; text-align: left; }
-    header h2 { margin: 0; font-size: 20px; }
+    
+    /* 頂部商店標題 */
+    header { background: #06C755; color: white; padding: 20px 15px; text-align: center; }
+    header h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
+
+    /* 用戶資訊列 - LINE 原生風格 */
+    .user-profile { background: white; padding: 15px; display: flex; align-items: center; border-bottom: 1px solid #eee; }
+    .user-avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #eee; object-fit: cover; border: 2px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+    .user-info { flex: 1; }
+    .user-name { font-weight: bold; font-size: 17px; margin: 0; color: #000; }
+    .user-store-status { font-size: 13px; color: #06C755; margin: 4px 0 0 0; }
+
     .container { padding: 15px; }
-    .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .card h3 { margin: 0 0 10px 0; font-size: 16px; color: #06C755; }
-    .field-group { margin-bottom: 12px; }
-    .field-label { font-size: 13px; color: #666; margin-bottom: 4px; display: block; }
-    .field-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-    .field-textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; height: 80px; resize: none; }
-    .btn-submit { background: #06C755; color: white; border: none; width: 100%; padding: 12px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    .nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; height: 60px; }
+    .card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
+    .card h3 { margin: 0 0 5px 0; font-size: 16px; color: #333; }
+    .card p { margin: 0; font-size: 13px; color: #888; line-height: 1.4; }
+    
+    /* 表單樣式 */
+    .field-group { margin-bottom: 15px; }
+    .field-label { font-size: 13px; color: #666; margin-bottom: 6px; display: block; }
+    .field-input, .field-textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; background: #fafafa; }
+    .field-textarea { height: 100px; resize: none; }
+    
+    .btn-submit { background: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .btn-submit:disabled { background: #ccc; }
+
+    /* 底部導覽 */
+    .nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; height: 65px; box-shadow: 0 -1px 5px rgba(0,0,0,0.05); }
     .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #999; cursor: pointer; }
-    .nav-btn.active { color: #06C755; font-weight: bold; }
-    .match-result { background: #fff; padding: 10px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: #444; }
-    #ai-loading { text-align: center; color: #666; padding: 20px; font-size: 14px; }
+    .nav-btn.active { color: #06C755; }
+    
+    .match-result { background: #fff; padding: 15px; font-size: 15px; line-height: 1.6; white-space: pre-wrap; color: #444; border-radius: 10px; }
+    #ai-loading { text-align: center; color: #666; padding: 30px; font-size: 14px; }
   </style>
 </head>
 <body>
 
-<header><h2 id="store-name">正在載入服務...</h2></header>
+<header><h2 id="store-name">進入服務中...</h2></header>
+
+<!-- 登入者身分與所在商店資訊 -->
+<div class="user-profile">
+  <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/100" alt="頭像">
+  <div class="user-info">
+    <p id="user-display-name" class="user-name">載入中...</p>
+    <p id="current-store-status" class="user-store-status">正在確認店家資訊...</p>
+  </div>
+</div>
 
 <div id="view-home" class="container">
   <div class="card" onclick="switchView('profile')">
     <h3>📇 數位名片設定</h3>
-    <div style="font-size:13px; color:#888;">完善個人資訊，讓 AI 幫您精準配對業務機會。</div>
+    <p>完善個人資訊，讓 AI 幫您精準配對業務機會。</p>
   </div>
   <div class="card" onclick="switchView('ai')">
     <h3>🤖 AI 智能配對</h3>
-    <div style="font-size:13px; color:#888;">根據您的資源與需求，自動推薦適合的合作夥伴。</div>
+    <p>根據您的資源與需求，自動推薦適合的合作夥伴。</p>
   </div>
 </div>
 
 <div id="view-profile" class="container" style="display:none;">
   <div class="card">
-    <h3>我的數位名片</h3>
+    <h3 style="color:#06C755">我的數位名片</h3>
     <div id="profile-form"></div>
     <button class="btn-submit" id="save-btn" onclick="saveProfile()">儲存並更新名片</button>
   </div>
@@ -49,10 +76,10 @@
 
 <div id="view-ai" class="container" style="display:none;">
   <div class="card">
-    <h3>AI 配對分析</h3>
-    <div id="ai-loading" style="display:none;">分析數據中，請稍候...</div>
+    <h3 style="color:#06C755">AI 配對分析</h3>
+    <div id="ai-loading" style="display:none;">AI 正在分析資料庫，請稍候...</div>
     <div id="ai-result" class="match-result"></div>
-    <button class="btn-submit" style="background:#333; margin-top:10px;" onclick="getAiMatches()">重新獲取配對</button>
+    <button class="btn-submit" style="background:#333; margin-top:15px;" onclick="getAiMatches()">重新獲取配對</button>
   </div>
 </div>
 
@@ -69,30 +96,48 @@
 
   const formConfig = [
     { id: 'name', label: '真實姓名', type: 'text', placeholder: '您的姓名' },
-    { id: 'job', label: '公司職稱', type: 'text', placeholder: '例：創辦人 / 業務經理' },
+    { id: 'job', label: '公司職稱', type: '例：創辦人 / 業務經理' },
     { id: 'industry', label: '產業領域', type: 'text', placeholder: '例：電商 / 數位行銷' },
     { id: 'resource', label: '我的資源 (我有什麼？)', type: 'textarea', placeholder: '例：熟悉電商物流、有開發團隊' },
     { id: 'need', label: '我的需求 (我找什麼？)', type: 'textarea', placeholder: '例：尋找保養品供應商、異業結盟' }
   ];
 
   async function init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    p = urlParams.get('p');
-    if (!p) { document.getElementById('store-name').innerText = '無效連結'; return; }
-
-    generateFormFields();
-
     try {
+      // 1. 先初始化 LIFF 並取得使用者頭像 (確保身分優先顯示)
       await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+      
       const profile = await liff.getProfile();
       uid = profile.userId;
+      document.getElementById('user-avatar').src = profile.pictureUrl || '';
+      document.getElementById('user-display-name').innerText = profile.displayName;
+
+      // 2. 解析商店參數 p
+      const urlParams = new URLSearchParams(window.location.search);
+      p = urlParams.get('p');
+      
+      if (!p) { 
+        document.getElementById('store-name').innerText = '無效連結';
+        document.getElementById('current-store-status').innerText = '⚠ 未偵測到有效的商店編號';
+        document.getElementById('current-store-status').style.color = 'red';
+        return; 
+      }
+
+      generateFormFields();
       loadHubData();
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      document.getElementById('user-display-name').innerText = '載入失敗';
+    }
   }
 
   function generateFormFields() {
     const container = document.getElementById('profile-form');
+    container.innerHTML = '';
     formConfig.forEach(field => {
       const group = document.createElement('div');
       group.className = 'field-group';
@@ -101,6 +146,7 @@
       input.id = `f-${field.id}`;
       input.className = (field.type === 'textarea') ? 'field-textarea' : 'field-input';
       if (field.type === 'text') input.type = 'text';
+      input.placeholder = field.placeholder || '';
       group.appendChild(input);
       container.appendChild(group);
     });
@@ -110,17 +156,25 @@
     try {
       const res = await fetch(WORKER_URL, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get_service_hub', p, uid })
       });
       const result = await res.json();
       if (result.status === 'success') {
-        document.getElementById('store-name').innerText = result.data.storeName;
+        const storeName = result.data.storeName;
+        document.getElementById('store-name').innerText = storeName;
+        document.getElementById('current-store-status').innerText = `📍 目前在：${storeName}`;
+        
         const prof = result.data.myProfile;
         formConfig.forEach(f => {
           if (prof[f.id]) document.getElementById(`f-${f.id}`).value = prof[f.id];
         });
+      } else {
+        document.getElementById('current-store-status').innerText = '驗證錯誤：' + result.message;
       }
-    } catch (e) { document.getElementById('store-name').innerText = '連線失敗'; }
+    } catch (e) { 
+      document.getElementById('store-name').innerText = '連線失敗';
+    }
   }
 
   async function saveProfile() {
@@ -132,6 +186,7 @@
     try {
       const res = await fetch(WORKER_URL, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'save_profile', p, uid, profile: profileData })
       });
       const result = await res.json();
@@ -150,11 +205,12 @@
     try {
       const res = await fetch(WORKER_URL, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get_ai_matches', p, uid })
       });
       resBox.innerText = await res.text();
       resBox.style.display = 'block';
-    } catch (e) { resBox.innerText = '配對失敗'; resBox.style.display = 'block'; }
+    } catch (e) { resBox.innerText = '配對暫時無法運作'; resBox.style.display = 'block'; }
     loading.style.display = 'none';
   }
 
@@ -164,6 +220,7 @@
     document.getElementById('view-' + v).style.display = 'block';
     document.getElementById('nav-' + v).classList.add('active');
     if (v === 'ai') getAiMatches();
+    window.scrollTo(0, 0);
   }
 
   init();
