@@ -6,11 +6,11 @@
   <title>經銷商審核後台</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; -webkit-font-smoothing: antialiased; }
     .admin-container { max-width: 450px; margin: 0 auto; min-height: 100vh; }
     
     .tabs { display: flex; background: #FFFFFF; border-bottom: 1px solid #EEEEEE; position: sticky; top: 0; z-index: 10; }
-    .tab { flex: 1; text-align: center; padding: 15px; color: #999999; cursor: pointer; }
+    .tab { flex: 1; text-align: center; padding: 15px; color: #999999; cursor: pointer; font-size: 15px; }
     .tab.active { color: #06C755; border-bottom: 2px solid #06C755; }
 
     .list-area { padding: 15px; }
@@ -20,12 +20,13 @@
     .dealer-info { font-size: 15px; color: #666666; margin-bottom: 15px; line-height: 1.5; }
 
     .action-row { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
-    .sid-input { flex: 1; padding: 10px 0; border: none; border-bottom: 1px solid #EEEEEE; font-size: 15px; color: #007AFF; outline: none; }
-    .btn-approve { padding: 10px 20px; background: #06C755; color: white; border: none; font-size: 15px; cursor: pointer; }
+    .sid-input { flex: 1; padding: 10px 0; border: none; border-bottom: 1px solid #EEEEEE; font-size: 15px; color: #007AFF; outline: none; background: transparent; border-radius: 0; }
+    .btn-approve { padding: 10px 20px; background: #06C755; color: white; border: none; font-size: 15px; cursor: pointer; border-radius: 4px; }
 
     .link-box { margin-top: 15px; padding: 15px; background: #F9F9F9; color: #007AFF; font-size: 15px; word-break: break-all; border-left: 3px solid #06C755; }
     
-    #message { padding: 20px; text-align: center; color: #999999; }
+    #message { padding: 20px; text-align: center; color: #999999; font-size: 15px; }
+    .error-text { color: #FF4D4F; }
   </style>
 </head>
 <body>
@@ -52,13 +53,15 @@
         const profile = await liff.getProfile();
         adminUid = profile.userId;
         
-        // 驗證是否為平台管理員
+        // 嚴格校對管理員 UID
         if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
-          document.getElementById('message').innerText = '權限不足';
+          document.getElementById('message').innerHTML = '<span class="error-text">權限不足：您無權訪問此頁面</span>';
           return;
         }
         loadDealers();
-      } catch (err) { document.getElementById('message').innerText = '系統錯誤'; }
+      } catch (err) { 
+        document.getElementById('message').innerHTML = '<span class="error-text">LIFF 初始化失敗</span>'; 
+      }
     }
 
     function switchTab(status) {
@@ -71,64 +74,82 @@
     async function loadDealers() {
       const container = document.getElementById('list-container');
       const msg = document.getElementById('message');
-      msg.innerText = '載入名單中...';
+      msg.innerText = '正在讀取經銷商名單...';
       container.innerHTML = '';
 
       try {
         const res = await fetch(WORKER_URL, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'get_dealers', admin_uid: adminUid, targetStatus: currentTab })
         });
-        const result = await res.json();
-        msg.innerText = '';
         
-        if (result.data.length === 0) {
-          msg.innerText = '目前無相關申請資料';
-          return;
-        }
+        const result = await res.json();
+        if (result.status === 'success') {
+          msg.innerText = '';
+          // 修正路徑：result.data 是 GAS 回傳的內容，內含 data 陣列與 suggestedSid
+          const dealerList = result.data.data;
+          const suggestedSid = result.data.suggestedSid;
 
-        result.data.forEach((item, index) => {
-          const card = document.createElement('div');
-          card.className = 'dealer-card';
-          const suggestedSid = item.sid || "ST_" + ("000" + (parseInt(result.suggestedSid.split('_')[1]) + index)).slice(-3);
-          
-          card.innerHTML = `
-            <div class="dealer-name">負責人：${item.name}</div>
-            <div class="dealer-brand">品牌：${item.brand || item.company}</div>
-            <div class="dealer-info">
-              電話：${item.phone}<br>
-              管道：${item.channel}
-            </div>
-            <div class="action-row">
-              <input type="text" id="sid_${item.uid}" class="sid-input" value="${suggestedSid}">
-              <button class="btn-approve" onclick="approve('${item.uid}')">核准</button>
-            </div>
-            <div id="res_${item.uid}" style="display:none;"></div>
-          `;
-          container.appendChild(card);
-        });
-      } catch (e) { msg.innerText = '連線失敗'; }
+          if (dealerList.length === 0) {
+            msg.innerText = `目前無${currentTab}的申請案`;
+            return;
+          }
+
+          dealerList.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'dealer-card';
+            // 如果已有 SID 則用現有的，否則用建議序號
+            const displaySid = item.sid || "ST_" + ("000" + (parseInt(suggestedSid.split('_')[1]) + index)).slice(-3);
+            
+            card.innerHTML = `
+              <div class="dealer-name">負責人：${item.name}</div>
+              <div class="dealer-brand">品牌：${item.brand || item.company}</div>
+              <div class="dealer-info">
+                電話：${item.phone}<br>
+                管道：${item.channel}
+              </div>
+              <div class="action-row">
+                <input type="text" id="sid_${item.uid}" class="sid-input" value="${displaySid}">
+                <button class="btn-approve" onclick="approve('${item.uid}')">核准</button>
+              </div>
+              <div id="res_${item.uid}" style="display:none;"></div>
+            `;
+            container.appendChild(card);
+          });
+        } else {
+          msg.innerHTML = `<span class="error-text">系統提示：${result.message}</span>`;
+        }
+      } catch (e) { 
+        msg.innerHTML = '<span class="error-text">連線失敗：請檢查網路或 Worker 狀態</span>'; 
+      }
     }
 
     async function approve(targetUid) {
       const sid = document.getElementById(`sid_${targetUid}`).value;
       const resBox = document.getElementById(`res_${targetUid}`);
       resBox.style.display = 'block';
-      resBox.innerText = '處理中...';
+      resBox.className = ''; // 重置樣式
+      resBox.innerText = '正在處理並建立專屬資料庫...';
       
       try {
         const response = await fetch(WORKER_URL, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'approve_dealer', admin_uid: adminUid, target_uid: targetUid, sid: sid })
         });
+        
         const result = await response.json();
+        // 修正路徑：result.data 才是 GAS 回傳的成功物件
         if (result.status === 'success') {
           resBox.className = 'link-box';
-          resBox.innerText = '連結已產生：' + result.link;
+          resBox.innerText = '核准成功！專屬連結：' + result.data.link;
         } else {
-          resBox.innerText = '核准失敗';
+          resBox.innerHTML = `<span class="error-text">核准失敗：${result.message}</span>`;
         }
-      } catch (e) { resBox.innerText = '連線錯誤'; }
+      } catch (e) { 
+        resBox.innerHTML = '<span class="error-text">連線異常，請稍後再試</span>'; 
+      }
     }
 
     initLiff();
