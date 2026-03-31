@@ -21,7 +21,7 @@
     .header-right { display: flex; align-items: center; gap: 12px; }
     .user-avatar-top { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #EEE; }
 
-    /* 三模組頁籤 (灰色背景還原) */
+    /* 三模組頁籤 */
     .tab-selector { display: flex; background: #F1F5F9; border-radius: 8px; padding: 4px; margin: 15px 20px; }
     .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #64748b; font-size: 15px; transition: all 0.2s; }
     .tab-item.active { background: #FFFFFF; color: #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -44,17 +44,22 @@
     /* 名單文字域 */
     .textarea-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; font-size: 15px; outline: none; height: 180px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
 
-    /* 梯次項目樣式 (動態複製模式) */
+    /* 梯次項目樣式 (增加複製功能) */
     .batch-list-area { border-top: 1px solid #F1F5F9; margin-top: 10px; padding-top: 10px; }
     .batch-item { background: #FFFFFF; border-bottom: 1px solid #F1F5F9; padding: 20px; position: relative; }
     .batch-item:last-child { border-bottom: none; }
-    .btn-remove-batch { position: absolute; top: 15px; right: 15px; color: #cbd5e1; cursor: pointer; }
+    
+    .batch-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 12px; color: #cbd5e1; }
+    .batch-action-btn { cursor: pointer; transition: color 0.2s; }
+    .batch-action-btn:hover { color: #2563eb; }
+    .btn-remove:hover { color: #ef4444; }
+
     .btn-add-batch { width: calc(100% - 40px); margin: 10px 20px; padding: 14px; border: 2px dashed #06C755; color: #06C755; background: rgba(6, 199, 85, 0.05); border-radius: 12px; font-size: 14px; text-align: center; cursor: pointer; font-weight: 500; }
 
     /* 主要按鈕 */
     .btn-action { width: calc(100% - 40px); margin: 25px 20px; padding: 18px; background: #06C755; color: white; border: none; font-size: 16px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
     
-    /* 底部 6 格導覽列 (帶選取框效果) */
+    /* 底部導覽列 */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #475569; cursor: pointer; padding-top: 8px; }
     .nav-item.active { color: #0f172a; }
@@ -85,9 +90,7 @@
     </header>
 
     <main id="main-content">
-      <!-- 建立活動視圖 -->
       <div id="view-create">
-        <!-- 三大模組頁籤 -->
         <div class="tab-selector">
           <div id="tab-quick" class="tab-item active" onclick="switchCreateMode('quick')">快速匯入</div>
           <div id="tab-full" class="tab-item" onclick="switchCreateMode('full')">完整發佈</div>
@@ -95,13 +98,11 @@
         </div>
 
         <div id="create-form-area">
-          <!-- 活動名稱 (共通) -->
           <div class="field-group">
             <label class="field-label" id="label-act-name">活動名稱</label>
             <input id="act-name" class="input-box" placeholder="輸入活動標題...">
           </div>
 
-          <!-- 類型與身份 (並排佈局還原) -->
           <div class="row-grid">
             <div>
               <label class="field-label">活動類型</label>
@@ -113,7 +114,6 @@
             </div>
           </div>
 
-          <!-- 宣傳大圖 -->
           <div class="field-group" style="padding-bottom: 0;">
             <label class="field-label">宣傳大圖 (選填)</label>
           </div>
@@ -124,7 +124,6 @@
             <input type="file" id="act-image-file" class="hidden" accept="image/*" onchange="previewFile(this)">
           </div>
 
-          <!-- 模組 A: 快速匯入 -->
           <div id="module-quick">
             <div class="field-group">
               <div class="field-label-row">
@@ -135,7 +134,6 @@
             </div>
           </div>
 
-          <!-- 模組 B: 完整發佈 -->
           <div id="module-full" class="hidden">
             <div class="row-grid">
               <div><label class="field-label">開始時間</label><input type="datetime-local" id="d-start" class="input-box text-[13px]"></div>
@@ -143,11 +141,10 @@
             </div>
             <div class="field-group">
               <label class="field-label">活動詳情</label>
-              <textarea id="d-desc" class="textarea-box" style="height: 120px" placeholder="描述活動內容..."></textarea>
+              <textarea id="d-desc" class="textarea-box !h-32" placeholder="描述活動內容..."></textarea>
             </div>
           </div>
 
-          <!-- 模組 C: 系列梯次 (動態複製模式) -->
           <div id="module-batch" class="hidden">
             <div class="field-group">
               <label class="field-label">系列描述 (共用)</label>
@@ -157,8 +154,12 @@
             <div id="batch-container" class="batch-list-area">
               <!-- 初始梯次 -->
               <div class="batch-item">
+                <div class="batch-actions">
+                  <i data-lucide="copy" class="batch-action-btn" title="複製內容" onclick="copyBatch(this)"></i>
+                  <i data-lucide="x" class="batch-action-btn btn-remove" title="刪除" onclick="this.closest('.batch-item').remove(); updateBatchNumbers();"></i>
+                </div>
                 <div class="field-label-row">
-                  <label class="field-label batch-title-label">梯次 1 名稱與時間</label>
+                  <label class="field-label batch-number-label">梯次 1 名稱與時間</label>
                 </div>
                 <input type="text" class="input-box b-item-name mb-3" placeholder="例：第一梯次 (10/01)">
                 <div class="grid grid-cols-2 gap-3">
@@ -178,15 +179,9 @@
         </div>
       </div>
 
-      <!-- 其他模組預留 (預設隱藏) -->
-      <div id="view-checkin" class="hidden">
-        <div class="field-group" style="background:#F1F5F9; font-size:13px; color:#64748B;">活動簽到核銷</div>
-        <div class="field-group"><select id="event-selector" class="input-box" onchange="loadRegistrants()"></select></div>
-        <div id="registrant-list"></div>
-      </div>
+      <!-- 其他模組略... -->
     </main>
 
-    <!-- 底部 6 格導覽列 -->
     <nav id="bottom-nav">
       <div class="nav-item active" id="nav-create" onclick="switchNav('create')"><div class="icon-box"><i data-lucide="plus-circle"></i></div><span class="nav-text">建立</span></div>
       <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
@@ -212,7 +207,8 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        document.getElementById('user-avatar-img').src = profile.pictureUrl || '';
+        const avatarImg = document.getElementById('user-avatar-img');
+        if(avatarImg) avatarImg.src = profile.pictureUrl || '';
         await loadHubData();
       } catch (err) { console.error(err); } 
       finally { document.getElementById('loader').classList.add('hidden'); }
@@ -225,10 +221,6 @@
         const d = result.data;
         const bn = document.getElementById('brand-name');
         if(bn) bn.innerText = d.brandName || "管理中心";
-        const sel = document.getElementById('event-selector');
-        if (sel && d.activities) {
-          sel.innerHTML = '<option value="">選擇活動...</option>' + d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
-        }
       }
     }
 
@@ -243,42 +235,59 @@
       if(lbl) lbl.innerText = (m === 'batch' ? '系列名稱' : '活動名稱');
     }
 
-    // 梯次動態複製模式
-    function addBatchRow() {
+    // 複製梯次邏輯
+    function copyBatch(btn) {
+      const parent = btn.closest('.batch-item');
+      const data = {
+        name: parent.querySelector('.b-item-name').value,
+        start: parent.querySelector('.b-item-start').value,
+        end: parent.querySelector('.b-item-end').value,
+        limit: parent.querySelector('.b-item-limit').value
+      };
+      addBatchRow(data);
+    }
+
+    function addBatchRow(data = null) {
       const container = document.getElementById('batch-container');
-      const count = container.querySelectorAll('.batch-item').length + 1;
-      
-      // 複製結構邏輯
       const div = document.createElement('div');
       div.className = 'batch-item animate-in fade-in';
       div.innerHTML = `
-        <i data-lucide="x" class="btn-remove-batch" onclick="this.parentElement.remove()"></i>
-        <div class="field-label-row">
-          <label class="field-label">梯次 ${count} 名稱與時間</label>
+        <div class="batch-actions">
+          <i data-lucide="copy" class="batch-action-btn" onclick="copyBatch(this)"></i>
+          <i data-lucide="x" class="batch-action-btn btn-remove" onclick="this.closest('.batch-item').remove(); updateBatchNumbers();"></i>
         </div>
-        <input type="text" class="input-box b-item-name mb-3" placeholder="梯次名稱">
+        <div class="field-label-row">
+          <label class="field-label batch-number-label">梯次名稱與時間</label>
+        </div>
+        <input type="text" class="input-box b-item-name mb-3" placeholder="梯次名稱" value="${data ? data.name : ''}">
         <div class="grid grid-cols-2 gap-3">
-          <input type="datetime-local" class="input-box b-item-start !text-[12px] !py-2">
-          <input type="datetime-local" class="input-box b-item-end !text-[12px] !py-2">
+          <input type="datetime-local" class="input-box b-item-start !text-[12px] !py-2" value="${data ? data.start : ''}">
+          <input type="datetime-local" class="input-box b-item-end !text-[12px] !py-2" value="${data ? data.end : ''}">
         </div>
         <div class="mt-3">
-          <input type="number" class="input-box b-item-limit !py-2" placeholder="人數限制">
+          <input type="number" class="input-box b-item-limit !py-2" placeholder="人數限制" value="${data ? data.limit : ''}">
         </div>
       `;
       container.appendChild(div);
+      updateBatchNumbers();
       lucide.createIcons();
+    }
+
+    function updateBatchNumbers() {
+      const labels = document.querySelectorAll('.batch-number-label');
+      labels.forEach((label, index) => {
+        label.innerText = `梯次 ${index + 1} 名稱與時間`;
+      });
     }
 
     function switchNav(v) {
       document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
       document.getElementById('view-' + v).classList.remove('hidden');
-      
       document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.remove('active');
         const box = el.querySelector('.icon-box');
         if (box) { el.removeChild(box); el.insertAdjacentHTML('afterbegin', box.innerHTML); }
       });
-
       const target = document.getElementById('nav-' + v);
       if (target) {
         target.classList.add('active');
