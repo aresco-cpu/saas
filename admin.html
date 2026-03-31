@@ -5,55 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>admin.html</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     /* 全局規範：15px, 不加粗, LINE 原生風格 */
-    body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; -webkit-font-smoothing: antialiased; }
-    .admin-container { max-width: 450px; margin: 0 auto; min-height: 100vh; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; -webkit-font-smoothing: antialiased; padding-bottom: 80px; }
+    .admin-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    .tabs { display: flex; background: #FFFFFF; border-bottom: 1px solid #EEEEEE; position: sticky; top: 0; z-index: 10; }
-    .tab { flex: 1; text-align: center; padding: 15px; color: #999999; cursor: pointer; font-size: 15px; }
+    header { background: #333333; color: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .header-title { font-size: 17px; font-weight: 400; }
+
+    .tabs { display: flex; background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
+    .tab { flex: 1; text-align: center; padding: 15px; color: #999999; cursor: pointer; font-size: 15px; transition: color 0.2s; }
     .tab.active { color: #06C755; border-bottom: 2px solid #06C755; }
 
-    .list-area { padding: 1px 0; }
-    .dealer-card { background: #FFFFFF; padding: 20px; border-bottom: 1px solid #F0F0F0; margin-bottom: 1px; }
-    .dealer-name { font-size: 15px; color: #333333; margin-bottom: 6px; }
+    .dealer-card { background: #FFFFFF; padding: 20px; border-bottom: 1px solid #F0F0F0; }
+    .dealer-name { font-size: 15px; color: #333333; margin-bottom: 4px; }
     .dealer-brand { font-size: 15px; color: #06C755; margin-bottom: 8px; }
-    .dealer-info { font-size: 14px; color: #666666; line-height: 1.5; }
+    .dealer-info { font-size: 14px; color: #999999; line-height: 1.5; }
 
     .action-row { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
-    .sid-input { flex: 1; padding: 10px 0; border: none; border-bottom: 1px solid #EEEEEE; font-size: 15px; color: #007AFF; outline: none; background: transparent; }
-    .btn-approve { padding: 10px 20px; background: #06C755; color: white; border: none; font-size: 15px; cursor: pointer; border-radius: 4px; }
+    .sid-input { flex: 1; padding: 12px; border: 1px solid #EEEEEE; font-size: 15px; color: #007AFF; outline: none; border-radius: 4px; }
+    .btn-approve { padding: 12px 20px; background: #06C755; color: white; border: none; font-size: 15px; cursor: pointer; border-radius: 4px; }
     
     .link-box { margin-top: 15px; padding: 15px; background: #F9F9F9; color: #007AFF; font-size: 14px; word-break: break-all; border-left: 3px solid #06C755; }
+    
     #message { padding: 60px 20px; text-align: center; color: #999999; font-size: 15px; }
     .error { color: #FF4D4F; }
+    
+    .hidden { display: none !important; }
+
+    /* 底部導覽 - 返回首頁 */
+    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 70px; left: 50%; transform: translateX(-50%); z-index: 1000; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; }
+    .nav-text { font-size: 12px; margin-top: 4px; }
   </style>
 </head>
 <body>
   <div class="admin-container">
+    <header>
+      <span class="header-title">系統管理中心</span>
+      <i data-lucide="home" style="width: 20px; height: 20px; cursor: pointer;" onclick="location.href='index.html'"></i>
+    </header>
+
     <div class="tabs">
       <div class="tab active" id="tab-pending" onclick="switchTab('待審核')">待審核</div>
       <div class="tab" id="tab-approved" onclick="switchTab('已核准')">已核准</div>
     </div>
+
     <div id="message">驗證權限中...</div>
-    <div id="list-container" class="list-area"></div>
+    <div id="list-container"></div>
+
+    <nav>
+      <div class="nav-item" onclick="location.href='index.html'">
+        <i data-lucide="layout-dashboard"></i>
+        <span class="nav-text">註冊首頁</span>
+      </div>
+    </nav>
   </div>
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
+    const SUPER_ADMIN = 'Uf729764dbb5b652a5a90a467320bea29';
     let adminUid = '';
     let currentTab = '待審核';
 
     async function init() {
+      lucide.createIcons();
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         adminUid = profile.userId;
-        // Super Admin UID 檢查
-        if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
-          document.getElementById('message').innerText = '權限不足';
+        
+        if (adminUid !== SUPER_ADMIN) {
+          document.getElementById('message').innerHTML = '<span class="error">權限不足，僅限系統開發者進入</span>';
           return;
         }
         loadDealers();
@@ -72,7 +98,7 @@
     async function loadDealers() {
       const container = document.getElementById('list-container');
       const msg = document.getElementById('message');
-      msg.innerText = '讀取中...';
+      msg.innerText = '讀取申請名單中...';
       container.innerHTML = '';
 
       try {
@@ -82,7 +108,14 @@
           body: JSON.stringify({ action: 'get_dealers', admin_uid: adminUid, targetStatus: currentTab })
         });
         
-        const result = await res.json();
+        const text = await res.text();
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch(e) {
+          msg.innerHTML = `<div class="error">連線失敗：解析資料格式錯誤<br><small>${text.substring(0, 100)}</small></div>`;
+          return;
+        }
         
         if (result.status === 'success') {
           msg.innerText = '';
@@ -90,39 +123,38 @@
           const suggestedSid = result.data.suggestedSid;
 
           if (!dealers || dealers.length === 0) {
-            msg.innerText = `目前無${currentTab}申請`;
+            msg.innerText = `目前無${currentTab}名單`;
             return;
           }
 
           dealers.forEach((item) => {
-            const card = document.createElement('div');
-            card.className = 'dealer-card';
-            const displaySid = item.sid || suggestedSid;
-            card.innerHTML = `
+            const div = document.createElement('div');
+            div.className = 'dealer-card';
+            div.innerHTML = `
               <div class="dealer-name">負責人：${item.name}</div>
               <div class="dealer-brand">品牌：${item.brand || item.company}</div>
-              <div class="dealer-info">電話：${item.phone}<br>管道：${item.channel}</div>
+              <div class="dealer-info">電話：${item.phone} | 管道：${item.channel}</div>
               <div class="action-row">
-                <input type="text" id="sid_${item.uid}" class="sid-input" value="${displaySid}">
+                <input type="text" id="sid_${item.uid}" class="sid-input" value="${item.sid || suggestedSid}">
                 <button class="btn-approve" onclick="approve('${item.uid}')">核准</button>
               </div>
-              <div id="res_${item.uid}" style="display:none;"></div>
+              <div id="res_${item.uid}" class="hidden"></div>
             `;
-            container.appendChild(card);
+            container.appendChild(div);
           });
         } else {
-          msg.innerHTML = `<span class="error">載入失敗: ${result.message}</span>`;
+          msg.innerHTML = `<span class="error">錯誤: ${result.message}</span>`;
         }
       } catch (e) { 
-        msg.innerHTML = `<span class="error">連線失敗，請檢查 Worker 設定</span>`; 
+        msg.innerHTML = `<span class="error">無法連線至 Worker，請檢查 API 設定</span>`; 
       }
     }
 
     async function approve(targetUid) {
       const sid = document.getElementById(`sid_${targetUid}`).value;
       const resBox = document.getElementById(`res_${targetUid}`);
-      resBox.style.display = 'block';
-      resBox.innerText = '正在配置資料庫...';
+      resBox.classList.remove('hidden');
+      resBox.innerText = '正在初始化環境...';
       try {
         const res = await fetch(WORKER_URL, {
           method: 'POST',
@@ -132,12 +164,13 @@
         const result = await res.json();
         if (result.status === 'success') {
           resBox.className = 'link-box';
-          resBox.innerText = '核准成功！連結：' + result.data.link;
+          resBox.innerText = '成功！連結：' + result.data.link;
         } else {
-          resBox.innerText = '核准失敗：' + result.message;
+          resBox.innerText = '錯誤：' + result.message;
         }
-      } catch (e) { resBox.innerText = '網路異常'; }
+      } catch (e) { resBox.innerText = '連線超時'; }
     }
+
     init();
   </script>
 </body>
