@@ -3,160 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>行政審核後台</title>
+  <title>活動建立與管理</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background: #fff; color: #333; }
-    .tab-item { flex: 1; text-align: center; padding: 15px 0; font-size: 14px; color: #999; cursor: pointer; border-bottom: 1.5px solid #f2f2f2; }
-    .tab-active { color: #06C755; border-bottom-color: #06C755; }
-    .dealer-card { padding: 20px; border-bottom: 1px solid #f9f9f9; }
-    .btn-approve { background: #06C755; color: white; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: none; cursor: pointer; }
-    .btn-copy { background: #f5f5f5; color: #666; padding: 5px 10px; border-radius: 4px; font-size: 11px; border: none; margin-top: 8px; cursor: pointer; }
-    .modal { background: rgba(0,0,0,0.5); display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
-    .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 320px; padding: 24px; }
-    input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 8px; font-size: 15px; margin-top: 10px; outline: none; background: #fafafa; }
-    .url-link { font-size: 11px; color: #007aff; display: block; word-break: break-all; margin-top: 6px; text-decoration: none; line-height: 1.4; }
+    body { font-family: -apple-system, sans-serif; background-color: #f4f4f4; color: #333; padding-bottom: 80px; }
+    .nav-tab { display: flex; background: white; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 10; }
+    .tab-item { flex: 1; text-align: center; padding: 15px; font-size: 14px; color: #999; cursor: pointer; }
+    .tab-item.active { color: #06C755; border-bottom: 2px solid #06C755; }
+    .section { background: white; margin-top: 10px; padding: 15px; }
+    .label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; }
+    .input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 8px; font-size: 15px; outline: none; background: #fafafa; }
+    .btn-main { background: #06C755; color: white; width: 100%; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 500; cursor: pointer; border: none; margin-top: 20px; }
+    .img-upload { width: 100%; height: 160px; background: #f9f9f9; border: 1px dashed #ddd; border-radius: 10px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; }
+    .img-p { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+    .ai-btn { background: #333; color: white; font-size: 11px; padding: 4px 10px; border-radius: 20px; float: right; margin-top: -30px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<div class="max-w-[480px] mx-auto min-h-screen">
-  <header class="p-5 flex justify-between items-center">
-    <h2 class="text-xl font-medium">經銷商審核</h2>
-    <span id="admin-info" class="text-[10px] text-gray-300">ADMIN</span>
-  </header>
-
-  <nav class="flex">
-    <div onclick="switchTab('待審核')" id="tab-pending" class="tab-item tab-active">待審核</div>
-    <div onclick="switchTab('已核准')" id="tab-approved" class="tab-item">已核准</div>
-  </nav>
-
-  <div id="dealer-list">
-    <div class="p-20 text-center text-gray-300 text-sm">載入名單中...</div>
-  </div>
+<div class="nav-tab">
+  <div onclick="switchTab('quick')" id="tab-quick" class="tab-item active">快速上架</div>
+  <div onclick="switchTab('detailed')" id="tab-detailed" class="tab-item">正式規格</div>
 </div>
 
-<div id="approve-modal" class="modal">
-  <div class="modal-content">
-    <h3 class="text-lg font-medium">核准經銷商</h3>
-    <p class="text-xs text-gray-400 mt-1">請為該店指定專屬 SID</p>
-    <input type="text" id="assign-sid" placeholder="例: ST_001">
-    <div class="flex gap-4 mt-8">
-      <button onclick="closeModal()" class="flex-1 text-sm text-gray-400">取消</button>
-      <button onclick="confirmApprove()" class="flex-1 py-3 bg-[#06C755] text-white rounded-lg text-sm">確認核准</button>
+<main id="app" class="max-w-[450px] mx-auto">
+  <!-- 1. 快速上架：專業優化版 -->
+  <div id="view-quick" class="p-4 space-y-4">
+    <div class="section !mt-0 rounded-xl">
+      <span class="label">快速活動名稱</span>
+      <input type="text" id="q-name" class="input" placeholder="例如：第 88 次定期例會">
+      
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div>
+          <span class="label">預設身份</span>
+          <select id="q-identity" class="input">
+            <option value="會員">會員</option>
+            <option value="來賓">來賓</option>
+          </select>
+        </div>
+        <div>
+          <span class="label">開始時間</span>
+          <input type="datetime-local" id="q-start" class="input !text-xs">
+        </div>
+      </div>
     </div>
+
+    <div class="section rounded-xl">
+      <div class="flex justify-between items-center mb-2">
+        <span class="label !mb-0">匯入預約名單</span>
+        <span class="text-[11px] color-gray-400">每行一人姓名</span>
+      </div>
+      <textarea id="q-names" class="input h-48" placeholder="王小明&#10;李大華..."></textarea>
+    </div>
+    <button onclick="submit('quick')" class="btn-main">立即發布並匯入名單</button>
   </div>
-</div>
+
+  <!-- 2. 正式規格 -->
+  <div id="view-detailed" class="hidden p-4 space-y-4">
+    <div class="section !mt-0 rounded-xl">
+      <span class="label">活動封面</span>
+      <div onclick="document.getElementById('file-in').click()" class="img-upload">
+        <span id="hint">📸 點擊選擇圖片</span>
+        <img id="prev" class="img-p hidden">
+        <input type="file" id="file-in" class="hidden" accept="image/*" onchange="handleImg(this)">
+      </div>
+      <input type="hidden" id="d-img">
+    </div>
+
+    <div class="section rounded-xl space-y-4">
+      <div>
+        <span class="label">活動標題</span>
+        <input type="text" id="d-name" class="input">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><span class="label">費用</span><input type="number" id="d-price" class="input" value="0"></div>
+        <div><span class="label">上限</span><input type="number" id="d-limit" class="input" placeholder="無限制"></div>
+      </div>
+      <div>
+        <div onclick="aiBoost()" class="ai-btn">🤖 AI 美化文案</div>
+        <span class="label">活動詳細介紹</span>
+        <textarea id="d-desc" class="input h-32" placeholder="輸入課程或活動重點..."></textarea>
+      </div>
+    </div>
+    <button onclick="submit('detailed')" class="btn-main">發布正式活動</button>
+  </div>
+</main>
 
 <script>
   const LIFF_ID = '2009367829-5bIWGL8O';
   const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-  let uid = '', currentTab = '待審核', selectedUid = '', suggestedSid = '';
+  let p = '', uid = '';
 
   async function init() {
-    try {
-      await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
-      const profile = await liff.getProfile();
-      uid = profile.userId;
-      loadDealers();
-    } catch (e) {
-      document.getElementById('dealer-list').innerHTML = `<div class="p-10 text-red-400 text-center">LIFF 初始化失敗</div>`;
-    }
+    p = new URLSearchParams(window.location.search).get('p');
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    uid = (await liff.getProfile()).userId;
   }
 
-  function switchTab(status) {
-    currentTab = status;
-    document.getElementById('tab-pending').classList.toggle('tab-active', status === '待審核');
-    document.getElementById('tab-approved').classList.toggle('tab-active', status === '已核准');
-    loadDealers();
+  function handleImg(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > 800) { h = Math.round(h * (800 / w)); w = 800; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const b64 = canvas.toDataURL('image/jpeg', 0.7);
+        document.getElementById('prev').src = b64;
+        document.getElementById('prev').classList.remove('hidden');
+        document.getElementById('hint').classList.add('hidden');
+        document.getElementById('d-img').value = b64;
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 
-  async function loadDealers() {
-    const container = document.getElementById('dealer-list');
-    container.innerHTML = '<div class="p-20 text-center text-gray-300 text-sm">讀取中...</div>';
-    
-    try {
-      const response = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get_dealers', admin_uid: uid, targetStatus: currentTab })
-      });
-      
-      const result = await response.json();
-      
-      if (result.status === 'success') {
-        suggestedSid = result.suggestedSid;
-        renderList(result.data);
-      } else {
-        container.innerHTML = `<div class="p-20 text-center text-red-300 text-sm">${result.message}</div>`;
-      }
-    } catch (e) {
-      container.innerHTML = `<div class="p-20 text-center text-red-400 text-sm">網路連線異常</div>`;
-    }
-  }
-
-  function renderList(list) {
-    const container = document.getElementById('dealer-list');
-    if (!list || list.length === 0) {
-      container.innerHTML = `<div class="p-20 text-center text-gray-300 text-xs">暫無${currentTab}的名單</div>`;
-      return;
-    }
-
-    container.innerHTML = list.map(item => {
-      const url = `https://saas.ares-co2026.workers.dev/?p=${item.p}`;
-      return `
-        <div class="dealer-card">
-          <div class="flex justify-between items-start">
-            <div class="flex-1">
-              <div class="text-[11px] text-gray-400 mb-0.5">${item.company || '個人申請'}</div>
-              <div class="text-base font-medium">${item.name}</div>
-              ${currentTab === '已核准' ? `
-                <div class="mt-2">
-                  <span class="text-[10px] bg-gray-50 px-2 py-0.5 rounded text-gray-500">ID: ${item.sid}</span>
-                  <a href="${url}" class="url-link" target="_blank">${url}</a>
-                  <button onclick="copyText('${url}')" class="btn-copy">複製專屬連結</button>
-                </div>
-              ` : ''}
-            </div>
-            ${currentTab === '待審核' ? `<button onclick="openModal('${item.uid}')" class="btn-approve">核准</button>` : ''}
-          </div>
-          <div class="text-[10px] text-gray-300 mt-3">${item.phone} · ${new Date(item.time).toLocaleDateString()} 申請</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function copyText(text) {
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    alert('已複製到剪貼簿');
-  }
-
-  function openModal(targetUid) {
-    selectedUid = targetUid;
-    document.getElementById('assign-sid').value = suggestedSid;
-    document.getElementById('approve-modal').style.display = 'flex';
-  }
-
-  function closeModal() { document.getElementById('approve-modal').style.display = 'none'; }
-
-  async function confirmApprove() {
-    const sid = document.getElementById('assign-sid').value;
-    if (!sid) return;
-    closeModal();
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'approve_dealer', admin_uid: uid, target_uid: selectedUid, sid: sid })
+  function switchTab(t) {
+    ['quick', 'detailed'].forEach(m => {
+      document.getElementById('view-' + m).classList.toggle('hidden', m !== t);
+      document.getElementById('tab-' + m).classList.toggle('active', m === t);
     });
+  }
+
+  async function aiBoost() {
+    const el = document.getElementById('d-desc');
+    if(!el.value) return alert('請先輸入簡要大綱');
+    const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'ai_optimize_activity', p, content: el.value }) });
+    el.value = await res.text();
+  }
+
+  async function submit(mode) {
+    const payload = { action: 'create_activity', mode, p, uid };
+    if (mode === 'quick') {
+      payload.name = document.getElementById('q-name').value;
+      payload.identity = document.getElementById('q-identity').value;
+      payload.start = document.getElementById('q-start').value;
+      payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
+    } else {
+      payload.name = document.getElementById('d-name').value;
+      payload.price = document.getElementById('d-price').value;
+      payload.limit = document.getElementById('d-limit').value;
+      payload.desc = document.getElementById('d-desc').value;
+      payload.image = document.getElementById('d-img').value;
+    }
+
+    if(!payload.name) return alert('請填寫活動標題');
+
+    const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
     const result = await res.json();
     alert(result.message);
-    loadDealers();
+    if(result.status === 'success') location.href = 'service_hub.html?p=' + p;
   }
 
   init();
