@@ -1,4 +1,4 @@
-<!-- Version: v1.1.3 (報名大師 SaaS 穩定版 - 支援快速複製梯次功能) -->
+<!-- Version: v1.1.4 (報名大師 SaaS 穩定版 - 嚴格遵循無粗體、無包框、支援複製梯次) -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -7,7 +7,7 @@
   <title>建立活動</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
@@ -25,17 +25,17 @@
     body { font-family: 'Noto Sans TC', sans-serif; background-color: #ffffff; color: #111; -webkit-font-smoothing: antialiased; }
     .nav-tabs { display: flex; border-bottom: 1px solid #f2f2f2; position: sticky; top: 0; background: #fff; z-index: 30; }
     .tab { flex: 1; text-align: center; padding: 14px 0; font-size: 14px; color: #8e8e93; cursor: pointer; border-bottom: 2px solid transparent; }
-    .tab-active { color: #06C755; border-bottom-color: #06C755; font-weight: 500; }
+    .tab-active { color: #06C755; border-bottom-color: #06C755; font-weight: 400; }
     
-    /* LINE 原生風格：極簡底線、無包框、節省空間 */
+    /* LINE 原生風格：極簡底線、無包框、無粗體 */
     .row-item { padding: 12px 20px; border-bottom: 1px solid #f8f8f8; display: flex; align-items: center; min-height: 52px; }
-    .row-label { width: 85px; font-size: 14px; color: #111; flex-shrink: 0; }
-    .row-input { flex: 1; border: none; font-size: 15px; outline: none; padding: 0; background: transparent; color: #111; }
+    .row-label { width: 85px; font-size: 14px; color: #111; flex-shrink: 0; font-weight: 400; }
+    .row-input { flex: 1; border: none; font-size: 15px; outline: none; padding: 0; background: transparent; color: #111; font-weight: 400; }
     .row-input::placeholder { color: #c7c7cc; }
 
-    .textarea-box { width: 100%; padding: 15px 20px; border-bottom: 1px solid #f8f8f8; font-size: 14px; outline: none; resize: none; background: #fdfdfd; }
+    .textarea-box { width: 100%; padding: 15px 20px; border-bottom: 1px solid #f8f8f8; font-size: 14px; outline: none; resize: none; background: #fdfdfd; font-weight: 400; }
     
-    .btn-main { width: 100%; padding: 18px; background-color: #06C755; color: #fff; font-size: 16px; border: none; position: fixed; bottom: 0; left: 0; z-index: 40; font-weight: 500; }
+    .btn-main { width: 100%; padding: 18px; background-color: #06C755; color: #fff; font-size: 16px; border: none; position: fixed; bottom: 0; left: 0; z-index: 40; font-weight: 400; }
     .btn-main:disabled { background-color: #c7c7cc; }
 
     .img-upload { padding: 20px; text-align: center; border-bottom: 1px solid #f8f8f8; cursor: pointer; }
@@ -44,11 +44,11 @@
 
     .batch-item { padding: 15px 20px; border-bottom: 1px solid #f2f2f2; position: relative; background: #fcfcfc; }
     .batch-actions { position: absolute; right: 20px; top: 15px; display: flex; gap: 15px; }
-    .batch-btn { font-size: 11px; cursor: pointer; display: flex; items-center; gap: 2px; }
+    .batch-btn { font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px; font-weight: 400; }
     .btn-copy { color: #007aff; }
     .btn-remove { color: #ff3b30; }
     
-    .batch-add { color: #007aff; font-size: 14px; padding: 16px; cursor: pointer; text-align: center; border-bottom: 1px solid #f8f8f8; }
+    .batch-add { color: #007aff; font-size: 14px; padding: 16px; cursor: pointer; text-align: center; border-bottom: 1px solid #f8f8f8; font-weight: 400; }
 
     .hidden { display: none !important; }
   </style>
@@ -56,7 +56,6 @@
 <body class="pb-24">
 
 <div id="app" class="max-w-md mx-auto">
-  <!-- 模式切換 -->
   <nav class="nav-tabs">
     <div onclick="switchTab('quick')" id="tab-quick" class="tab tab-active">快速上架</div>
     <div onclick="switchTab('formal')" id="tab-formal" class="tab">正式規格</div>
@@ -64,7 +63,6 @@
   </nav>
 
   <main>
-    <!-- 1. 快速模式 -->
     <section id="form-quick">
       <div class="row-item">
         <span class="row-label">活動名稱</span>
@@ -86,7 +84,6 @@
       </div>
     </section>
 
-    <!-- 2. 正式模式 -->
     <section id="form-formal" class="hidden">
       <div onclick="document.getElementById('file-formal').click()" class="img-upload">
         <img id="prev-formal" class="img-prev">
@@ -109,7 +106,6 @@
       </div>
     </section>
 
-    <!-- 3. 梯次模式 -->
     <section id="form-batch" class="hidden">
       <div class="row-item">
         <span class="row-label">系列標題</span>
@@ -119,9 +115,7 @@
         <div class="text-[12px] text-gray-400 mb-2">系列介紹</div>
         <textarea id="b-desc" class="w-full h-24 text-sm outline-none resize-none"></textarea>
       </div>
-      <div id="batch-container">
-        <!-- JS 動態生成 -->
-      </div>
+      <div id="batch-container"></div>
       <div class="batch-add" onclick="addBatchRow()">+ 新增一個空白梯次</div>
     </section>
   </main>
@@ -135,12 +129,14 @@
   let p = '', uid = '', currentMode = 'quick';
 
   async function init() {
-    p = new URLSearchParams(window.location.search).get('p');
+    const params = new URLSearchParams(window.location.search);
+    p = params.get('p');
     try {
       await liff.init({ liffId: LIFF_ID });
       if (!liff.isLoggedIn()) { liff.login(); return; }
-      uid = (await liff.getProfile()).userId;
-      addBatchRow(); // 初始化梯次
+      const profile = await liff.getProfile();
+      uid = profile.userId;
+      addBatchRow();
     } catch (e) { console.error('LIFF Error', e); }
   }
 
@@ -152,10 +148,6 @@
     });
   }
 
-  /**
-   * 新增或複製梯次
-   * @param {Object} data 可選，若傳入則代表複製該筆資料
-   */
   function addBatchRow(data = null) {
     const id = Date.now();
     const name = data ? data.name : '';
@@ -188,9 +180,6 @@
     document.getElementById('batch-container').insertAdjacentHTML('beforeend', html);
   }
 
-  /**
-   * 複製指定梯次
-   */
   function cloneBatch(sourceId) {
     const sourceEl = document.getElementById(`batch-${sourceId}`);
     const data = {
@@ -199,7 +188,6 @@
       loc: sourceEl.querySelector('.b-sub-loc').value
     };
     addBatchRow(data);
-    // 捲動到底部方便編輯新複製的梯次
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
@@ -228,7 +216,7 @@
 
   async function aiBoost(id) {
     const el = document.getElementById(id);
-    if(!el.value) return alert('請先輸入簡述');
+    if(!el.value) return;
     const res = await fetch(WORKER_URL, { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' },
@@ -264,7 +252,7 @@
         }));
       }
 
-      if(!payload.name) throw new Error('請填寫活動標題');
+      if(!payload.name) throw new Error('標題不能為空');
 
       const response = await fetch(WORKER_URL, {
         method: 'POST',
