@@ -8,23 +8,18 @@
   <style>
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; -webkit-font-smoothing: antialiased; }
     .admin-container { max-width: 450px; margin: 0 auto; min-height: 100vh; }
-    
     .tabs { display: flex; background: #FFFFFF; border-bottom: 1px solid #EEEEEE; position: sticky; top: 0; z-index: 10; }
     .tab { flex: 1; text-align: center; padding: 15px; color: #999999; cursor: pointer; font-size: 15px; }
     .tab.active { color: #06C755; border-bottom: 2px solid #06C755; }
-
     .list-area { padding: 15px; }
     .dealer-card { background: #FFFFFF; padding: 20px; border-bottom: 1px solid #F0F0F0; margin-bottom: 1px; }
     .dealer-name { font-size: 15px; color: #333333; margin-bottom: 5px; }
     .dealer-brand { font-size: 15px; color: #06C755; margin-bottom: 10px; }
     .dealer-info { font-size: 15px; color: #666666; margin-bottom: 15px; line-height: 1.5; }
-
     .action-row { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
     .sid-input { flex: 1; padding: 10px 0; border: none; border-bottom: 1px solid #EEEEEE; font-size: 15px; color: #007AFF; outline: none; background: transparent; border-radius: 0; }
     .btn-approve { padding: 10px 20px; background: #06C755; color: white; border: none; font-size: 15px; cursor: pointer; border-radius: 4px; }
-
     .link-box { margin-top: 15px; padding: 15px; background: #F9F9F9; color: #007AFF; font-size: 15px; word-break: break-all; border-left: 3px solid #06C755; }
-    
     #message { padding: 20px; text-align: center; color: #999999; font-size: 15px; }
     .error-text { color: #FF4D4F; }
   </style>
@@ -35,7 +30,6 @@
       <div class="tab active" id="tab-pending" onclick="switchTab('待審核')">待審核</div>
       <div class="tab" id="tab-approved" onclick="switchTab('已核准')">已核准</div>
     </div>
-    
     <div id="message">驗證管理者權限...</div>
     <div id="list-container" class="list-area"></div>
   </div>
@@ -52,16 +46,12 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         adminUid = profile.userId;
-        
-        // 嚴格校對管理員 UID
         if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
-          document.getElementById('message').innerHTML = '<span class="error-text">權限不足：您無權訪問此頁面</span>';
+          document.getElementById('message').innerHTML = '<span class="error-text">權限不足</span>';
           return;
         }
         loadDealers();
-      } catch (err) { 
-        document.getElementById('message').innerHTML = '<span class="error-text">LIFF 初始化失敗</span>'; 
-      }
+      } catch (err) { document.getElementById('message').innerText = 'LIFF 初始化失敗'; }
     }
 
     function switchTab(status) {
@@ -74,7 +64,7 @@
     async function loadDealers() {
       const container = document.getElementById('list-container');
       const msg = document.getElementById('message');
-      msg.innerText = '正在讀取經銷商名單...';
+      msg.innerText = '載入名單中...';
       container.innerHTML = '';
 
       try {
@@ -83,32 +73,26 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'get_dealers', admin_uid: adminUid, targetStatus: currentTab })
         });
-        
         const result = await res.json();
-        if (result.status === 'success') {
+        
+        if (result.status === 'success' && result.data) {
           msg.innerText = '';
-          // 修正路徑：result.data 是 GAS 回傳的內容，內含 data 陣列與 suggestedSid
           const dealerList = result.data.data;
           const suggestedSid = result.data.suggestedSid;
 
-          if (dealerList.length === 0) {
-            msg.innerText = `目前無${currentTab}的申請案`;
+          if (!dealerList || dealerList.length === 0) {
+            msg.innerText = `無${currentTab}申請案`;
             return;
           }
 
           dealerList.forEach((item, index) => {
             const card = document.createElement('div');
             card.className = 'dealer-card';
-            // 如果已有 SID 則用現有的，否則用建議序號
-            const displaySid = item.sid || "ST_" + ("000" + (parseInt(suggestedSid.split('_')[1]) + index)).slice(-3);
-            
+            const displaySid = item.sid || suggestedSid;
             card.innerHTML = `
               <div class="dealer-name">負責人：${item.name}</div>
               <div class="dealer-brand">品牌：${item.brand || item.company}</div>
-              <div class="dealer-info">
-                電話：${item.phone}<br>
-                管道：${item.channel}
-              </div>
+              <div class="dealer-info">電話：${item.phone} | 管道：${item.channel}</div>
               <div class="action-row">
                 <input type="text" id="sid_${item.uid}" class="sid-input" value="${displaySid}">
                 <button class="btn-approve" onclick="approve('${item.uid}')">核准</button>
@@ -118,38 +102,30 @@
             container.appendChild(card);
           });
         } else {
-          msg.innerHTML = `<span class="error-text">系統提示：${result.message}</span>`;
+          msg.innerHTML = `<span class="error-text">錯誤：${result.message || '無法讀取數據'}</span>`;
         }
-      } catch (e) { 
-        msg.innerHTML = '<span class="error-text">連線失敗：請檢查網路或 Worker 狀態</span>'; 
-      }
+      } catch (e) { msg.innerText = '連線失敗'; }
     }
 
     async function approve(targetUid) {
       const sid = document.getElementById(`sid_${targetUid}`).value;
       const resBox = document.getElementById(`res_${targetUid}`);
       resBox.style.display = 'block';
-      resBox.className = ''; // 重置樣式
-      resBox.innerText = '正在處理並建立專屬資料庫...';
-      
+      resBox.innerText = '處理中...';
       try {
         const response = await fetch(WORKER_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'approve_dealer', admin_uid: adminUid, target_uid: targetUid, sid: sid })
         });
-        
         const result = await response.json();
-        // 修正路徑：result.data 才是 GAS 回傳的成功物件
-        if (result.status === 'success') {
+        if (result.status === 'success' && result.data) {
           resBox.className = 'link-box';
-          resBox.innerText = '核准成功！專屬連結：' + result.data.link;
+          resBox.innerText = '連結：' + result.data.link;
         } else {
-          resBox.innerHTML = `<span class="error-text">核准失敗：${result.message}</span>`;
+          resBox.innerText = '核准失敗：' + (result.message || '未知錯誤');
         }
-      } catch (e) { 
-        resBox.innerHTML = '<span class="error-text">連線異常，請稍後再試</span>'; 
-      }
+      } catch (e) { resBox.innerText = '連線異常'; }
     }
 
     initLiff();
