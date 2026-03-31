@@ -1,46 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>經銷商註冊</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; }
-    input { width: 100%; padding: 8px; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; background-color: #06C755; color: white; border: none; border-radius: 5px; font-size: 16px; margin-top: 10px; }
-    .admin-btn { display: block; text-align: center; text-decoration: none; background-color: #333; color: white; padding: 10px; border-radius: 5px; margin-top: 20px; }
-    #message { margin-top: 15px; color: red; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #FFFFFF; color: #333333; font-size: 15px; font-weight: 400; -webkit-font-smoothing: antialiased; }
+    .page-container { max-width: 450px; margin: 0 auto; padding: 20px; }
+    
+    header { padding: 10px 0 30px 0; border-bottom: 1px solid #EEEEEE; margin-bottom: 25px; }
+    header h2 { margin: 0; font-size: 15px; font-weight: 400; color: #06C755; }
+
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; color: #666666; font-size: 15px; }
+    input { width: 100%; padding: 12px 0; border: none; border-bottom: 1px solid #EEEEEE; border-radius: 0; font-size: 15px; outline: none; background: transparent; color: #333333; }
+    input:focus { border-bottom-color: #06C755; }
+    input::placeholder { color: #CCCCCC; }
+
+    button { width: 100%; padding: 15px; background-color: #06C755; color: white; border: none; border-radius: 0; font-size: 15px; font-weight: 400; margin-top: 20px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    
+    #message { margin-top: 20px; color: #FF4D4F; text-align: center; font-size: 15px; }
+    .loading { color: #999999; }
   </style>
 </head>
 <body>
-  <h2>經銷商註冊表單</h2>
-  <div id="form-container" style="display:none;">
-    <div class="form-group">
-      <label>姓名 / 負責人</label>
-      <input type="text" id="name" required>
+  <div class="page-container">
+    <header>
+      <h2>2026 經銷商入駐申請</h2>
+    </header>
+
+    <div id="form-container" style="display:none;">
+      <div class="form-group">
+        <label>負責人姓名</label>
+        <input type="text" id="name" placeholder="請輸入姓名" required>
+      </div>
+      <div class="form-group">
+        <label>公司 / 團隊名稱</label>
+        <input type="text" id="company" placeholder="用於正式合約" required>
+      </div>
+      <div class="form-group">
+        <label>品牌 / 店家名稱 (Banner 顯示)</label>
+        <input type="text" id="brand" placeholder="例：阿瑞斯咖啡廳" required>
+      </div>
+      <div class="form-group">
+        <label>聯絡電話</label>
+        <input type="tel" id="phone" placeholder="09xx-xxx-xxx" required>
+      </div>
+      <div class="form-group">
+        <label>電子信箱</label>
+        <input type="email" id="email" placeholder="example@mail.com" required>
+      </div>
+      <div class="form-group">
+        <label>預計推廣管道</label>
+        <input type="text" id="channel" placeholder="FB、LINE群組、實體店面">
+      </div>
+      <button onclick="submitForm()">送出申請</button>
     </div>
-    <div class="form-group">
-      <label>公司 / 團隊名稱</label>
-      <input type="text" id="company" required>
-    </div>
-    <div class="form-group">
-      <label>聯絡電話</label>
-      <input type="tel" id="phone" required>
-    </div>
-    <div class="form-group">
-      <label>電子信箱</label>
-      <input type="email" id="email" required>
-    </div>
-    <div class="form-group">
-      <label>預計推廣管道</label>
-      <input type="text" id="channel" placeholder="例如：FB社團、個人網站" required>
-    </div>
-    <button onclick="submitForm()">送出申請</button>
+    
+    <div id="message" class="loading">正在載入系統資料...</div>
   </div>
-  <div id="message">載入中，請稍候...</div>
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
@@ -50,80 +69,51 @@
     async function initLiff() {
       try {
         await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
+        if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         userUid = profile.userId;
-        await checkUserStatus();
-      } catch (err) {
-        document.getElementById('message').innerText = 'LIFF 初始化失敗：' + err.message;
-      }
+        checkStatus();
+      } catch (err) { document.getElementById('message').innerText = 'LIFF 初始化失敗'; }
     }
 
-    async function checkUserStatus() {
+    async function checkStatus() {
       try {
-        const response = await fetch(WORKER_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'check_status', uid: userUid })
-        });
-        const result = await response.json();
-        
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'check_status', uid: userUid }) });
+        const result = await res.json();
         if (result.status === 'registered') {
+          document.getElementById('message').innerText = '您已提交申請，目前正在審核中。';
           document.getElementById('form-container').style.display = 'none';
-          
-          if (result.message.indexOf('管理員') !== -1) {
-            document.getElementById('message').innerHTML = result.message + '<a href="admin.html" class="admin-btn">進入審核後台</a>';
-          } else {
-            document.getElementById('message').innerText = result.message;
-          }
         } else {
           document.getElementById('message').innerText = '';
           document.getElementById('form-container').style.display = 'block';
         }
-      } catch (err) {
-        document.getElementById('message').innerText = '連線異常，無法驗證身分。';
+      } catch (e) {
+        document.getElementById('message').innerText = '系統連線異常';
       }
     }
 
     async function submitForm() {
-      const name = document.getElementById('name').value;
-      const company = document.getElementById('company').value;
-      const phone = document.getElementById('phone').value;
-      const email = document.getElementById('email').value;
-      const channel = document.getElementById('channel').value;
+      const brand = document.getElementById('brand').value;
+      if (!brand) { alert('請填寫品牌名稱'); return; }
 
-      if (!name || !company || !phone || !email || !channel) {
-        document.getElementById('message').innerText = '請填寫所有欄位';
-        return;
-      }
-
-      document.getElementById('message').innerText = '資料傳送中...';
-      
+      document.getElementById('message').innerText = '正在提交申請...';
       const payload = {
         action: 'register_dealer',
         uid: userUid,
-        name: name,
-        company: company,
-        phone: phone,
-        email: email,
-        channel: channel
+        name: document.getElementById('name').value,
+        company: document.getElementById('company').value,
+        brand: brand,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        channel: document.getElementById('channel').value
       };
 
       try {
-        const response = await fetch(WORKER_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        const result = await response.text();
-        document.getElementById('message').innerText = result;
+        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
+        document.getElementById('message').innerText = '申請成功！我們將盡快與您聯繫。';
         document.getElementById('form-container').style.display = 'none';
-      } catch (err) {
-        document.getElementById('message').innerText = '傳送失敗，請稍後再試。';
-      }
+      } catch (e) { document.getElementById('message').innerText = '傳送失敗，請稍後再試。'; }
     }
-
     initLiff();
   </script>
 </body>
