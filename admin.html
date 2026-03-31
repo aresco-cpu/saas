@@ -1,36 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>經銷商審核後台</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; background-color: #f4f5f7; margin: 0; }
-    .tabs { display: flex; background: #fff; margin-bottom: 15px; border-bottom: 1px solid #ddd; }
-    .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: #666; }
-    .tab.active { color: #06C755; border-bottom: 2px solid #06C755; font-weight: bold; }
-    .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .card p { margin: 5px 0; font-size: 14px; color: #333; }
-    .input-row { display: flex; align-items: center; margin-top: 10px; gap: 8px; }
-    input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: #0056b3; width: 100px; }
-    button { padding: 8px 15px; background-color: #06C755; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; }
-    .copy-btn { background-color: #007bff; margin-top: 10px; padding: 6px 12px; font-size: 13px; }
-    #message { color: #d9534f; font-weight: bold; padding: 0 20px; font-size: 14px; line-height: 1.5; }
-    .link-box { margin-top: 10px; padding: 12px; background: #eef; word-break: break-all; font-size: 12px; display: none; border-radius: 4px; border: 1px solid #ddd; }
-    .error-detail { font-size: 11px; color: #999; margin-top: 5px; display: block; font-family: monospace; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; }
+    .admin-container { max-width: 450px; margin: 0 auto; min-height: 100vh; }
+    
+    .tabs { display: flex; background: #FFFFFF; border-bottom: 1px solid #EEEEEE; position: sticky; top: 0; z-index: 10; }
+    .tab { flex: 1; text-align: center; padding: 15px; color: #999999; cursor: pointer; }
+    .tab.active { color: #06C755; border-bottom: 2px solid #06C755; }
+
+    .list-area { padding: 15px; }
+    .dealer-card { background: #FFFFFF; padding: 20px; border-bottom: 1px solid #F0F0F0; margin-bottom: 1px; }
+    .dealer-name { font-size: 15px; color: #333333; margin-bottom: 5px; }
+    .dealer-brand { font-size: 15px; color: #06C755; margin-bottom: 10px; }
+    .dealer-info { font-size: 15px; color: #666666; margin-bottom: 15px; line-height: 1.5; }
+
+    .action-row { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+    .sid-input { flex: 1; padding: 10px 0; border: none; border-bottom: 1px solid #EEEEEE; font-size: 15px; color: #007AFF; outline: none; }
+    .btn-approve { padding: 10px 20px; background: #06C755; color: white; border: none; font-size: 15px; cursor: pointer; }
+
+    .link-box { margin-top: 15px; padding: 15px; background: #F9F9F9; color: #007AFF; font-size: 15px; word-break: break-all; border-left: 3px solid #06C755; }
+    
+    #message { padding: 20px; text-align: center; color: #999999; }
   </style>
 </head>
 <body>
-  <div class="tabs">
-    <div class="tab active" id="tab-pending" onclick="switchTab('待審核')">待審核</div>
-    <div class="tab" id="tab-approved" onclick="switchTab('已核准')">已核准</div>
+  <div class="admin-container">
+    <div class="tabs">
+      <div class="tab active" id="tab-pending" onclick="switchTab('待審核')">待審核</div>
+      <div class="tab" id="tab-approved" onclick="switchTab('已核准')">已核准</div>
+    </div>
+    
+    <div id="message">驗證管理者權限...</div>
+    <div id="list-container" class="list-area"></div>
   </div>
-  
-  <div id="message">驗證身分中...</div>
-  <div id="list-container" style="padding: 0 20px;"></div>
-
-  <input type="text" id="copyInput" style="position: absolute; left: -9999px;">
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
@@ -41,139 +48,87 @@
     async function initLiff() {
       try {
         await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) {
-          liff.login({ redirectUri: window.location.href });
-          return;
-        }
+        if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         adminUid = profile.userId;
         
-        // 嚴格比對管理員 UID
+        // 驗證是否為平台管理員
         if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
-          document.getElementById('message').innerText = '權限錯誤：您的 UID 不具備管理員權限。';
+          document.getElementById('message').innerText = '權限不足';
           return;
         }
-        
         loadDealers();
-      } catch (err) {
-        showError('LIFF 初始化失敗', err);
-      }
+      } catch (err) { document.getElementById('message').innerText = '系統錯誤'; }
     }
 
     function switchTab(status) {
       currentTab = status;
-      document.getElementById('tab-pending').className = status === '待審核' ? 'tab active' : 'tab';
-      document.getElementById('tab-approved').className = status === '已核准' ? 'tab active' : 'tab';
+      document.getElementById('tab-pending').classList.toggle('active', status === '待審核');
+      document.getElementById('tab-approved').classList.toggle('active', status === '已核准');
       loadDealers();
     }
 
     async function loadDealers() {
-      const msgEl = document.getElementById('message');
-      const listEl = document.getElementById('list-container');
-      msgEl.innerText = '正在連線至後台伺服器...';
-      listEl.innerHTML = '';
+      const container = document.getElementById('list-container');
+      const msg = document.getElementById('message');
+      msg.innerText = '載入名單中...';
+      container.innerHTML = '';
 
       try {
-        const response = await fetch(WORKER_URL, {
+        const res = await fetch(WORKER_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'get_dealers', admin_uid: adminUid, targetStatus: currentTab })
         });
-
-        if (!response.ok) {
-          throw new Error(`伺服器回傳錯誤代碼: ${response.status}`);
+        const result = await res.json();
+        msg.innerText = '';
+        
+        if (result.data.length === 0) {
+          msg.innerText = '目前無相關申請資料';
+          return;
         }
 
-        const text = await response.text();
-        let result;
-        try {
-          result = JSON.parse(text);
-        } catch (e) {
-          throw new Error('後台回傳了非 JSON 格式的內容（可能是 GAS 報錯 HTML）');
-        }
-
-        if (result.status === 'success') {
-          renderList(result.data, result.suggestedSid);
-          msgEl.innerText = '';
-        } else {
-          msgEl.innerText = '系統提示：' + (result.message || '未知錯誤');
-        }
-      } catch (err) {
-        showError('連線異常，無法驗證身分', err);
-      }
-    }
-
-    function showError(title, err) {
-      const msgEl = document.getElementById('message');
-      msgEl.innerHTML = `${title}<br><span class="error-detail">錯誤詳情: ${err.message}</span>`;
-    }
-
-    function renderList(data, suggestedSid) {
-      const container = document.getElementById('list-container');
-      if (data.length === 0) {
-        container.innerHTML = `<p style="text-align:center; color:#999; margin-top:50px;">目前沒有${currentTab}的申請。</p>`;
-        return;
-      }
-
-      let nextStNum = parseInt(suggestedSid.replace('ST_', ''), 10);
-
-      data.forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        const displaySid = (currentTab === '已核准' && item.sid) ? item.sid : "ST_" + ("000" + (nextStNum + index)).slice(-3);
-        const btnText = currentTab === '已核准' ? '更新/補發連結' : '核准並產生連結';
-
-        card.innerHTML = `
-          <p><strong>公司：</strong> ${item.company} | <strong>姓名：</strong> ${item.name}</p>
-          <p><strong>電話：</strong> ${item.phone}</p>
-          <div class="input-row">
-            <input type="text" id="sid_${item.uid}" value="${displaySid}">
-            <button onclick="approve('${item.uid}')">${btnText}</button>
-          </div>
-          <div id="result_${item.uid}" class="link-box"></div>
-        `;
-        container.appendChild(card);
-      });
+        result.data.forEach((item, index) => {
+          const card = document.createElement('div');
+          card.className = 'dealer-card';
+          const suggestedSid = item.sid || "ST_" + ("000" + (parseInt(result.suggestedSid.split('_')[1]) + index)).slice(-3);
+          
+          card.innerHTML = `
+            <div class="dealer-name">負責人：${item.name}</div>
+            <div class="dealer-brand">品牌：${item.brand || item.company}</div>
+            <div class="dealer-info">
+              電話：${item.phone}<br>
+              管道：${item.channel}
+            </div>
+            <div class="action-row">
+              <input type="text" id="sid_${item.uid}" class="sid-input" value="${suggestedSid}">
+              <button class="btn-approve" onclick="approve('${item.uid}')">核准</button>
+            </div>
+            <div id="res_${item.uid}" style="display:none;"></div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (e) { msg.innerText = '連線失敗'; }
     }
 
     async function approve(targetUid) {
-      const resultBox = document.getElementById(`result_${targetUid}`);
-      const sidInput = document.getElementById(`sid_${targetUid}`).value.trim();
-      if (!sidInput) return alert('請輸入 SID');
-
-      resultBox.style.display = 'block';
-      resultBox.innerText = '處理中...';
-
+      const sid = document.getElementById(`sid_${targetUid}`).value;
+      const resBox = document.getElementById(`res_${targetUid}`);
+      resBox.style.display = 'block';
+      resBox.innerText = '處理中...';
+      
       try {
         const response = await fetch(WORKER_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'approve_dealer', admin_uid: adminUid, target_uid: targetUid, sid: sidInput })
+          body: JSON.stringify({ action: 'approve_dealer', admin_uid: adminUid, target_uid: targetUid, sid: sid })
         });
         const result = await response.json();
         if (result.status === 'success') {
-          resultBox.style.background = '#d4edda';
-          resultBox.innerHTML = `
-            <div style="font-weight:bold; color:#155724; margin-bottom:5px;">✅ 處理完成</div>
-            <div id="url_${targetUid}" style="color:#004085; font-size:11px;">${result.link}</div>
-            <button class="copy-btn" onclick="copyText('url_${targetUid}')">複製連結</button>
-          `;
+          resBox.className = 'link-box';
+          resBox.innerText = '連結已產生：' + result.link;
         } else {
-          resultBox.style.background = '#f8d7da';
-          resultBox.innerText = result.message;
+          resBox.innerText = '核准失敗';
         }
-      } catch (err) { 
-        resultBox.innerText = '更新失敗: ' + err.message; 
-      }
-    }
-
-    function copyText(elId) {
-      const text = document.getElementById(elId).innerText;
-      const input = document.getElementById('copyInput');
-      input.value = text;
-      input.select();
-      document.execCommand('copy');
-      alert('已複製到剪貼簿！');
+      } catch (e) { resBox.innerText = '連線錯誤'; }
     }
 
     initLiff();
