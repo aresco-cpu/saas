@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" href="data:,">
+  <title>card.html</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <style>
+    /* 全局規範：15px, 不加粗, LINE 原生風格 */
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #FFFFFF; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
+    .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
+    
+    /* 頂部標頭 */
+    header { background: #2563eb; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .header-left { display: flex; align-items: center; gap: 8px; }
+    .header-title { font-size: 19px; font-weight: 400; }
+    .admin-badge { background: #1e293b; color: white; font-size: 10px; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; }
+    .user-avatar-top { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #EEE; }
+
+    /* AI 辨識區塊 */
+    .scanner-box { background: #F8FAFC; border: 1px dashed #cbd5e1; border-radius: 12px; margin: 20px; padding: 30px 20px; text-align: center; cursor: pointer; }
+    .scanner-box i { color: #94a3b8; margin-bottom: 10px; width: 40px; height: 40px; }
+    .scanner-text { color: #64748b; font-size: 14px; }
+
+    /* 搜尋與清單 */
+    .search-area { padding: 0 20px 10px 20px; }
+    .search-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 15px; font-size: 15px; outline: none; background: #FFFFFF; }
+    
+    .card-list { background: #FFFFFF; }
+    .card-item { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #F1F5F9; cursor: pointer; }
+    .card-item:active { background: #F8F8F8; }
+    .card-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; background: #F1F5F9; }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name { font-size: 16px; color: #333333; margin: 0 0 4px 0; }
+    .card-meta { font-size: 14px; color: #94a3b8; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* 表單欄位 */
+    .field-group { padding: 15px 20px; border-bottom: 1px solid #F8FAFC; }
+    .field-label { font-size: 14px; color: #64748b; margin-bottom: 6px; display: block; }
+    .input-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; box-sizing: border-box; }
+    .textarea-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; height: 100px; resize: none; }
+
+    /* 底部導覽列 */
+    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #475569; cursor: pointer; padding-top: 8px; }
+    .nav-item.active { color: #0f172a; }
+    .nav-item i { width: 22px; height: 22px; margin-bottom: 5px; }
+    .nav-text { font-size: 12px; }
+    .nav-item.active .icon-box { border: 1.5px solid #0f172a; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
+
+    /* Modal */
+    .modal { position: fixed; inset: 0; background: white; z-index: 1001; display: flex; flex-direction: column; }
+    .modal-header { padding: 15px 20px; border-bottom: 1px solid #EEEEEE; display: flex; align-items: center; justify-content: space-between; }
+    .modal-body { flex: 1; overflow-y: auto; padding-bottom: 50px; }
+
+    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; }
+    .hidden { display: none !important; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #2563eb; }
+  </style>
+</head>
+<body>
+  <div id="loader" class="loading-overlay">載入名片中...</div>
+
+  <div class="app-container">
+    <header>
+      <div class="header-left">
+        <i data-lucide="contact-2" style="width: 20px; height: 20px;"></i>
+        <span class="header-title">名片管理</span>
+        <span class="admin-badge">Admin</span>
+      </div>
+      <div class="header-right">
+        <img id="user-avatar-img" class="user-avatar-top" src="">
+        <i data-lucide="arrow-left-right" style="width: 20px; height: 20px; cursor: pointer;" onclick="location.href='service_hub.html?p='+p"></i>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <!-- 1. AI 掃描入口 -->
+      <div class="scanner-box" onclick="document.getElementById('card-camera').click()">
+        <i data-lucide="scan-face"></i>
+        <p class="scanner-text">AI 智慧名片辨識 (拍照或上傳)</p>
+        <input type="file" id="card-camera" class="hidden" accept="image/*" onchange="openCropper(this)">
+      </div>
+
+      <!-- 2. 搜尋與清單 -->
+      <div class="search-area">
+        <input type="text" class="search-input" placeholder="搜尋姓名、公司..." oninput="filterCards(this.value)">
+      </div>
+
+      <div id="card-list-container" class="card-list">
+        <!-- 名片項目將動態渲染於此 -->
+      </div>
+    </main>
+
+    <!-- 底部 6 格導覽列 -->
+    <nav id="bottom-nav">
+      <div class="nav-item" onclick="location.href='active.html?p='+p"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
+      <div class="nav-item" onclick="location.href='active.html?p='+p"><i data-lucide="plus-circle"></i><span class="nav-text">建立</span></div>
+      <div class="nav-item" onclick="location.href='active.html?p='+p"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
+      <div class="nav-item" onclick="location.href='active.html?p='+p"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
+      <div class="nav-item active"><div class="icon-box"><i data-lucide="contact"></i></div><span class="nav-text">名片</span></div>
+      <div class="nav-item" onclick="location.href='active.html?p='+p"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
+    </nav>
+  </div>
+
+  <!-- 名片詳情/編輯 Modal -->
+  <div id="card-modal" class="modal hidden">
+    <div class="modal-header">
+      <h3 id="modal-title" style="font-size:18px;">編輯名片</h3>
+      <i data-lucide="x" style="cursor:pointer;" onclick="closeModal()"></i>
+    </div>
+    <div class="modal-body">
+      <div class="field-group"><label class="field-label">姓名</label><input id="f-Name" class="input-box"></div>
+      <div class="field-group"><label class="field-label">職稱</label><input id="f-Title" class="input-box"></div>
+      <div class="field-group"><label class="field-label">公司</label><input id="f-CompanyName" class="input-box"></div>
+      <div class="field-group"><label class="field-label">手機</label><input id="f-Mobile" class="input-box"></div>
+      <div class="field-group"><label class="field-label">Email</label><input id="f-Email" class="input-box"></div>
+      <div class="field-group"><label class="field-label">地址</label><input id="f-Address" class="input-box"></div>
+      <div class="field-group"><label class="field-label">備註</label><textarea id="f-Notes" class="textarea-box"></textarea></div>
+      <button class="btn-action" onclick="saveCard()">儲存名片資料</button>
+    </div>
+  </div>
+
+  <!-- 裁切 Modal -->
+  <div id="cropper-modal" class="modal hidden" style="background:#000;">
+    <div class="modal-header" style="background:#000; color:#FFF; border:none;">
+      <span>裁切名片</span>
+      <button style="color:#06C755; font-weight:bold;" onclick="confirmCrop()">完成</button>
+    </div>
+    <div class="flex-1 relative flex items-center justify-center">
+      <img id="cropper-image" src="" style="max-width:100%;">
+    </div>
+  </div>
+
+  <script>
+    const LIFF_ID = '2009367829-5bIWGL8O';
+    const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
+    let uid = '', p = '', cropper = null, allCards = [];
+
+    async function init() {
+      lucide.createIcons();
+      const params = new URLSearchParams(window.location.search);
+      p = params.get('p');
+      if (!p) { document.getElementById('loader').innerText = '缺少 p 參數'; return; }
+
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
+        uid = profile.userId;
+        document.getElementById('user-avatar-img').src = profile.pictureUrl || '';
+        await loadCards();
+      } catch (err) { console.error(err); } 
+      finally { document.getElementById('loader').classList.add('hidden'); }
+    }
+
+    async function loadCards() {
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
+      const result = await res.json();
+      if (result.status === 'success') {
+        // 這裡後端 API 應該回傳 Profiles 裡的所有名片
+        allCards = result.data.allProfiles || []; 
+        renderCards(allCards);
+      }
+    }
+
+    function renderCards(cards) {
+      const container = document.getElementById('card-list-container');
+      if (cards.length === 0) {
+        container.innerHTML = '<div style="padding:40px; color:#999; text-align:center;">尚無名片資料</div>';
+        return;
+      }
+      container.innerHTML = cards.map(c => `
+        <div class="card-item" onclick="openEditModal('${c.uid}')">
+          <img class="card-avatar" src="${c.avatar || 'https://via.placeholder.com/50'}">
+          <div class="card-info">
+            <p class="card-name">${c.name || '未命名'}</p>
+            <p class="card-meta">${c.company || ''} ${c.job || ''}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterCards(val) {
+      const filtered = allCards.filter(c => (c.name || '').includes(val) || (c.company || '').includes(val));
+      renderCards(filtered);
+    }
+
+    function openCropper(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.getElementById('cropper-image');
+        img.src = e.target.result;
+        document.getElementById('cropper-modal').classList.remove('hidden');
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(img, { aspectRatio: NaN, viewMode: 1 });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function confirmCrop() {
+      const base64 = cropper.getCroppedCanvas().toDataURL('image/jpeg', 0.8);
+      document.getElementById('cropper-modal').classList.add('hidden');
+      document.getElementById('loader').classList.remove('hidden');
+      document.getElementById('loader').innerText = 'AI 辨識中...';
+      
+      try {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'recognizeCard', base64Image: base64 }) });
+        const result = await res.json();
+        const data = result.data;
+        
+        document.getElementById('card-modal').classList.remove('hidden');
+        document.getElementById('f-Name').value = data.Name || '';
+        document.getElementById('f-Title').value = data.Title || '';
+        document.getElementById('f-CompanyName').value = data.CompanyName || '';
+        document.getElementById('f-Mobile').value = data.Mobile || '';
+        document.getElementById('f-Email').value = data.Email || '';
+        document.getElementById('f-Address').value = data.Address || '';
+      } catch (e) { alert('辨識失敗'); }
+      finally { document.getElementById('loader').classList.add('hidden'); }
+    }
+
+    async function saveCard() {
+      const profile = {
+        name: document.getElementById('f-Name').value,
+        job: document.getElementById('f-Title').value,
+        company: document.getElementById('f-CompanyName').value,
+        industry: '', // 可由 AI 補齊
+        resource: document.getElementById('f-Notes').value,
+        need: ''
+      };
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile }) });
+      alert('名片已存入雲端');
+      location.reload();
+    }
+
+    function closeModal() { document.getElementById('card-modal').classList.add('hidden'); }
+
+    init();
+  </script>
+</body>
+</html>
