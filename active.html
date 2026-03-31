@@ -7,25 +7,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #f4f4f4; color: #333; }
+    body { font-family: -apple-system, sans-serif; background-color: #f8f8f8; color: #333; }
     .input-group { margin-bottom: 16px; }
-    .label-text { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
-    .form-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; background: #fff; }
+    .label-text { display: block; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 400; }
+    .form-input { width: 100%; padding: 12px; border: 1px solid #e5e5e5; border-radius: 8px; font-size: 15px; outline: none; background: #fff; transition: border-color 0.2s; }
     .form-input:focus { border-color: #06C755; }
-    .tab-btn { flex: 1; text-align: center; padding: 10px; font-size: 14px; cursor: pointer; color: #999; border-bottom: 2px solid transparent; }
-    .tab-btn.active { color: #06C755; border-bottom-color: #06C755; font-weight: 500; }
-    .btn-main { background: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; cursor: pointer; }
-    .btn-ai { background: #333; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; float: right; margin-top: -24px; cursor: pointer; }
-    .batch-item { background: #fff; border: 1px solid #eee; padding: 12px; border-radius: 8px; margin-bottom: 10px; position: relative; }
-    .nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: white; display: flex; border-top: 1px solid #eee; height: 60px; }
-    .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #999; cursor: pointer; }
+    .tab-btn { flex: 1; text-align: center; padding: 12px; font-size: 14px; cursor: pointer; color: #999; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab-btn.active { color: #06C755; border-bottom-color: #06C755; }
+    .btn-main { background: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 500; }
+    .btn-ai { background: #333; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; float: right; margin-top: -26px; cursor: pointer; }
+    .image-preview { width: 100%; aspect-ratio: 16/9; background: #eee; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px dashed #ccc; margin-bottom: 8px; position: relative; }
+    .image-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .batch-item { background: #fff; border: 1px solid #eee; padding: 16px; border-radius: 8px; margin-bottom: 12px; position: relative; }
+    .nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: white; display: flex; border-top: 1px solid #eee; height: 60px; z-index: 100; }
+    .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #999; cursor: pointer; }
     .nav-btn.active { color: #06C755; }
+    .delete-btn { position: absolute; right: 8px; top: 8px; color: #ff4d4f; font-size: 12px; cursor: pointer; }
   </style>
 </head>
 <body class="flex justify-center">
 
-<div class="w-full max-w-[450px] min-h-screen bg-white relative pb-20">
-  <header class="bg-[#06C755] text-white p-4 text-center">
+<div class="w-full max-w-[450px] min-h-screen bg-white relative pb-24">
+  <header class="bg-[#06C755] text-white p-4 text-center sticky top-0 z-50">
     <h2 class="text-lg font-medium">建立新活動</h2>
   </header>
 
@@ -36,24 +39,49 @@
   </div>
 
   <main class="p-4">
+    <!-- 通用元件：圖片上傳預覽 -->
+    <div class="input-group">
+      <span class="label-text">活動封面圖</span>
+      <div id="image-upload-box" class="image-preview" onclick="document.getElementById('img-input').click()">
+        <span id="img-placeholder" class="text-gray-400 text-sm">點擊上傳封面圖片</span>
+        <img id="img-preview" class="hidden">
+      </div>
+      <input type="file" id="img-input" class="hidden" accept="image/*" onchange="handleImage(this)">
+    </div>
+
     <!-- 1. 快速模式 -->
     <div id="form-quick" class="space-y-4">
       <div class="input-group">
         <span class="label-text">活動標題</span>
-        <input type="text" id="q-name" class="form-input" placeholder="例：每週例會">
+        <input type="text" id="q-name" class="form-input" placeholder="例：每週例會 (快速)">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="input-group">
+          <span class="label-text">開始時間</span>
+          <input type="datetime-local" id="q-start" class="form-input !text-xs">
+        </div>
+        <div class="input-group">
+          <span class="label-text">結束時間</span>
+          <input type="datetime-local" id="q-end" class="form-input !text-xs">
+        </div>
       </div>
       <div class="input-group">
-        <span class="label-text">名單內容 (每行一位)</span>
-        <textarea id="q-names" class="form-input h-40" placeholder="請貼上參與者姓名..."></textarea>
+        <span class="label-text">活動說明</span>
+        <div onclick="aiOptimizeDesc('q-desc')" class="btn-ai">🤖 AI 優化</div>
+        <textarea id="q-desc" class="form-input h-24" placeholder="簡單輸入活動介紹..."></textarea>
       </div>
-      <button onclick="submitActivity('quick')" class="btn-main">立即建立並匯入</button>
+      <div class="input-group">
+        <span class="label-text">參與者名單 (每行一位)</span>
+        <textarea id="q-names" class="form-input h-32" placeholder="請貼上參與者姓名..."></textarea>
+      </div>
+      <button onclick="submitActivity('quick')" class="btn-main">建立並直接匯入名單</button>
     </div>
 
     <!-- 2. 詳細模式 -->
     <div id="form-detailed" class="hidden space-y-4">
       <div class="input-group">
         <span class="label-text">正式活動標題</span>
-        <input type="text" id="d-name" class="form-input">
+        <input type="text" id="d-name" class="form-input" placeholder="請輸入完整活動名稱">
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div class="input-group">
@@ -66,9 +94,9 @@
         </div>
       </div>
       <div class="input-group">
-        <span class="label-text">活動說明</span>
-        <div onclick="aiOptimizeDesc('d-desc')" class="btn-ai">🤖 AI 優化文案</div>
-        <textarea id="d-desc" class="form-input h-32" placeholder="輸入活動介紹..."></textarea>
+        <span class="label-text">活動詳細說明</span>
+        <div onclick="aiOptimizeDesc('d-desc')" class="btn-ai">🤖 AI 優化</div>
+        <textarea id="d-desc" class="form-input h-48" placeholder="輸入詳細活動規章與介紹..."></textarea>
       </div>
       <button onclick="submitActivity('detailed')" class="btn-main">發布正式活動</button>
     </div>
@@ -76,22 +104,36 @@
     <!-- 3. 梯次模式 -->
     <div id="form-batch" class="hidden space-y-4">
       <div class="input-group">
-        <span class="label-text">系列活動標題</span>
-        <input type="text" id="b-name" class="form-input">
+        <span class="label-text">系列活動總標題</span>
+        <input type="text" id="b-name" class="form-input" placeholder="例：2024 夏季培訓營">
       </div>
+      <div class="input-group">
+        <span class="label-text">系列活動說明</span>
+        <div onclick="aiOptimizeDesc('b-desc')" class="btn-ai">🤖 AI 優化</div>
+        <textarea id="b-desc" class="form-input h-24" placeholder="輸入該系列梯次的共通說明..."></textarea>
+      </div>
+      
       <div id="batch-container">
-        <!-- 動態梯次 -->
+        <!-- 初次載入的第一個梯次 -->
         <div class="batch-item">
-          <input type="text" class="form-input b-item-name mb-2" placeholder="梯次名稱 (例：第一梯)">
-          <input type="datetime-local" class="form-input b-item-start text-xs">
+          <div class="delete-btn" onclick="this.parentElement.remove()">移除</div>
+          <span class="label-text">梯次名稱</span>
+          <input type="text" class="form-input b-item-name mb-2" placeholder="例：第一梯次">
+          <div class="grid grid-cols-2 gap-2">
+            <input type="datetime-local" class="form-input b-item-start text-xs">
+            <input type="datetime-local" class="form-input b-item-end text-xs">
+          </div>
         </div>
       </div>
-      <button onclick="addBatchRow()" class="w-full py-2 border-2 border-dashed border-gray-200 rounded text-gray-400 text-sm">+ 新增梯次</button>
-      <button onclick="submitActivity('batch')" class="btn-main mt-4">發布梯次活動</button>
+
+      <div class="flex gap-2">
+        <button onclick="addBatchRow(false)" class="flex-1 py-3 border border-gray-300 rounded-lg text-gray-600 text-sm bg-white font-medium">+ 新增空白梯次</button>
+        <button onclick="addBatchRow(true)" class="flex-1 py-3 border border-dashed border-[#06C755] rounded-lg text-[#06C755] text-sm bg-green-50 font-medium">⧉ 複製前一梯次</button>
+      </div>
+      <button onclick="submitActivity('batch')" class="btn-main mt-6">發布系列梯次活動</button>
     </div>
   </main>
 
-  <!-- 底部導覽 -->
   <nav class="nav">
     <div class="nav-btn" onclick="location.href='admin.html'"><span>後台</span></div>
     <div class="nav-btn active"><span>建立</span></div>
@@ -102,16 +144,34 @@
 <script>
   const LIFF_ID = '2009367829-5bIWGL8O';
   const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-  let uid = '', p = '';
+  let uid = '', p = '', currentImgBase64 = '';
 
   async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     p = urlParams.get('p');
 
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) { liff.login(); return; }
-    const profile = await liff.getProfile();
-    uid = profile.userId;
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      const profile = await liff.getProfile();
+      uid = profile.userId;
+    } catch (e) {
+      console.error('LIFF Init failed', e);
+    }
+  }
+
+  function handleImage(input) {
+    const file = input.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentImgBase64 = e.target.result;
+        document.getElementById('img-preview').src = currentImgBase64;
+        document.getElementById('img-preview').classList.remove('hidden');
+        document.getElementById('img-placeholder').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   function switchTab(m) {
@@ -121,47 +181,113 @@
     });
   }
 
-  function addBatchRow() {
+  function addBatchRow(isCopy = false) {
+    const container = document.getElementById('batch-container');
+    const rows = container.getElementsByClassName('batch-item');
+    let lastRow = rows.length > 0 ? rows[rows.length - 1] : null;
+
     const row = document.createElement('div');
     row.className = 'batch-item';
-    row.innerHTML = `<input type="text" class="form-input b-item-name mb-2" placeholder="梯次名稱"><input type="datetime-local" class="form-input b-item-start text-xs">`;
-    document.getElementById('batch-container').appendChild(row);
+    
+    // 取得前一筆資料（如果有的話）
+    const prevName = (isCopy && lastRow) ? lastRow.querySelector('.b-item-name').value : "";
+    const prevStart = (isCopy && lastRow) ? lastRow.querySelector('.b-item-start').value : "";
+    const prevEnd = (isCopy && lastRow) ? lastRow.querySelector('.b-item-end').value : "";
+
+    row.innerHTML = `
+      <div class="delete-btn" onclick="this.parentElement.remove()">移除</div>
+      <span class="label-text">梯次名稱</span>
+      <input type="text" class="form-input b-item-name mb-2" value="${prevName}" placeholder="梯次名稱">
+      <div class="grid grid-cols-2 gap-2">
+        <input type="datetime-local" class="form-input b-item-start text-xs" value="${prevStart}">
+        <input type="datetime-local" class="form-input b-item-end text-xs" value="${prevEnd}">
+      </div>
+    `;
+    container.appendChild(row);
   }
 
   async function aiOptimizeDesc(id) {
     const el = document.getElementById(id);
-    if (!el.value) return alert('請先輸入簡短大綱');
-    el.placeholder = 'AI 思考中...';
+    if (!el.value) return alert('請先輸入一點活動內容或關鍵字');
+    const originalText = el.value;
+    el.value = '';
+    el.placeholder = 'AI 正在規劃精彩文案...';
     
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'ai_optimize_activity', p, content: el.value })
-    });
-    el.value = await res.text();
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ai_optimize_activity', p, content: originalText })
+      });
+      const data = await res.text();
+      el.value = data;
+    } catch (e) {
+      el.value = originalText;
+      alert('AI 優化暫時無法使用');
+    }
   }
 
   async function submitActivity(mode) {
-    let payload = { action: 'create_activity', mode, p, uid };
+    let payload = { 
+      action: 'create_activity', 
+      mode, 
+      p, 
+      uid,
+      img: currentImgBase64 
+    };
     
     if (mode === 'quick') {
       payload.name = document.getElementById('q-name').value;
+      payload.start = document.getElementById('q-start').value;
+      payload.end = document.getElementById('q-end').value;
+      payload.desc = document.getElementById('q-desc').value;
       payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
     } else if (mode === 'detailed') {
       payload.name = document.getElementById('d-name').value;
       payload.start = document.getElementById('d-start').value;
       payload.end = document.getElementById('d-end').value;
       payload.desc = document.getElementById('d-desc').value;
+    } else if (mode === 'batch') {
+      payload.name = document.getElementById('b-name').value;
+      payload.desc = document.getElementById('b-desc').value;
+      payload.batches = Array.from(document.querySelectorAll('.batch-item')).map(item => ({
+        name: item.querySelector('.b-item-name').value,
+        start: item.querySelector('.b-item-start').value,
+        end: item.querySelector('.b-item-end').value
+      }));
     }
     
     if (!payload.name) return alert('請填寫活動標題');
+    if (mode === 'batch' && payload.batches.length === 0) return alert('請至少新增一個梯次');
 
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-    const result = await res.json();
-    alert(result.message);
-    if (result.status === 'success') location.reload();
+    // 簡易 Loading 提示
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = '處理中...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      alert(result.message);
+      if (result.status === 'success') {
+        // 發布成功後導向至前台查看或留在原地
+        if (confirm('建立成功！是否前往查看活動？')) {
+          location.href = 'service_hub.html?p=' + p;
+        } else {
+          location.reload();
+        }
+      }
+    } catch (e) {
+      alert('發布失敗，請檢查網路連線');
+    } finally {
+      btn.innerText = originalText;
+      btn.disabled = false;
+    }
   }
 
   init();
