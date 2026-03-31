@@ -9,7 +9,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 全局規範：15px, 不加粗, LINE 原生風格 */
+    /* 全局規範：15px, 不加粗, LINE 原生風格, 移除多餘空間 */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
@@ -22,29 +22,29 @@
     .user-name { margin: 0; font-size: 15px; color: #333333; }
     .user-role { font-size: 15px; color: #06C755; margin-top: 4px; display: block; }
 
-    /* 三模組頁籤選擇器 (依據 image_3f1802.png) */
+    /* 三模組分段切換 (image_3f0cbb.png) */
     .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 15px 20px; }
-    .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; transition: all 0.2s; }
+    .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 14px; transition: all 0.2s; }
     .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    /* 表單區塊佈局 */
+    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
+
+    /* 表單佈局與欄位 (image_3f1802.png) */
     .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
-    .field-label { font-size: 15px; color: #333333; margin-bottom: 10px; display: block; }
+    .field-label { font-size: 15px; color: #333333; margin-bottom: 8px; display: block; }
     .field-tag { font-size: 11px; color: #718096; background: #EDF2F7; padding: 2px 8px; border-radius: 4px; float: right; margin-top: -26px; }
     
     .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; }
     .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #FFFFFF; padding: 0 20px 15px 20px; border-bottom: 1px solid #F9F9F9; }
 
-    /* 宣傳大圖區 (圖解還原) */
+    /* 宣傳大圖上傳區 (帶虛線) */
     .image-upload-area { border: 1px dashed #CBD5E0; border-radius: 12px; padding: 40px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin: 10px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; }
-    .image-upload-area i { color: #A0AEC0; margin-bottom: 12px; width: 42px; height: 42px; }
+    .image-upload-area i { color: #A0AEC0; margin-bottom: 8px; width: 42px; height: 42px; }
     .image-upload-text { color: #A0AEC0; font-size: 15px; }
     #preview-image { max-width: 100%; border-radius: 8px; display: none; }
 
-    /* 名單與詳情文字域 */
-    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 12px; padding: 15px; font-size: 15px; outline: none; height: 150px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
-
-    /* 系列梯次項目 (v1.0.5) */
+    /* 名單內容與梯次項目 (v1.0.5) */
+    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; font-size: 15px; outline: none; height: 180px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
     .batch-item { background: #fff; border: 1px solid #eee; padding: 16px; border-radius: 12px; margin: 10px 20px; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
     .btn-add-batch { width: calc(100% - 40px); margin: 10px 20px; padding: 14px; border: 2px dashed #06C755; color: #06C755; background: rgba(6, 199, 85, 0.05); border-radius: 12px; font-size: 14px; text-align: center; cursor: pointer; font-weight: 500; }
 
@@ -72,13 +72,13 @@
     <div class="user-profile">
       <img id="user-avatar" class="user-avatar" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">正在識別身份...</p>
+        <p id="user-display-name" class="user-name">正在載入...</p>
         <span id="role-text" class="user-role">管理權限已開啟</span>
       </div>
     </div>
 
     <main id="main-content">
-      <!-- 1. 建立活動視圖 (核心功能) -->
+      <!-- 1. 建立活動視圖 (移植 v1.0.5 & v1.0.4 邏輯) -->
       <div id="view-create">
         <div class="tab-selector">
           <div id="tab-quick" class="tab-item active" onclick="switchCreateMode('quick')">快速匯入</div>
@@ -86,14 +86,13 @@
           <div id="tab-batch" class="tab-item" onclick="switchCreateMode('batch')">系列梯次</div>
         </div>
 
-        <div id="create-form">
-          <!-- 活動名稱 (共通) -->
+        <div id="create-form-area">
           <div class="field-group">
             <label class="field-label" id="label-act-name">活動名稱</label>
             <input id="act-name" class="input-box" placeholder="輸入活動標題...">
           </div>
 
-          <!-- 類型與身份 (Side by Side) -->
+          <!-- 並排佈局 (還原圖解) -->
           <div class="row-grid">
             <div>
               <label class="field-label">活動類型</label>
@@ -105,7 +104,7 @@
             </div>
           </div>
 
-          <!-- 宣傳大圖上傳區 -->
+          <!-- 宣傳大圖上傳 (還原圖解) -->
           <div class="field-group" style="border-bottom: none; padding-bottom: 0;">
             <label class="field-label">宣傳大圖 (選填)</label>
           </div>
@@ -116,29 +115,31 @@
             <input type="file" id="act-image-file" class="hidden" accept="image/*" onchange="previewFile(this)">
           </div>
 
-          <!-- 模組 A: 快速匯入 -->
+          <!-- 快速匯入模組 -->
           <div id="module-quick">
             <div class="field-group">
-              <label class="field-label">名單內容</label>
-              <span class="field-tag">支援批次輸入</span>
+              <div class="field-label-row">
+                <label class="field-label">名單內容</label>
+                <span class="field-tag">支援批次輸入</span>
+              </div>
               <textarea id="q-names" class="textarea-box" placeholder="請貼上參與者姓名，每行一位..."></textarea>
             </div>
           </div>
 
-          <!-- 模組 B: 完整發佈 (image_3f1fe3.png) -->
+          <!-- 完整發佈模組 (還原 image_3f1fe3.png) -->
           <div id="module-full" class="hidden">
             <div class="row-grid">
-              <div><label class="field-label">開始時間</label><input type="datetime-local" id="d-start" class="input-box"></div>
-              <div><label class="field-label">結束時間</label><input type="datetime-local" id="d-end" class="input-box"></div>
+              <div><label class="field-label">開始時間</label><input type="datetime-local" id="d-start" class="input-box text-[13px]"></div>
+              <div><label class="field-label">結束時間</label><input type="datetime-local" id="d-end" class="input-box text-[13px]"></div>
             </div>
             <div class="field-group">
               <label class="field-label">活動詳情</label>
               <div onclick="aiOptimizeDesc()" class="btn-ai">🤖 AI 優化</div>
-              <textarea id="d-desc" class="textarea-box" placeholder="描述活動內容..."></textarea>
+              <textarea id="d-desc" class="textarea-box" style="height: 120px" placeholder="描述活動內容..."></textarea>
             </div>
           </div>
 
-          <!-- 模組 C: 系列梯次 -->
+          <!-- 系列梯次模組 (移植 v1.0.5) -->
           <div id="module-batch" class="hidden">
             <div class="field-group">
               <label class="field-label">系列描述 (共用)</label>
@@ -162,43 +163,29 @@
         </div>
       </div>
 
-      <!-- 2. 核銷視圖 -->
+      <!-- 功能視圖：核銷、CRM、配對、名片、參數 -->
       <div id="view-checkin" class="hidden">
-        <div class="section-title">活動現場核銷</div>
+        <div class="section-title">活動核銷簽到</div>
         <div class="field-group"><select id="event-selector" class="input-box" onchange="loadRegistrants()"></select></div>
         <div id="registrant-list" class="bg-white"></div>
       </div>
 
-      <!-- 3. CRM 視圖 -->
       <div id="view-crm" class="hidden">
-        <div class="section-title">中心成員參與度</div>
+        <div class="section-title">成員參與度統計</div>
         <div id="crm-container" class="bg-white"></div>
       </div>
 
-      <!-- 4. 配對視圖 -->
       <div id="view-ai" class="hidden">
-        <div class="section-title">AI 商機媒合</div>
-        <div id="ai-content" class="bg-white p-5 leading-relaxed">點擊啟動，分析全中心會員名片。</div>
-        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
+        <div class="section-title">AI 智能媒合</div>
+        <div id="ai-content" class="bg-white p-5 leading-relaxed">啟動分析中...</div>
+        <button class="btn-action btn-dark" onclick="getAiMatches()">執行 AI 媒合分析</button>
       </div>
 
-      <!-- 5. 名片視圖 -->
-      <div id="view-card" class="hidden">
-        <div class="section-title">管理員數位名片</div>
-        <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
-        <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
-        <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="input-box"></div>
-        <div class="field-group"><label class="field-label">資源</label><textarea id="f-resource" class="textarea-box" style="background:#FFF; height: 100px;"></textarea></div>
-        <div class="field-group"><label class="field-label">需求</label><textarea id="f-need" class="textarea-box" style="background:#FFF; height: 100px;"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">儲存並更新名片</button>
-      </div>
-
-      <!-- 6. 參數視圖 -->
       <div id="view-settings" class="hidden">
-        <div class="section-title">系統連線參數</div>
-        <div class="field-group"><label class="field-label">TG Bot Token</label><input id="set-tg-token" class="input-box"></div>
-        <div class="field-group"><label class="field-label">TG Chat ID</label><input id="set-tg-chatid" class="input-box"></div>
-        <button class="btn-action btn-dark" onclick="saveSettings()">儲存系統參數</button>
+        <div class="section-title">系統連線設定</div>
+        <div class="field-group"><label class="field-label">TG Token</label><input id="set-tg-token" class="input-box"></div>
+        <div class="field-group"><label class="field-label">TG ChatID</label><input id="set-tg-chatid" class="input-box"></div>
+        <button class="btn-action btn-dark" onclick="saveSettings()">儲存設定</button>
       </div>
     </main>
 
@@ -223,6 +210,7 @@
       const params = new URLSearchParams(window.location.search);
       p = params.get('p');
       if (!p) { document.getElementById('loader').innerText = '缺少 p 參數'; return; }
+
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
