@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="icon" href="data:,">
   <title>active.html</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -21,37 +22,34 @@
     .user-name { margin: 0; font-size: 15px; color: #333333; }
     .user-role { font-size: 15px; color: #06C755; margin-top: 4px; display: block; }
 
-    /* 頂部切換 (image_3f1802.png 頂部) */
+    /* 三模組分段頁籤 */
     .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 15px 20px; }
-    .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #007AFF; font-size: 15px; }
-    .tab-item.active { background: #FFFFFF; color: #007AFF; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 14px; transition: all 0.2s; }
+    .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
-
-    /* 表單佈局 (依據圖解) */
+    /* 表單欄位與並排佈局 */
     .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
-    .field-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .field-label { font-size: 15px; color: #333333; }
-    .field-tag { font-size: 12px; color: #718096; background: #EDF2F7; padding: 2px 8px; border-radius: 4px; }
+    .field-label { font-size: 15px; color: #333333; margin-bottom: 8px; display: block; }
+    .field-tag { font-size: 11px; color: #718096; background: #EDF2F7; padding: 2px 8px; border-radius: 4px; float: right; margin-top: -26px; }
     
-    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; }
-    
-    .row-flex { display: flex; gap: 12px; background: #FFFFFF; padding: 0 20px 15px 20px; border-bottom: 1px solid #F9F9F9; }
-    .row-flex .col { flex: 1; }
+    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; }
+    .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #FFFFFF; padding: 0 20px 15px 20px; border-bottom: 1px solid #F9F9F9; }
 
-    /* 宣傳大圖區 (圖解中間區塊) */
-    .image-upload-area { border: 1px dashed #CBD5E0; border-radius: 12px; padding: 40px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin: 10px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; }
-    .image-upload-area i { color: #A0AEC0; margin-bottom: 12px; width: 42px; height: 42px; }
-    .image-upload-text { color: #A0AEC0; font-size: 15px; }
+    /* 宣傳大圖上傳區 */
+    .image-upload-area { border: 1px dashed #CBD5E0; border-radius: 12px; padding: 30px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin: 10px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .image-upload-area i { color: #A0AEC0; margin-bottom: 8px; width: 36px; height: 36px; }
+    .image-upload-text { color: #A0AEC0; font-size: 14px; }
     #preview-image { max-width: 100%; border-radius: 8px; display: none; }
 
-    /* 名單文字域 */
-    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 12px; padding: 15px; font-size: 15px; outline: none; height: 150px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
+    /* 系列梯次項目 */
+    .batch-item { background: #fff; border: 1px solid #eee; padding: 16px; border-radius: 12px; margin: 10px 20px; position: relative; }
+    .btn-add-batch { width: calc(100% - 40px); margin: 10px 20px; padding: 12px; border: 1px dashed #06C755; color: #06C755; background: rgba(6, 199, 85, 0.05); border-radius: 12px; font-size: 14px; }
 
-    .btn-action { width: calc(100% - 40px); margin: 25px 20px; padding: 18px; background: #06C755; color: white; border: none; font-size: 15px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
-    .btn-dark { background: #333333; }
+    /* 按鈕樣式 */
+    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
+    .btn-ai { background: #333; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; float: right; margin-top: -24px; cursor: pointer; }
 
-    /* 底部 6 格導覽列 (與 ACTMASTER 同步) */
+    /* 底部 6 格導覽列 */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
@@ -59,14 +57,8 @@
     .nav-text { font-size: 12px; }
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
-    /* 隱藏輔助 */
     .hidden { display: none !important; }
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; }
-    .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
-    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; }
-    .menu-item:active { background: #F8F8F8; }
-    .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; }
-    .menu-item p { margin: 0; font-size: 14px; color: #999; }
   </style>
 </head>
 <body>
@@ -78,125 +70,147 @@
     <div class="user-profile">
       <img id="user-avatar" class="user-avatar" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">正在識別身份...</p>
+        <p id="user-display-name" class="user-name">正在載入...</p>
         <span id="role-text" class="user-role">管理權限已開啟</span>
       </div>
     </div>
 
     <main id="main-content">
-      <!-- 1. 建立視圖：完全按照 image_3f1802.png 排版 -->
+      <!-- 建立視圖：包含三模組切換 (依據 v1.0.5) -->
       <div id="view-create">
         <div class="tab-selector">
-          <div id="tab-quick" class="tab-item active" onclick="switchMode('quick')">快速匯入</div>
-          <div id="tab-full" class="tab-item" onclick="switchMode('full')">完整發佈</div>
+          <div id="tab-quick" class="tab-item active" onclick="switchCreateMode('quick')">快速匯入</div>
+          <div id="tab-detailed" class="tab-item" onclick="switchCreateMode('detailed')">詳細發佈</div>
+          <div id="tab-batch" class="tab-item" onclick="switchCreateMode('batch')">梯次建立</div>
         </div>
 
         <div id="create-form">
+          <!-- 共通欄位 -->
           <div class="field-group">
-            <div class="field-label-row"><label class="field-label">活動名稱</label></div>
+            <label class="field-label" id="label-act-name">活動名稱</label>
             <input id="act-name" class="input-box" placeholder="輸入活動標題...">
           </div>
 
-          <div class="row-flex">
-            <div class="col">
-              <div class="field-label-row"><label class="field-label">活動類型</label></div>
+          <!-- 並排：類型與身分 (依據 image_3ea7ff.png) -->
+          <div class="row-grid">
+            <div>
+              <label class="field-label">活動類型</label>
               <input id="act-type" class="input-box" value="例會">
             </div>
-            <div class="col">
-              <div class="field-label-row"><label class="field-label">預設身份</label></div>
+            <div>
+              <label class="field-label">預設身份</label>
               <input id="act-role" class="input-box" value="會員">
             </div>
           </div>
 
+          <!-- 宣傳大圖上傳區 -->
           <div class="field-group" style="border-bottom: none; padding-bottom: 0;">
-            <div class="field-label-row"><label class="field-label">宣傳大圖 (選填)</label></div>
+            <label class="field-label">宣傳大圖 (選填)</label>
           </div>
           <div class="image-upload-area" onclick="document.getElementById('act-image-file').click()">
-            <i data-lucide="image" id="upload-icon"></i>
+            <i data-lucide="image-plus" id="upload-icon"></i>
             <img id="preview-image" src="">
             <span class="image-upload-text" id="upload-text">點擊上傳圖片</span>
             <input type="file" id="act-image-file" class="hidden" accept="image/*" onchange="previewFile(this)">
           </div>
 
-          <div class="field-group">
-            <div class="field-label-row">
+          <!-- 快速匯入模組 (q-names) -->
+          <div id="module-quick">
+            <div class="field-group">
               <label class="field-label">名單內容</label>
               <span class="field-tag">支援批次輸入</span>
+              <textarea id="q-names" class="input-box h-48 resize-none" placeholder="請貼上參與者姓名，每行一位..."></textarea>
             </div>
-            <textarea id="act-list" class="textarea-box" placeholder="請貼上參與者姓名，每行一位..."></textarea>
           </div>
 
-          <button class="btn-action" onclick="submitActivity()">確認建立並發布</button>
+          <!-- 詳細發佈模組 (d-desc) -->
+          <div id="module-detailed" class="hidden">
+            <div class="row-grid">
+              <div>
+                <label class="field-label">開始時間</label>
+                <input type="datetime-local" id="d-start" class="input-box text-[13px]">
+              </div>
+              <div>
+                <label class="field-label">結束時間</label>
+                <input type="datetime-local" id="d-end" class="input-box text-[13px]">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">活動詳情</label>
+              <div onclick="aiOptimizeDesc('d-desc')" class="btn-ai">🤖 AI 優化</div>
+              <textarea id="d-desc" class="input-box h-32 resize-none" placeholder="描述活動內容..."></textarea>
+            </div>
+          </div>
+
+          <!-- 梯次建立模組 (batch-container) -->
+          <div id="module-batch" class="hidden">
+            <div id="batch-container">
+              <div class="batch-item">
+                <label class="field-label">梯次 1 名稱</label>
+                <input type="text" class="input-box b-item-name !py-2 mb-3" placeholder="例：第一梯次 (10/01)">
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                  <input type="datetime-local" class="input-box b-item-start !text-[12px] !py-2">
+                  <input type="datetime-local" class="input-box b-item-end !text-[12px] !py-2">
+                </div>
+                <input type="number" class="input-box b-item-limit !py-2" placeholder="人數限制 (不限則留空)">
+              </div>
+            </div>
+            <button onclick="addBatchRow()" class="btn-add-batch">+ 新增梯次</button>
+            <div class="field-group">
+              <label class="field-label">系列說明 (共用)</label>
+              <textarea id="b-desc" class="input-box h-32 resize-none" placeholder="此系列活動的總體說明..."></textarea>
+            </div>
+          </div>
+
+          <button id="btn-submit" class="btn-action" onclick="submitActivity()">確認建立並發布</button>
         </div>
       </div>
 
-      <!-- 2. 核銷視圖 -->
+      <!-- 其他功能視圖 (核銷、CRM、配對、名片、參數) -->
       <div id="view-checkin" class="hidden">
-        <div class="section-title">活動現場核銷</div>
-        <div class="field-group">
-          <select id="event-selector" class="input-box" onchange="loadRegistrants()"><option value="">載入活動中...</option></select>
-        </div>
-        <div id="registrant-list" class="menu-list"></div>
+        <div class="section-title">簽到核銷</div>
+        <div class="field-group"><select id="event-selector" class="input-box" onchange="loadRegistrants()"></select></div>
+        <div id="registrant-list" class="bg-white"></div>
       </div>
 
-      <!-- 3. CRM 視圖 -->
       <div id="view-crm" class="hidden">
-        <div class="section-title">中心成員參與度統計</div>
-        <div id="crm-container" class="menu-list"></div>
+        <div class="section-title">會員總覽</div>
+        <div id="crm-container" class="bg-white"></div>
       </div>
 
-      <!-- 4. 配對視圖 -->
       <div id="view-ai" class="hidden">
-        <div class="section-title">AI 智能媒合分析</div>
-        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">點擊按鈕，啟動中心會員資料分析。</div>
-        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
+        <div class="section-title">AI 媒合分析</div>
+        <div id="ai-content" class="bg-white p-5 leading-relaxed">啟動分析中...</div>
       </div>
 
-      <!-- 5. 名片視圖 -->
-      <div id="view-card" class="hidden">
-        <div class="section-title">管理員數位名片</div>
-        <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
-        <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
-        <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="input-box"></div>
-        <div class="field-group"><label class="field-label">資源</label><textarea id="f-resource" class="textarea-box" style="background:#FFF"></textarea></div>
-        <div class="field-group"><label class="field-label">需求</label><textarea id="f-need" class="textarea-box" style="background:#FFF"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">儲存更新</button>
-      </div>
-
-      <!-- 6. 參數視圖 -->
       <div id="view-settings" class="hidden">
-        <div class="section-title">系統連線參數</div>
-        <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="input-box"></div>
-        <div class="field-group"><label class="field-label">Chat ID</label><input id="set-tg-chatid" class="input-box"></div>
-        <button class="btn-action btn-dark" onclick="saveSettings()">儲存參數</button>
+        <div class="section-title">系統參數</div>
+        <div class="field-group"><label class="field-label">TG Token</label><input id="set-tg-token" class="input-box"></div>
+        <div class="field-group"><label class="field-label">TG ChatID</label><input id="set-tg-chatid" class="input-box"></div>
+        <button class="btn-action btn-dark" onclick="saveSettings()">儲存</button>
       </div>
+
     </main>
 
     <!-- 底部 6 格導覽列 -->
     <nav id="bottom-nav">
       <div class="nav-item active" id="nav-create" onclick="switchNav('create')">
-        <div class="icon-box"><i data-lucide="plus-circle"></i></div>
-        <span class="nav-text">建立</span>
+        <div class="icon-box"><i data-lucide="plus-circle"></i></div><span class="nav-text">建立</span>
       </div>
       <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')">
-        <i data-lucide="check-square"></i>
-        <span class="nav-text">核銷</span>
+        <i data-lucide="check-square"></i><span class="nav-text">核銷</span>
       </div>
       <div class="nav-item" id="nav-crm" onclick="switchNav('crm')">
-        <i data-lucide="users"></i>
-        <span class="nav-text">CRM</span>
+        <i data-lucide="users"></i><span class="nav-text">CRM</span>
       </div>
       <div class="nav-item" id="nav-ai" onclick="switchNav('ai')">
-        <i data-lucide="brain-circuit"></i>
-        <span class="nav-text">配對</span>
+        <i data-lucide="brain-circuit"></i><span class="nav-text">配對</span>
       </div>
       <div class="nav-item" id="nav-card" onclick="switchNav('card')">
-        <i data-lucide="contact"></i>
-        <span class="nav-text">名片</span>
+        <i data-lucide="contact"></i><span class="nav-text">名片</span>
       </div>
       <div class="nav-item" id="nav-settings" onclick="switchNav('settings')">
-        <i data-lucide="settings"></i>
-        <span class="nav-text">參數</span>
+        <i data-lucide="settings"></i><span class="nav-text">參數</span>
       </div>
     </nav>
   </div>
@@ -220,11 +234,8 @@
         document.getElementById('user-avatar').src = profile.pictureUrl || '';
         document.getElementById('user-display-name').innerText = profile.displayName;
         await loadHubData();
-      } catch (err) {
-        console.error(err);
-      } finally {
-        document.getElementById('loader').classList.add('hidden');
-      }
+      } catch (err) { console.error(err); } 
+      finally { document.getElementById('loader').classList.add('hidden'); }
     }
 
     async function loadHubData() {
@@ -240,10 +251,73 @@
       }
     }
 
-    function switchMode(m) {
+    function switchCreateMode(m) {
       currentMode = m;
-      document.getElementById('tab-quick').classList.toggle('active', m === 'quick');
-      document.getElementById('tab-full').classList.toggle('active', m === 'full');
+      ['quick', 'detailed', 'batch'].forEach(id => {
+        document.getElementById('tab-' + id).classList.toggle('active', id === m);
+        document.getElementById('module-' + id).classList.toggle('hidden', id !== m);
+      });
+      document.getElementById('label-act-name').innerText = m === 'batch' ? '系列名稱' : '活動名稱';
+    }
+
+    function addBatchRow() {
+      const container = document.getElementById('batch-container');
+      const count = container.querySelectorAll('.batch-item').length + 1;
+      const div = document.createElement('div');
+      div.className = 'batch-item animate-in fade-in';
+      div.innerHTML = `
+        <button onclick="this.parentElement.remove()" class="absolute top-3 right-3 text-gray-300">✕</button>
+        <label class="field-label">梯次 ${count} 名稱</label>
+        <input type="text" class="input-box b-item-name mb-3" placeholder="梯次名稱">
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <input type="datetime-local" class="input-box b-item-start !text-[12px]">
+          <input type="datetime-local" class="input-box b-item-end !text-[12px]">
+        </div>
+        <input type="number" class="input-box b-item-limit" placeholder="人數限制">
+      `;
+      container.appendChild(div);
+    }
+
+    async function submitActivity() {
+      const name = document.getElementById('act-name').value;
+      if (!name) return alert('請輸入活動標題');
+      
+      document.getElementById('loader').classList.remove('hidden');
+      let payload = { 
+        action: 'create_activity', p, uid, name, 
+        type: document.getElementById('act-type').value,
+        role: document.getElementById('act-role').value,
+        mode: currentMode 
+      };
+
+      if (currentMode === 'quick') payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
+      if (currentMode === 'detailed') {
+        payload.start = document.getElementById('d-start').value;
+        payload.end = document.getElementById('d-end').value;
+        payload.desc = document.getElementById('d-desc').value;
+      }
+      if (currentMode === 'batch') {
+        payload.desc = document.getElementById('b-desc').value;
+        payload.batches = Array.from(document.querySelectorAll('.batch-item')).map(it => ({
+          name: it.querySelector('.b-item-name').value,
+          start: it.querySelector('.b-item-start').value,
+          end: it.querySelector('.b-item-end').value,
+          limit: it.querySelector('.b-item-limit').value
+        }));
+      }
+
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
+      alert('活動已建立！');
+      location.reload();
+    }
+
+    function switchNav(v) {
+      document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
+      document.getElementById('view-' + v).classList.remove('hidden');
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById('nav-' + v);
+      if (target) target.classList.add('active');
+      lucide.createIcons();
     }
 
     function previewFile(input) {
@@ -259,82 +333,6 @@
         };
         reader.readAsDataURL(file);
       }
-    }
-
-    function switchNav(v) {
-      document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
-      document.getElementById('view-' + v).classList.remove('hidden');
-      
-      document.querySelectorAll('.nav-item').forEach(el => {
-        el.classList.remove('active');
-        const box = el.querySelector('.icon-box');
-        if (box) {
-          const content = box.innerHTML;
-          el.removeChild(box);
-          el.insertAdjacentHTML('afterbegin', content);
-        }
-      });
-
-      const target = document.getElementById('nav-' + v);
-      if (target) {
-        target.classList.add('active');
-        const content = target.innerHTML;
-        const iconPart = content.split('<span')[0];
-        const textPart = content.includes('<span') ? '<span' + content.split('<span')[1] : '';
-        target.innerHTML = `<div class="icon-box">${iconPart}</div>${textPart}`;
-      }
-      
-      if (v === 'crm') loadCrmData();
-      window.scrollTo(0, 0);
-      lucide.createIcons();
-    }
-
-    async function submitActivity() {
-      const name = document.getElementById('act-name').value;
-      if (!name) return alert('請填寫活動名稱');
-      document.getElementById('loader').classList.remove('hidden');
-      try {
-        const payload = { 
-          action: 'create_activity', p, uid, 
-          name: name,
-          type: document.getElementById('act-type').value,
-          role: document.getElementById('act-role').value,
-          mode: currentMode,
-          names: document.getElementById('act-list').value.split('\n') 
-        };
-        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
-        alert('建立成功');
-        switchNav('checkin');
-      } finally { document.getElementById('loader').classList.add('hidden'); }
-    }
-
-    async function loadRegistrants() {
-      const act = document.getElementById('event-selector').value;
-      if (!act) return;
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: act }) });
-      const result = await res.json();
-      document.getElementById('registrant-list').innerHTML = result.data.map(r => `
-        <div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
-          <h3>${r.姓名}</h3>
-          <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊簽到'}</p>
-        </div>
-      `).join('');
-    }
-
-    async function toggleCheckIn(act, row, status) {
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_checkin', p, activityName: act, rowId: row, status: status }) });
-      await loadRegistrants();
-    }
-
-    async function loadCrmData() {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
-      const result = await res.json();
-      document.getElementById('crm-container').innerHTML = result.data.map(u => `
-        <div class="menu-item">
-          <h3>${u.name}</h3>
-          <p>累積參與：${u.attended} 次</p>
-        </div>
-      `).join('');
     }
 
     init();
