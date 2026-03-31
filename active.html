@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>經銷商管理後台</title>
+  <title>管理後台</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -14,7 +14,6 @@
     header h1 { margin: 0; font-size: 20px; font-weight: 400; color: #1A202C; }
     header p { margin: 5px 0 0 0; font-size: 15px; color: #718096; }
 
-    /* 選項切換 */
     .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 20px; }
     .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
     .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -24,21 +23,16 @@
     label { display: block; margin-bottom: 8px; color: #4A5568; font-size: 15px; }
     input, textarea, select { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
     
-    /* 列表樣式 */
     .list-item { padding: 15px 0; border-bottom: 1px solid #F9F9F9; display: flex; justify-content: space-between; align-items: center; }
     .list-info { flex: 1; }
     .list-title { font-size: 15px; color: #333333; margin-bottom: 2px; }
-    .list-sub { font-size: 15px; color: #999999; }
     
     .btn-tag { font-size: 13px; padding: 6px 12px; border-radius: 4px; border: 1px solid #E2E8F0; color: #718096; cursor: pointer; }
     .btn-tag.active { background: #06C755; color: white; border-color: #06C755; }
 
-    /* 圖片上傳區 */
     .upload-box { border: 1px dashed #CBD5E0; border-radius: 8px; padding: 30px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin-bottom: 20px; }
-    .upload-box i { color: #A0AEC0; margin-bottom: 8px; }
 
-    /* 底部導覽 */
-    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 100; }
+    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 85px; left: 50%; transform: translateX(-50%); z-index: 100; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; text-decoration: none; }
     .nav-item.active { color: #1A202C; }
     .nav-item i { margin-bottom: 6px; width: 22px; height: 22px; }
@@ -47,89 +41,61 @@
 
     .btn-main { width: 100%; padding: 16px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 10px; }
     .hidden { display: none; }
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 200; font-size: 15px; color: #06C755; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay hidden">系統處理中...</div>
-  
   <div class="page-container">
     <header>
       <h1 id="view-title">建立新活動</h1>
       <p id="view-desc">部署您的專屬活動流程。</p>
     </header>
 
-    <!-- [建立] 視圖 -->
+    <!-- [建立] -->
     <div id="view-create" class="content-view">
-      <div class="tab-selector">
-        <div class="tab-item active" onclick="switchMode('quick')">快速</div>
-        <div class="tab-item" onclick="switchMode('full')">完整</div>
-      </div>
-      <div class="form-group">
-        <label>活動名稱</label>
-        <input type="text" id="act-name" placeholder="輸入標題">
-      </div>
-      <div class="form-group">
-        <label>名單匯入 (每行一位)</label>
-        <textarea id="act-list" style="height:150px;" placeholder="貼上參與者姓名..."></textarea>
-      </div>
+      <div class="form-group"><label>活動名稱</label><input type="text" id="act-name" placeholder="輸入標題"></div>
+      <div class="form-group"><label>名單匯入 (每行一位)</label><textarea id="act-list" style="height:120px;" placeholder="貼上名單..."></textarea></div>
       <button class="btn-main" onclick="submitActivity()">確認發布</button>
     </div>
 
-    <!-- [核銷] 視圖 -->
+    <!-- [核銷] -->
     <div id="view-checkin" class="content-view hidden">
-      <div class="form-group" style="margin-top:20px;">
-        <label>選擇活動</label>
-        <select id="event-selector" onchange="loadCheckInList()"></select>
-      </div>
-      <div id="checkin-list">
-        <p style="text-align:center; color:#CCC; padding-top:50px;">請先選擇一個活動</p>
-      </div>
+      <div class="form-group"><label>選擇活動</label><select id="event-selector" onchange="loadCheckInList()"></select></div>
+      <div id="checkin-list"></div>
     </div>
 
-    <!-- [CRM] 視圖 -->
+    <!-- [CRM] -->
     <div id="view-crm" class="content-view hidden">
-      <div id="crm-list" style="margin-top:20px;">
-        <p style="text-align:center; color:#CCC; padding-top:50px;">正在讀取會員數據庫...</p>
-      </div>
+      <div id="crm-list"></div>
     </div>
 
-    <!-- [名片] 視圖 (含 OCR 掃描) -->
+    <!-- [配對] -->
+    <div id="view-matching" class="content-view hidden">
+      <div id="ai-match-result" style="background:#F8FAFC; padding:15px; border-radius:8px; line-height:1.6;">點擊按鈕開始分析。</div>
+      <button class="btn-main" onclick="runAiMatch()">開始 AI 智能配對</button>
+    </div>
+
+    <!-- [名片] -->
     <div id="view-card" class="content-view hidden">
-      <div class="upload-box" onclick="document.getElementById('ocr-file').click()">
-        <i data-lucide="camera" style="width:32px; height:32px;"></i>
-        <p>掃描紙本名片 (AI 辨識)</p>
-      </div>
+      <div class="upload-box" onclick="document.getElementById('ocr-file').click()"><p>掃描紙本名片 (AI 辨識)</p></div>
       <input type="file" id="ocr-file" class="hidden" accept="image/*" onchange="handleOcr(this)">
-      
-      <div class="form-group"><label>姓名</label><input id="card-name" class="field-input"></div>
-      <div class="form-group"><label>公司</label><input id="card-company" class="field-input"></div>
-      <div class="form-group"><label>職稱</label><input id="card-job" class="field-input"></div>
-      <div class="form-group"><label>產業</label><input id="card-industry" class="field-input"></div>
-      <button class="btn-main" onclick="saveManualCard()">儲存名片至資料庫</button>
+      <div class="form-group"><label>姓名</label><input id="card-name"></div>
+      <button class="btn-main">儲存至資料庫</button>
     </div>
 
-    <!-- 其他視圖 (略)... -->
+    <!-- [參數] -->
+    <div id="view-settings" class="content-view hidden">
+      <div class="form-group"><label>Telegram Bot Token</label><input id="set-tg-token"></div>
+      <div class="form-group"><label>Telegram Chat ID</label><input id="set-tg-chatid"></div>
+      <button class="btn-main" onclick="saveSettings()">儲存設定</button>
+    </div>
 
     <nav>
-      <div class="nav-item active" id="nav-create" onclick="switchNav('create')">
-        <div class="icon-box"><i data-lucide="plus-circle"></i></div><span class="nav-text">建立</span>
-      </div>
-      <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')">
-        <i data-lucide="check-square"></i><span class="nav-text">核銷</span>
-      </div>
-      <div class="nav-item" id="nav-crm" onclick="switchNav('crm')">
-        <i data-lucide="users"></i><span class="nav-text">CRM</span>
-      </div>
-      <div class="nav-item" id="nav-matching" onclick="switchNav('matching')">
-        <i data-lucide="brain-circuit"></i><span class="nav-text">配對</span>
-      </div>
-      <div class="nav-item" id="nav-card" onclick="switchNav('card')">
-        <i data-lucide="contact"></i><span class="nav-text">名片</span>
-      </div>
-      <div class="nav-item" id="nav-settings" onclick="switchNav('settings')">
-        <i data-lucide="settings"></i><span class="nav-text">參數</span>
-      </div>
+      <div class="nav-item active" id="nav-create" onclick="switchNav('create')"><div class="icon-box"><i data-lucide="plus-circle"></i></div><span class="nav-text">建立</span></div>
+      <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
+      <div class="nav-item" id="nav-crm" onclick="switchNav('crm')"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
+      <div class="nav-item" id="nav-matching" onclick="switchNav('matching')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
+      <div class="nav-item" id="nav-card" onclick="switchNav('card')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
+      <div class="nav-item" id="nav-settings" onclick="switchNav('settings')"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
     </nav>
   </div>
 
@@ -154,73 +120,33 @@
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       document.getElementById('nav-' + view).classList.add('active');
       
-      const titles = { create: "建立新活動", checkin: "現場核銷簽到", crm: "會員 CRM 總覽", card: "數位名片管理" };
-      if (titles[view]) document.getElementById('view-title').innerText = titles[view];
+      const titles = { create: "建立新活動", checkin: "現場核銷簽到", crm: "會員 CRM 總覽", matching: "AI 商業配對", card: "名片辨識管理", settings: "系統參數設定" };
+      document.getElementById('view-title').innerText = titles[view];
 
       if (view === 'checkin') loadEvents();
       if (view === 'crm') loadCrm();
+      if (view === 'settings') loadSettings();
     }
 
-    // [核銷] 邏輯
+    // 核心 API 功能請確保 Code.gs 已更新至 v1.3.6 版本
     async function loadEvents() {
       const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
       const result = await res.json();
       const select = document.getElementById('event-selector');
       select.innerHTML = '<option value="">請選擇活動...</option>';
-      result.data.activities.forEach(act => {
-        select.innerHTML += `<option value="${act.name}">${act.name}</option>`;
-      });
+      result.data.activities.forEach(act => select.innerHTML += `<option value="${act.name}">${act.name}</option>`);
     }
 
-    async function loadCheckInList() {
-      const actName = document.getElementById('event-selector').value;
-      const listEl = document.getElementById('checkin-list');
-      listEl.innerHTML = '讀取名單中...';
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: actName }) });
-      const result = await res.json();
-      listEl.innerHTML = result.data.map(r => `
-        <div class="list-item">
-          <div class="list-info"><div class="list-title">${r.姓名}</div></div>
-          <div class="btn-tag ${r.checkedIn ? 'active' : ''}" onclick="toggleCheckIn('${actName}', ${r.rowId}, ${r.checkedIn})">
-            ${r.checkedIn ? '已簽到' : '點擊簽到'}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // [CRM] 邏輯 (移植 ACTMASTER CRM 統計)
     async function loadCrm() {
-      const listEl = document.getElementById('crm-list');
       const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
       const result = await res.json();
-      listEl.innerHTML = result.data.map(u => `
-        <div class="list-item">
-          <div class="list-info">
-            <div class="list-title">${u.name}</div>
-            <div class="list-sub">${u.industry || '未設定產業'}</div>
-          </div>
-          <div style="font-size:15px; color:#06C755;">參與 ${u.attended} 次</div>
-        </div>
-      `).join('');
+      document.getElementById('crm-list').innerHTML = result.data.map(u => `<div class="list-item"><div class="list-info"><div class="list-title">${u.name}</div></div><div style="color:#06C755;">參與 ${u.attended} 次</div></div>`).join('');
     }
 
-    // [名片 OCR] 邏輯 (移植 AI 辨識)
-    async function handleOcr(input) {
-      const file = input.files[0];
-      if (!file) return;
-      document.getElementById('loader').classList.remove('hidden');
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'recognizeCard', base64Image: e.target.result }) });
-        const result = await res.json();
-        const d = result.data;
-        document.getElementById('card-name').value = d.Name || '';
-        document.getElementById('card-company').value = d.CompanyName || '';
-        document.getElementById('card-job').value = d.Title || '';
-        document.getElementById('card-industry').value = d.Industry || '';
-        document.getElementById('loader').classList.add('hidden');
-      };
-      reader.readAsDataURL(file);
+    async function submitActivity() {
+      const payload = { action: 'create_activity', p, uid, mode: 'quick', name: document.getElementById('act-name').value, names: document.getElementById('act-list').value.split('\n') };
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
+      alert('活動已發布');
     }
 
     init();
