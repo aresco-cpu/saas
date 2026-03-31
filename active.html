@@ -3,142 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>活動管理</title>
+  <title>經銷商管理後台</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     body { font-family: -apple-system, sans-serif; margin: 0; background: #FFFFFF; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
-    .page-container { max-width: 450px; margin: 0 auto; padding: 25px 20px; }
-    header { margin-bottom: 25px; }
-    header h1 { margin: 0; font-size: 24px; font-weight: 400; color: #1A202C; margin-bottom: 8px; }
-    header p { margin: 0; font-size: 15px; color: #718096; }
-    .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin-bottom: 30px; }
-    .tab-item { flex: 1; text-align: center; padding: 12px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
+    .page-container { max-width: 450px; margin: 0 auto; }
+    
+    /* 頂部標題 */
+    header { padding: 25px 20px; border-bottom: 1px solid #F0F0F0; }
+    header h1 { margin: 0; font-size: 20px; font-weight: 400; color: #1A202C; }
+    header p { margin: 5px 0 0 0; font-size: 15px; color: #718096; }
+
+    /* 分段選擇器 (僅在建立模式顯示) */
+    .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 20px; }
+    .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
     .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .form-group { margin-bottom: 25px; position: relative; }
-    label { display: block; margin-bottom: 10px; color: #4A5568; font-size: 15px; }
-    input, textarea { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
-    .btn-submit { width: 100%; padding: 16px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 10px; }
-    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 75px; left: 50%; transform: translateX(-50%); z-index: 100; }
+
+    /* 表單與清單區塊 */
+    .content-view { padding: 0 20px; }
+    .form-group { margin-bottom: 25px; }
+    label { display: block; margin-bottom: 8px; color: #4A5568; font-size: 15px; }
+    input, textarea, select { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
+    input:focus, textarea:focus { border-color: #06C755; }
+
+    /* 清單樣式 (核銷/CRM/配對) */
+    .list-item { padding: 15px 0; border-bottom: 1px solid #F7FAFC; display: flex; justify-content: space-between; align-items: center; }
+    .list-info { flex: 1; }
+    .list-name { font-size: 15px; color: #1A202C; margin-bottom: 2px; }
+    .list-desc { font-size: 15px; color: #999999; }
+    .btn-tag { font-size: 13px; padding: 4px 10px; border-radius: 4px; cursor: pointer; border: 1px solid #E2E8F0; color: #718096; }
+    .btn-tag.active { background: #06C755; color: white; border-color: #06C755; }
+
+    /* 底部六格導覽 */
+    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 100; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; text-decoration: none; }
     .nav-item.active { color: #1A202C; }
-    .nav-text { font-size: 13px; margin-top: 4px; }
+    .nav-item i { margin-bottom: 6px; width: 22px; height: 22px; }
+    .nav-text { font-size: 13px; }
+    .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
+
+    .btn-submit { width: 100%; padding: 16px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin: 20px 0; }
     .hidden { display: none; }
+    .ai-box { background: #F8FAFC; padding: 15px; border-radius: 8px; line-height: 1.6; color: #4A5568; white-space: pre-wrap; }
   </style>
 </head>
 <body>
   <div class="page-container">
     <header>
-      <h1 id="header-title">建立新活動</h1>
-      <p id="header-desc">部署您的專屬活動流程。</p>
+      <h1 id="view-title">建立新活動</h1>
+      <p id="view-desc">部署您的專屬活動流程。</p>
     </header>
 
-    <div id="main-tabs" class="tab-selector">
-      <div id="tab-quick" class="tab-item active" onclick="switchTab('quick')">快速</div>
-      <div id="tab-full" class="tab-item" onclick="switchTab('full')">完整</div>
-      <div id="tab-batch" class="tab-item" onclick="switchTab('batch')">梯次</div>
-    </div>
-
-    <!-- 設定頁面標籤 (當導航點擊參數時) -->
-    <div id="settings-tabs" class="tab-selector hidden">
-      <div class="tab-item active">Telegram 設定</div>
-    </div>
-
-    <main id="view-create">
+    <!-- 1. 建立視圖 -->
+    <div id="view-create" class="content-view">
+      <div class="tab-selector">
+        <div class="tab-item active" onclick="switchCreateMode('quick')">快速</div>
+        <div class="tab-item" onclick="switchCreateMode('full')">完整</div>
+        <div class="tab-item" onclick="switchCreateMode('batch')">梯次</div>
+      </div>
       <div class="form-group">
         <label>活動名稱</label>
         <input type="text" id="act-name" placeholder="輸入活動標題...">
       </div>
-      <div id="section-quick" class="form-group">
+      <div class="form-group">
         <label>名單內容</label>
-        <textarea id="act-list" placeholder="請貼上參與者姓名，每行一位"></textarea>
+        <textarea id="act-list" placeholder="每行一位參與者姓名..."></textarea>
       </div>
-      <button class="btn-submit" onclick="submitData()">完成並建立</button>
-    </main>
+      <button class="btn-submit" onclick="submitActivity()">完成並發布</button>
+    </div>
 
-    <main id="view-settings" class="hidden">
-      <div class="form-group">
-        <label>Telegram Bot Token</label>
-        <input type="text" id="tg-token" placeholder="請貼上 BotFather 給予的 Token">
+    <!-- 2. 核銷視圖 -->
+    <div id="view-checkin" class="content-view hidden">
+      <div class="form-group" style="margin-top:20px;">
+        <label>選擇活動</label>
+        <select id="checkin-event-select" onchange="loadRegistrants()"></select>
       </div>
-      <div class="form-group">
-        <label>Telegram Chat ID</label>
-        <input type="text" id="tg-chatid" placeholder="請貼上您的 Chat ID">
+      <div id="registrant-list">
+        <p style="text-align:center; color:#999; margin-top:50px;">載入名單中...</p>
       </div>
-      <button class="btn-submit" onclick="saveSettings()">儲存參數設定</button>
-    </main>
+    </div>
 
+    <!-- 3. CRM 視圖 -->
+    <div id="view-crm" class="content-view hidden">
+      <div id="crm-list">
+        <p style="text-align:center; color:#999; margin-top:50px;">正在統計會員數據...</p>
+      </div>
+    </div>
+
+    <!-- 4. 配對視圖 -->
+    <div id="view-matching" class="content-view hidden">
+      <div style="margin-top:20px;">
+        <div id="ai-match-result" class="ai-box">點擊按鈕開始針對本中心會員進行 AI 媒合分析。</div>
+        <button class="btn-submit" style="background:#1A202C;" onclick="runAiMatch()">開始 AI 智能配對</button>
+      </div>
+    </div>
+
+    <!-- 5. 名片視圖 -->
+    <div id="view-card" class="content-view hidden">
+      <div style="margin-top:20px;">
+        <div class="form-group">
+          <label>個人數位名片預覽</label>
+          <div id="card-preview" class="ai-box" style="text-align:center;">
+            (您的數位名片樣式將顯示於此)
+          </div>
+        </div>
+        <button class="btn-submit" onclick="alert('進入編輯器')">編輯名片樣式</button>
+      </div>
+    </div>
+
+    <!-- 6. 參數視圖 -->
+    <div id="view-settings" class="content-view hidden">
+      <div style="margin-top:20px;">
+        <div class="form-group">
+          <label>Telegram Bot Token</label>
+          <input type="text" id="set-tg-token" placeholder="BotFather Token">
+        </div>
+        <div class="form-group">
+          <label>Telegram Chat ID</label>
+          <input type="text" id="set-tg-chatid" placeholder="Your Chat ID">
+        </div>
+        <button class="btn-submit" onclick="saveSettings()">儲存設定</button>
+      </div>
+    </div>
+
+    <!-- 底部六格導覽列 -->
     <nav>
-      <div class="nav-item active" onclick="switchNav('create')">
-        <i data-lucide="plus-circle"></i><span class="nav-text">建立</span>
+      <div class="nav-item active" id="nav-create" onclick="switchNav('create')">
+        <div class="icon-box"><i data-lucide="plus-circle"></i></div>
+        <span class="nav-text">建立</span>
       </div>
-      <div class="nav-item"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
+      <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')">
+        <i data-lucide="check-square"></i><span class="nav-text">核銷</span>
+      </div>
+      <div class="nav-item" id="nav-crm" onclick="switchNav('crm')">
+        <i data-lucide="users"></i><span class="nav-text">CRM</span>
+      </div>
+      <div class="nav-item" id="nav-matching" onclick="switchNav('matching')">
+        <i data-lucide="brain-circuit"></i><span class="nav-text">配對</span>
+      </div>
+      <div class="nav-item" id="nav-card" onclick="switchNav('card')">
+        <i data-lucide="contact"></i><span class="nav-text">名片</span>
+      </div>
       <div class="nav-item" id="nav-settings" onclick="switchNav('settings')">
         <i data-lucide="settings"></i><span class="nav-text">參數</span>
       </div>
-      <a id="link-front" href="#" class="nav-item">
-        <i data-lucide="layout-dashboard"></i><span class="nav-text">中台</span>
-      </a>
     </nav>
   </div>
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-    let uid = '', p = '';
+    let uid = '', p = '', currentView = 'create';
 
     async function init() {
       lucide.createIcons();
       const urlParams = new URLSearchParams(window.location.search);
       p = urlParams.get('p');
-      if (p) document.getElementById('link-front').href = `service_hub.html?p=${p}`;
-      await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
-      const profile = await liff.getProfile();
-      uid = profile.userId;
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
+        uid = profile.userId;
+      } catch (e) { console.error(e); }
     }
 
     function switchNav(view) {
-      document.getElementById('view-create').classList.toggle('hidden', view !== 'create');
-      document.getElementById('main-tabs').classList.toggle('hidden', view !== 'create');
-      document.getElementById('view-settings').classList.toggle('hidden', view !== 'settings');
-      document.getElementById('settings-tabs').classList.toggle('hidden', view !== 'settings');
+      currentView = view;
+      document.querySelectorAll('.content-view').forEach(el => el.classList.add('hidden'));
+      document.getElementById('view-' + view).classList.remove('hidden');
       
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      if (view === 'settings') {
-        document.getElementById('nav-settings').classList.add('active');
-        document.getElementById('header-title').innerText = "參數設定";
-        document.getElementById('header-desc').innerText = "管理您的通知與 API 設定。";
-        loadSettings();
-      } else {
-        document.querySelector('[onclick="switchNav(\'create\')"]').classList.add('active');
-        document.getElementById('header-title').innerText = "建立新活動";
-        document.getElementById('header-desc').innerText = "部署您的專屬活動流程。";
-      }
-    }
+      document.getElementById('nav-' + view).classList.add('active');
 
-    async function loadSettings() {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_settings', p, uid }) });
-      const result = await res.json();
-      if (result.status === 'success') {
-        document.getElementById('tg-token').value = result.data.TG_BOT_TOKEN || '';
-        document.getElementById('tg-chatid').value = result.data.TG_CHAT_ID || '';
-      }
-    }
-
-    async function saveSettings() {
-      const settings = {
-        TG_BOT_TOKEN: document.getElementById('tg-token').value,
-        TG_CHAT_ID: document.getElementById('tg-chatid').value
+      // 更新標題
+      const titles = {
+        create: { t: "建立新活動", d: "部署您的專屬活動流程。" },
+        checkin: { t: "現場核銷簽到", d: "管理活動出席狀況。" },
+        crm: { t: "會員 CRM 總覽", d: "分析您的客戶活躍度。" },
+        matching: { t: "AI 商業配對", d: "讓 AI 幫您尋找潛在商機。" },
+        card: { t: "數位名片設定", d: "管理您的對外品牌形象。" },
+        settings: { t: "系統參數設定", d: "管理通知與連線權限。" }
       };
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_settings', p, uid, settings }) });
-      alert('設定已儲存');
+      document.getElementById('view-title').innerText = titles[view].t;
+      document.getElementById('view-desc').innerText = titles[view].d;
+
+      if (view === 'checkin') loadEvents();
+      if (view === 'crm') loadCrmData();
+      window.scrollTo(0, 0);
     }
 
-    async function submitData() {
+    // [建立] 功能
+    async function submitActivity() {
       const payload = { action: 'create_activity', p, uid, mode: 'quick', name: document.getElementById('act-name').value, names: document.getElementById('act-list').value.split('\n') };
       await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
-      alert('活動建立成功，已發送 TG 通知');
+      alert('活動已建立');
+      switchNav('checkin');
+    }
+
+    // [核銷] 功能
+    async function loadEvents() {
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
+      const result = await res.json();
+      const select = document.getElementById('checkin-event-select');
+      // 模擬從資料庫撈取活動列表 (此處應由 GAS 回傳)
+      select.innerHTML = '<option value="">請選擇活動...</option>';
+    }
+
+    // [CRM] 功能
+    async function loadCrmData() {
+      const container = document.getElementById('crm-list');
+      // 這裡會從 GAS 的 saasGetAiContext 擴展版本撈取資料
+      container.innerHTML = '<p style="text-align:center; color:#999; margin-top:50px;">(串接專屬資料庫 CRM 清單...)</p>';
+    }
+
+    // [配對] 功能
+    async function runAiMatch() {
+      const resBox = document.getElementById('ai-match-result');
+      resBox.innerText = 'AI 正在分析全中心會員名片中...';
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
+      resBox.innerText = await res.text();
     }
 
     init();
