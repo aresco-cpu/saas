@@ -1,167 +1,182 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>行政管理</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>經銷商審核後台</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #fff; color: #111; -webkit-font-smoothing: antialiased; }
-    .nav-tabs { display: flex; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: #fff; z-index: 20; }
-    .tab { flex: 1; text-align: center; padding: 14px 0; font-size: 14px; color: #8e8e93; cursor: pointer; }
-    .tab-active { color: #06C755; border-bottom: 2px solid #06C755; }
-    .item-row { padding: 16px 20px; border-bottom: 1px solid #f8f8f8; }
-    .item-row:active { background-color: #fcfcfc; }
-    .text-grey { color: #8e8e93; font-size: 11px; }
-    .text-title { font-size: 15px; color: #111; margin-bottom: 2px; }
-    .btn-approve { background: #06C755; color: white; padding: 5px 14px; border-radius: 4px; font-size: 13px; border: none; }
-    .link-blue { color: #007aff; font-size: 11px; word-break: break-all; text-decoration: none; margin-top: 4px; display: block; }
-    .copy-tag { font-size: 10px; color: #007aff; border: 1px solid #007aff; padding: 1px 4px; border-radius: 3px; display: inline-block; margin-top: 5px; cursor: pointer; }
-    
-    /* 彈窗樣式 - 極簡化 */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 100; padding: 20px; }
-    .modal-content { background: white; border-radius: 8px; width: 100%; max-width: 300px; padding: 20px; }
-    .input-sid { width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 6px; font-size: 14px; outline: none; margin-top: 10px; background: #f9f9f9; }
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f5f7; margin: 0; }
+    .tabs { display: flex; background: #fff; margin-bottom: 15px; border-bottom: 1px solid #ddd; }
+    .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: #666; }
+    .tab.active { color: #06C755; border-bottom: 2px solid #06C755; font-weight: bold; }
+    .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .card p { margin: 5px 0; font-size: 14px; color: #333; }
+    .input-row { display: flex; align-items: center; margin-top: 10px; gap: 8px; }
+    input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; color: #0056b3; width: 100px; }
+    button { padding: 8px 15px; background-color: #06C755; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; }
+    .copy-btn { background-color: #007bff; margin-top: 10px; padding: 6px 12px; font-size: 13px; }
+    #message { color: #d9534f; font-weight: bold; padding: 0 20px; font-size: 14px; line-height: 1.5; }
+    .link-box { margin-top: 10px; padding: 12px; background: #eef; word-break: break-all; font-size: 12px; display: none; border-radius: 4px; border: 1px solid #ddd; }
+    .error-detail { font-size: 11px; color: #999; margin-top: 5px; display: block; font-family: monospace; }
   </style>
 </head>
 <body>
-
-<div class="max-w-[480px] mx-auto min-h-screen">
-  <header class="p-5 flex justify-between items-center border-b border-gray-50">
-    <div class="text-lg">經銷商審核</div>
-    <div class="text-grey">管理員模式</div>
-  </header>
-
-  <nav class="nav-tabs">
-    <div onclick="switchTab('待審核')" id="tab-pending" class="tab tab-active">待審核</div>
-    <div onclick="switchTab('已核准')" id="tab-approved" class="tab">已核准</div>
-  </nav>
-
-  <div id="list-container">
-    <div class="p-20 text-center text-grey">讀取中...</div>
+  <div class="tabs">
+    <div class="tab active" id="tab-pending" onclick="switchTab('待審核')">待審核</div>
+    <div class="tab" id="tab-approved" onclick="switchTab('已核准')">已核准</div>
   </div>
-</div>
+  
+  <div id="message">驗證身分中...</div>
+  <div id="list-container" style="padding: 0 20px;"></div>
 
-<!-- 核准彈窗 -->
-<div id="modal-box" class="modal">
-  <div class="modal-content">
-    <div class="text-sm">核准申請</div>
-    <div class="text-grey mt-1">請指定商店 SID</div>
-    <input type="text" id="input-sid" class="input-sid" placeholder="例：ST_001">
-    <div class="flex gap-4 mt-6">
-      <button onclick="closeModal()" class="flex-1 text-grey text-sm">取消</button>
-      <button onclick="confirmApprove()" class="flex-1 py-2 bg-[#06C755] text-white rounded text-sm">確認</button>
-    </div>
-  </div>
-</div>
+  <input type="text" id="copyInput" style="position: absolute; left: -9999px;">
 
-<script>
-  const LIFF_ID = '2009367829-5bIWGL8O';
-  const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-  let uid = '', currentTab = '待審核', selectedUid = '', suggestedSid = '';
+  <script>
+    const LIFF_ID = '2009367829-5bIWGL8O';
+    const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
+    let adminUid = '';
+    let currentTab = '待審核';
 
-  async function init() {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) { liff.login(); return; }
-    uid = (await liff.getProfile()).userId;
-    loadList();
-  }
-
-  function switchTab(status) {
-    currentTab = status;
-    document.getElementById('tab-pending').classList.toggle('tab-active', status === '待審核');
-    document.getElementById('tab-approved').classList.toggle('tab-active', status === '已核准');
-    loadList();
-  }
-
-  async function loadList() {
-    const container = document.getElementById('list-container');
-    container.innerHTML = '<div class="p-20 text-center text-grey">資料處理中...</div>';
-    
-    try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'get_dealers', admin_uid: uid, targetStatus: currentTab })
-      });
-      const result = await res.json();
-      
-      if (result.status === 'success') {
-        suggestedSid = result.suggestedSid;
-        renderRows(result.list); 
-      } else {
-        container.innerHTML = `<div class="p-10 text-center text-red-400 text-xs">${result.message}</div>`;
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: window.location.href });
+          return;
+        }
+        const profile = await liff.getProfile();
+        adminUid = profile.userId;
+        
+        // 嚴格比對管理員 UID
+        if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
+          document.getElementById('message').innerText = '權限錯誤：您的 UID 不具備管理員權限。';
+          return;
+        }
+        
+        loadDealers();
+      } catch (err) {
+        showError('LIFF 初始化失敗', err);
       }
-    } catch (e) {
-      container.innerHTML = `<div class="p-10 text-center text-red-400 text-xs">後端無回應，請確認 GAS 授權。</div>`;
-    }
-  }
-
-  function renderRows(list) {
-    const container = document.getElementById('list-container');
-    if (!list || list.length === 0) {
-      container.innerHTML = `<div class="p-20 text-center text-grey text-xs">暫無資料</div>`;
-      return;
     }
 
-    container.innerHTML = list.map(item => {
-      const url = `https://saas.ares-co2026.workers.dev/?p=${item.p}`;
-      return `
-        <div class="item-row">
-          <div class="flex justify-between items-start">
-            <div class="flex-1">
-              <div class="text-grey">${item.company || '個人'}</div>
-              <div class="text-title">${item.name}</div>
-              ${currentTab === '已核准' ? `
-                <div class="text-grey mt-1">ID: ${item.sid}</div>
-                <a href="${url}" target="_blank" class="link-blue">${url}</a>
-                <div class="copy-tag" onclick="copyUrl('${url}')">複製網址</div>
-              ` : ''}
-            </div>
-            ${currentTab === '待審核' ? `
-              <button onclick="openModal('${item.uid}')" class="btn-approve">核准</button>
-            ` : ''}
+    function switchTab(status) {
+      currentTab = status;
+      document.getElementById('tab-pending').className = status === '待審核' ? 'tab active' : 'tab';
+      document.getElementById('tab-approved').className = status === '已核准' ? 'tab active' : 'tab';
+      loadDealers();
+    }
+
+    async function loadDealers() {
+      const msgEl = document.getElementById('message');
+      const listEl = document.getElementById('list-container');
+      msgEl.innerText = '正在連線至後台伺服器...';
+      listEl.innerHTML = '';
+
+      try {
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_dealers', admin_uid: adminUid, targetStatus: currentTab })
+        });
+
+        if (!response.ok) {
+          throw new Error(`伺服器回傳錯誤代碼: ${response.status}`);
+        }
+
+        const text = await response.text();
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error('後台回傳了非 JSON 格式的內容（可能是 GAS 報錯 HTML）');
+        }
+
+        if (result.status === 'success') {
+          renderList(result.data, result.suggestedSid);
+          msgEl.innerText = '';
+        } else {
+          msgEl.innerText = '系統提示：' + (result.message || '未知錯誤');
+        }
+      } catch (err) {
+        showError('連線異常，無法驗證身分', err);
+      }
+    }
+
+    function showError(title, err) {
+      const msgEl = document.getElementById('message');
+      msgEl.innerHTML = `${title}<br><span class="error-detail">錯誤詳情: ${err.message}</span>`;
+    }
+
+    function renderList(data, suggestedSid) {
+      const container = document.getElementById('list-container');
+      if (data.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:#999; margin-top:50px;">目前沒有${currentTab}的申請。</p>`;
+        return;
+      }
+
+      let nextStNum = parseInt(suggestedSid.replace('ST_', ''), 10);
+
+      data.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const displaySid = (currentTab === '已核准' && item.sid) ? item.sid : "ST_" + ("000" + (nextStNum + index)).slice(-3);
+        const btnText = currentTab === '已核准' ? '更新/補發連結' : '核准並產生連結';
+
+        card.innerHTML = `
+          <p><strong>公司：</strong> ${item.company} | <strong>姓名：</strong> ${item.name}</p>
+          <p><strong>電話：</strong> ${item.phone}</p>
+          <div class="input-row">
+            <input type="text" id="sid_${item.uid}" value="${displaySid}">
+            <button onclick="approve('${item.uid}')">${btnText}</button>
           </div>
-          <div class="text-grey mt-2">${item.phone} · ${new Date(item.time).toLocaleDateString()} 申請</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function copyUrl(text) {
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    alert('已複製');
-  }
-
-  function openModal(targetUid) {
-    selectedUid = targetUid;
-    document.getElementById('input-sid').value = suggestedSid;
-    document.getElementById('modal-box').style.display = 'flex';
-  }
-
-  function closeModal() { document.getElementById('modal-box').style.display = 'none'; }
-
-  async function confirmApprove() {
-    const sid = document.getElementById('input-sid').value;
-    if (!sid) return;
-    closeModal();
-    try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'approve_dealer', admin_uid: uid, target_uid: selectedUid, sid: sid })
+          <div id="result_${item.uid}" class="link-box"></div>
+        `;
+        container.appendChild(card);
       });
-      const result = await res.json();
-      alert(result.message);
-      loadList();
-    } catch (e) { alert('操作異常'); }
-  }
+    }
 
-  init();
-</script>
+    async function approve(targetUid) {
+      const resultBox = document.getElementById(`result_${targetUid}`);
+      const sidInput = document.getElementById(`sid_${targetUid}`).value.trim();
+      if (!sidInput) return alert('請輸入 SID');
+
+      resultBox.style.display = 'block';
+      resultBox.innerText = '處理中...';
+
+      try {
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'approve_dealer', admin_uid: adminUid, target_uid: targetUid, sid: sidInput })
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+          resultBox.style.background = '#d4edda';
+          resultBox.innerHTML = `
+            <div style="font-weight:bold; color:#155724; margin-bottom:5px;">✅ 處理完成</div>
+            <div id="url_${targetUid}" style="color:#004085; font-size:11px;">${result.link}</div>
+            <button class="copy-btn" onclick="copyText('url_${targetUid}')">複製連結</button>
+          `;
+        } else {
+          resultBox.style.background = '#f8d7da';
+          resultBox.innerText = result.message;
+        }
+      } catch (err) { 
+        resultBox.innerText = '更新失敗: ' + err.message; 
+      }
+    }
+
+    function copyText(elId) {
+      const text = document.getElementById(elId).innerText;
+      const input = document.getElementById('copyInput');
+      input.value = text;
+      input.select();
+      document.execCommand('copy');
+      alert('已複製到剪貼簿！');
+    }
+
+    initLiff();
+  </script>
 </body>
 </html>
