@@ -13,18 +13,22 @@
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    header { background: #06C755; color: white; padding: 30px 20px; text-align: center; }
-    header h2 { margin: 0; font-size: 15px; font-weight: 400; letter-spacing: 1px; }
+    /* 頂部標頭 - LINE 綠色 (#06C755) */
+    header { background: #06C755; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .header-left { display: flex; align-items: center; gap: 8px; }
+    .header-title { font-size: 17px; font-weight: 400; letter-spacing: 0.5px; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .user-avatar-top { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #EEE; }
 
     .user-profile { background: #FFFFFF; padding: 20px; display: flex; align-items: center; border-bottom: 1px solid #EEEEEE; }
-    .user-avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; object-fit: cover; }
+    .user-avatar-mid { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; object-fit: cover; }
     .user-info { flex: 1; }
     .user-name { margin: 0; font-size: 15px; color: #333333; }
-    .user-role { font-size: 15px; color: #06C755; margin-top: 4px; display: block; }
+    .user-role { font-size: 15px; color: #06C755; margin-top: 4px; display: none; }
 
     .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
 
-    /* 清單選單樣式 (扁平化，無包框) */
+    /* 清單選單樣式 */
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
     .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
     .menu-item:last-child { border-bottom: none; }
@@ -41,7 +45,7 @@
     .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
     .btn-dark { background: #333333; }
 
-    /* 底部導覽列 (用戶版 4 格) */
+    /* 底部導覽列 */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
@@ -54,85 +58,77 @@
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">系統連線中...</div>
+  <div id="loader" class="loading-overlay">系統載入中...</div>
 
   <div class="app-container">
-    <header><h2 id="brand-name">服務中心</h2></header>
+    <header>
+      <div class="header-left">
+        <i data-lucide="home" style="width: 20px; height: 20px;"></i>
+        <span id="brand-name-header" class="header-title">服務中心</span>
+      </div>
+      <div class="header-right">
+        <img id="user-avatar-top" class="user-avatar-top" src="">
+        <!-- 管理員切換按鈕：僅在 isAdmin 為 true 時顯示 -->
+        <i id="btn-switch-admin" data-lucide="arrow-left-right" class="hidden" style="color: white; width: 20px; height: 20px; cursor: pointer;" onclick="switchToAdmin()"></i>
+      </div>
+    </header>
 
     <div class="user-profile">
-      <img id="user-avatar" class="user-avatar" src="">
+      <img id="user-avatar-mid" class="user-avatar-mid" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">正在識別身份...</p>
-        <span id="role-text" class="user-role" style="display:none;">管理權限已開啟</span>
+        <p id="user-display-name" class="user-name">辨識身份中...</p>
+        <span id="role-text" class="user-role">管理權限已開啟</span>
       </div>
-    </div>
-
-    <!-- 管理入口 (僅管理員可見) -->
-    <div id="admin-gate" class="hidden">
-      <div class="section-title">管理功能</div>
-      <button class="btn-action btn-dark" onclick="location.href='active.html?p='+p">進入管理員後台</button>
     </div>
 
     <main id="main-content">
       <!-- 1. 首頁選單 -->
       <div id="view-home">
-        <div class="section-title">功能選單</div>
+        <div class="section-title">商圈服務</div>
         <div class="menu-list">
           <div class="menu-item" onclick="switchView('profile')">
             <h3>📇 數位名片設定</h3>
-            <p>完善產業資訊，開啟 AI 配對功能。</p>
+            <p>填寫產業與資源，開啟 AI 商機配對。</p>
           </div>
           <div class="menu-item" onclick="switchView('activity')">
             <h3>📅 活動報名中心</h3>
-            <p>查看並報名此商圈最新的活動。</p>
-          </div>
-          <div class="menu-item" onclick="switchView('ai')">
-            <h3>🤖 AI 智能配對</h3>
-            <p>分析資源與需求，尋找合作商機。</p>
+            <p>查看並參加商圈最新的優質活動。</p>
           </div>
         </div>
       </div>
 
-      <!-- 2. 活動清單 -->
+      <!-- 2. 活動報名區 -->
       <div id="view-activity" class="hidden">
-        <div class="section-title">目前進行中的活動</div>
+        <div class="section-title">進行中的活動</div>
         <div id="activity-list-container" class="menu-list">
-          <div style="padding: 20px; color: #999; text-align: center;">載入活動資料中...</div>
+          <div style="padding: 40px; color: #999; text-align: center;">正在獲取最新活動...</div>
         </div>
       </div>
 
-      <!-- 3. 名片設定 -->
+      <!-- 3. 名片設定區 -->
       <div id="view-profile" class="hidden">
-        <div class="section-title">我的數位名片</div>
+        <div class="section-title">我的商務名片</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
         <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="input-box"></div>
-        <div class="field-group"><label class="field-label">我的資源</label><textarea id="f-resource" class="textarea-box"></textarea></div>
-        <div class="field-group"><label class="field-label">我的需求</label><textarea id="f-need" class="textarea-box"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">更新名片資料</button>
+        <div class="field-group"><label class="field-label">提供資源</label><textarea id="f-resource" class="textarea-box"></textarea></div>
+        <div class="field-group"><label class="field-label">尋求需求</label><textarea id="f-need" class="textarea-box"></textarea></div>
+        <button class="btn-action" onclick="saveProfile()">更新名片內容</button>
       </div>
 
-      <!-- 4. AI 配對 -->
+      <!-- 4. AI 配對區 -->
       <div id="view-ai" class="hidden">
-        <div class="section-title">AI 智能媒合建議</div>
-        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">點擊啟動分析...</div>
+        <div class="section-title">AI 智能配對分析</div>
+        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">完善名片資料後，點擊啟動媒合分析。</div>
         <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
       </div>
     </main>
 
     <nav id="bottom-nav">
-      <div class="nav-item active" id="nav-home" onclick="switchView('home')">
-        <div class="icon-box"><i data-lucide="home"></i></div><span class="nav-text">首頁</span>
-      </div>
-      <div class="nav-item" id="nav-profile" onclick="switchView('profile')">
-        <i data-lucide="contact"></i><span class="nav-text">名片</span>
-      </div>
-      <div class="nav-item" id="nav-activity" onclick="switchView('activity')">
-        <i data-lucide="calendar"></i><span class="nav-text">活動</span>
-      </div>
-      <div class="nav-item" id="nav-ai" onclick="switchView('ai')">
-        <i data-lucide="brain-circuit"></i><span class="nav-text">配對</span>
-      </div>
+      <div class="nav-item active" id="nav-home" onclick="switchView('home')"><div class="icon-box"><i data-lucide="home"></i></div><span class="nav-text">首頁</span></div>
+      <div class="nav-item" id="nav-profile" onclick="switchView('profile')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
+      <div class="nav-item" id="nav-activity" onclick="switchView('activity')"><i data-lucide="calendar"></i><span class="nav-text">活動</span></div>
+      <div class="nav-item" id="nav-ai" onclick="switchView('ai')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
     </nav>
   </div>
 
@@ -146,13 +142,13 @@
       const params = new URLSearchParams(window.location.search);
       p = params.get('p');
       if (!p) { document.getElementById('loader').innerText = '缺少 p 參數'; return; }
-
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        document.getElementById('user-avatar').src = profile.pictureUrl || '';
+        document.getElementById('user-avatar-top').src = profile.pictureUrl || '';
+        document.getElementById('user-avatar-mid').src = profile.pictureUrl || '';
         document.getElementById('user-display-name').innerText = profile.displayName;
         await loadHubData();
       } catch (err) { console.error(err); } 
@@ -165,11 +161,14 @@
       if (result.status === 'success') {
         const d = result.data;
         isAdmin = d.isAdmin;
-        document.getElementById('brand-name').innerText = d.brandName || "服務中心";
+        document.getElementById('brand-name-header').innerText = d.brandName || "服務中心";
+        
+        // 關鍵：管理員權限同步，顯示返回管理後台的按鈕
         if (isAdmin) {
+          document.getElementById('btn-switch-admin').classList.remove('hidden');
           document.getElementById('role-text').style.display = 'block';
-          document.getElementById('admin-gate').classList.remove('hidden');
         }
+
         if (d.myProfile) {
           document.getElementById('f-name').value = d.myProfile.name || '';
           document.getElementById('f-job').value = d.myProfile.job || '';
@@ -184,13 +183,13 @@
     function renderActivities(list) {
       const container = document.getElementById('activity-list-container');
       if (!list || list.length === 0) {
-        container.innerHTML = '<div style="padding: 40px; color: #CCC; text-align: center;">目前無公開活動</div>';
+        container.innerHTML = '<div style="padding: 40px; color: #CCC; text-align: center;">目前尚無公開活動</div>';
         return;
       }
       container.innerHTML = list.map(act => `
         <div class="menu-item">
           <h3>${act.name}</h3>
-          <p>${act.type} | ${act.desc || '查看詳情'}</p>
+          <p>${act.type} | ${act.desc || '點擊查看詳情'}</p>
         </div>
       `).join('');
     }
@@ -198,13 +197,11 @@
     function switchView(v) {
       document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
       document.getElementById('view-' + v).classList.remove('hidden');
-      
       document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.remove('active');
         const box = el.querySelector('.icon-box');
         if (box) { el.removeChild(box); el.insertAdjacentHTML('afterbegin', box.innerHTML); }
       });
-
       const target = document.getElementById('nav-' + v);
       if (target) {
         target.classList.add('active');
@@ -219,8 +216,11 @@
     async function saveProfile() {
       const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
       await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
-      alert('名片已更新');
+      alert('名片資料已成功更新');
     }
+
+    // 回到後台功能
+    function switchToAdmin() { window.location.href = `active.html?p=${p}`; }
 
     init();
   </script>
