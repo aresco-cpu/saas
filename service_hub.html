@@ -13,10 +13,10 @@
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    /* 頂部標頭 - LINE 綠色 (#06C755) */
+    /* 頂部標頭 - LINE 綠色 (#06C755) 對應 image_68769f.png */
     header { background: #06C755; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .header-left { display: flex; align-items: center; gap: 8px; }
-    .header-title { font-size: 17px; font-weight: 400; letter-spacing: 0.5px; }
+    .header-title { font-size: 17px; font-weight: 400; }
     .header-right { display: flex; align-items: center; gap: 12px; }
     .user-avatar-top { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #EEE; }
 
@@ -68,7 +68,7 @@
       </div>
       <div class="header-right">
         <img id="user-avatar-top" class="user-avatar-top" src="">
-        <!-- 管理員切換按鈕：僅在 isAdmin 為 true 時顯示 -->
+        <!-- 核心功能：雙向切換按鈕，僅管理員可見 -->
         <i id="btn-switch-admin" data-lucide="arrow-left-right" class="hidden" style="color: white; width: 20px; height: 20px; cursor: pointer;" onclick="switchToAdmin()"></i>
       </div>
     </header>
@@ -76,51 +76,51 @@
     <div class="user-profile">
       <img id="user-avatar-mid" class="user-avatar-mid" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">辨識身份中...</p>
+        <p id="user-display-name" class="user-name">正在載入...</p>
         <span id="role-text" class="user-role">管理權限已開啟</span>
       </div>
     </div>
 
     <main id="main-content">
-      <!-- 1. 首頁選單 -->
       <div id="view-home">
-        <div class="section-title">商圈服務</div>
+        <div class="section-title">商務選單</div>
         <div class="menu-list">
           <div class="menu-item" onclick="switchView('profile')">
-            <h3>📇 數位名片設定</h3>
-            <p>填寫產業與資源，開啟 AI 商機配對。</p>
+            <h3>📇 我的數位名片</h3>
+            <p>設定產業與需求，開啟 AI 商機配對。</p>
           </div>
           <div class="menu-item" onclick="switchView('activity')">
-            <h3>📅 活動報名中心</h3>
-            <p>查看並參加商圈最新的優質活動。</p>
+            <h3>📅 活動報名</h3>
+            <p>查看並報名此商圈最新的活動。</p>
+          </div>
+          <div class="menu-item" onclick="switchView('ai')">
+            <h3>🤖 AI 智能配對</h3>
+            <p>分析資源與需求，尋找中心內的潛在夥伴。</p>
           </div>
         </div>
       </div>
 
-      <!-- 2. 活動報名區 -->
       <div id="view-activity" class="hidden">
-        <div class="section-title">進行中的活動</div>
+        <div class="section-title">進行中活動</div>
         <div id="activity-list-container" class="menu-list">
-          <div style="padding: 40px; color: #999; text-align: center;">正在獲取最新活動...</div>
+          <div style="padding: 40px; color: #999; text-align: center;">載入活動中...</div>
         </div>
       </div>
 
-      <!-- 3. 名片設定區 -->
       <div id="view-profile" class="hidden">
-        <div class="section-title">我的商務名片</div>
+        <div class="section-title">數位名片設定</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
         <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="input-box"></div>
         <div class="field-group"><label class="field-label">提供資源</label><textarea id="f-resource" class="textarea-box"></textarea></div>
         <div class="field-group"><label class="field-label">尋求需求</label><textarea id="f-need" class="textarea-box"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">更新名片內容</button>
+        <button class="btn-action" onclick="saveProfile()">儲存更新</button>
       </div>
 
-      <!-- 4. AI 配對區 -->
       <div id="view-ai" class="hidden">
-        <div class="section-title">AI 智能配對分析</div>
-        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">完善名片資料後，點擊啟動媒合分析。</div>
-        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
+        <div class="section-title">AI 媒合建議</div>
+        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">點擊按鈕啟動 AI 分析。</div>
+        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合</button>
       </div>
     </main>
 
@@ -141,7 +141,8 @@
       lucide.createIcons();
       const params = new URLSearchParams(window.location.search);
       p = params.get('p');
-      if (!p) { document.getElementById('loader').innerText = '缺少 p 參數'; return; }
+      if (!p) { document.getElementById('loader').innerText = '缺少商店參數'; return; }
+
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
@@ -163,7 +164,7 @@
         isAdmin = d.isAdmin;
         document.getElementById('brand-name-header').innerText = d.brandName || "服務中心";
         
-        // 關鍵：管理員權限同步，顯示返回管理後台的按鈕
+        // 如果是管理員，顯示返回後台按鈕
         if (isAdmin) {
           document.getElementById('btn-switch-admin').classList.remove('hidden');
           document.getElementById('role-text').style.display = 'block';
@@ -183,7 +184,7 @@
     function renderActivities(list) {
       const container = document.getElementById('activity-list-container');
       if (!list || list.length === 0) {
-        container.innerHTML = '<div style="padding: 40px; color: #CCC; text-align: center;">目前尚無公開活動</div>';
+        container.innerHTML = '<div style="padding: 40px; color: #CCC; text-align: center;">目前無公開活動</div>';
         return;
       }
       container.innerHTML = list.map(act => `
@@ -213,14 +214,13 @@
       lucide.createIcons();
     }
 
+    function switchToAdmin() { window.location.href = `active.html?p=${p}`; }
+
     async function saveProfile() {
       const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
       await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
-      alert('名片資料已成功更新');
+      alert('名片已更新');
     }
-
-    // 回到後台功能
-    function switchToAdmin() { window.location.href = `active.html?p=${p}`; }
 
     init();
   </script>
