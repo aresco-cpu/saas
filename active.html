@@ -1,132 +1,111 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html class="light" lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>建立活動</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>建立新活動</title>
+  
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          colors: { primary: "#06C755", "text-main": "#111111", "text-muted": "#8e8e93" }
+        }
+      }
+    }
+  </script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #fff; color: #111; -webkit-font-smoothing: antialiased; }
-    .nav-tabs { display: flex; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: #fff; z-index: 20; }
-    .tab { flex: 1; text-align: center; padding: 14px 0; font-size: 14px; color: #8e8e93; cursor: pointer; }
-    .tab-active { color: #06C755; border-bottom: 2px solid #06C755; }
+    .material-symbols-outlined { vertical-align: middle; }
+    body { background-color: #ffffff; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1.5rem); }
     
-    .section-label { font-size: 11px; color: #8e8e93; margin-bottom: 4px; display: block; }
-    .input-line { width: 100%; padding: 8px 0; border: none; border-bottom: 1px solid #f0f0f0; font-size: 15px; outline: none; border-radius: 0; background: transparent; }
-    .input-line:focus { border-bottom-color: #06C755; }
+    /* LINE 原生風格：極簡、無包框、無粗體 */
+    .input-label { @apply block text-[13px] text-text-muted mb-1 font-normal; }
+    .custom-input { @apply w-full h-[44px] px-0 bg-transparent border-0 border-b border-gray-100 rounded-none outline-none focus:border-primary focus:ring-0 transition-colors text-text-main text-[15px] shadow-none; }
+    .textarea-block { @apply w-full p-3 bg-gray-50 border-0 rounded-lg outline-none focus:ring-1 focus:ring-primary transition-colors text-[14px] text-text-main resize-none leading-relaxed shadow-none; }
+
+    .btn-primary { @apply w-full py-4 bg-primary text-white font-medium text-[16px] active:opacity-80 transition-opacity flex items-center justify-center gap-2; }
+    .tab-btn { @apply flex-1 py-3 text-[14px] text-text-muted border-b-2 border-transparent transition-all; }
+    .tab-active { @apply text-primary border-primary; }
+
+    .nav-btn { @apply flex flex-col items-center justify-center flex-1 text-text-muted; }
+    .nav-active { @apply text-text-main font-medium; }
     
-    .row-item { padding: 15px 20px; border-bottom: 1px solid #f8f8f8; }
-    .btn-submit { background: #06C755; color: white; width: 100%; padding: 16px; font-size: 16px; border: none; position: fixed; bottom: 0; left: 0; }
-    
-    .img-placeholder { width: 100%; height: 140px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; color: #c7c7cc; font-size: 13px; cursor: pointer; overflow: hidden; }
-    .img-preview { width: 100%; height: 100%; object-fit: cover; }
-    
-    .textarea-box { width: 100%; height: 100px; padding: 10px; background: #f9f9f9; border: none; border-radius: 4px; font-size: 14px; outline: none; margin-top: 5px; resize: none; }
-    .btn-ai { font-size: 10px; color: #007aff; border: 1px solid #007aff; padding: 1px 6px; border-radius: 3px; float: right; cursor: pointer; }
-    
-    .batch-item { padding: 10px 0; border-top: 1px dashed #eee; margin-top: 10px; position: relative; }
-    .btn-remove { position: absolute; right: 0; top: 10px; color: #ff3b30; font-size: 11px; cursor: pointer; }
-    .add-more { color: #007aff; font-size: 13px; text-align: center; padding: 15px; cursor: pointer; }
     .hidden { display: none; }
   </style>
 </head>
-<body class="pb-24">
+<body class="text-text-main min-h-screen">
 
-<nav class="nav-tabs">
-  <div onclick="switchMode('quick')" id="tab-quick" class="tab tab-active">快速</div>
-  <div onclick="switchMode('formal')" id="tab-formal" class="tab">正式</div>
-  <div onclick="switchMode('batch')" id="tab-batch" class="tab">梯次</div>
-</nav>
+<div id="app" class="max-w-md mx-auto min-h-screen flex flex-col relative bg-white">
+  
+  <!-- 頂部導航 -->
+  <nav class="sticky top-0 z-40 bg-white px-5 py-3 flex justify-between items-center border-b border-gray-50">
+    <div class="text-lg font-medium flex items-center gap-2">建立活動</div>
+    <div id="user-badge" class="hidden"><img id="user-avatar" class="w-8 h-8 rounded-full border border-gray-100 shadow-sm"></div>
+  </nav>
 
-<div id="form-container">
-  <!-- 1. 快速上架 -->
-  <div id="view-quick">
-    <div class="row-item">
-      <span class="section-label">活動名稱</span>
-      <input type="text" id="q-name" class="input-line" placeholder="例：第 88 次定期例會">
+  <main class="flex-1 overflow-y-auto pb-32">
+    <!-- 模式切換 -->
+    <div class="flex border-b border-gray-50 sticky top-[53px] bg-white z-30">
+      <button onclick="switchMode('quick')" id="tab-quick" class="tab-btn tab-active">快速匯入</button>
+      <button onclick="switchMode('formal')" id="tab-formal" class="tab-btn">正式規格</button>
+      <button onclick="switchMode('batch')" id="tab-batch" class="tab-btn">梯次建立</button>
     </div>
-    <div class="row-item flex gap-4">
-      <div class="flex-1">
-        <span class="section-label">預設身分</span>
-        <select id="q-identity" class="input-line">
-          <option value="會員">會員</option>
-          <option value="來賓">來賓</option>
-        </select>
-      </div>
-      <div class="flex-1">
-        <span class="section-label">開始時間</span>
-        <input type="datetime-local" id="q-start" class="input-line text-xs">
-      </div>
-    </div>
-    <div class="row-item">
-      <span class="section-label">預約名單 (每行一個姓名)</span>
-      <textarea id="q-names" class="textarea-box" placeholder="王小明&#10;李大華..."></textarea>
-    </div>
-  </div>
 
-  <!-- 2. 正式規格 -->
-  <div id="view-formal" class="hidden">
-    <div class="row-item">
-      <span class="section-label">封面圖片 (自動壓縮)</span>
-      <div onclick="document.getElementById('file-in').click()" class="img-placeholder">
-        <span id="hint-text">點擊選取相片</span>
-        <img id="prev" class="img-preview hidden">
+    <!-- 1. 快速匯入模式 -->
+    <div id="view-quick" class="p-5 space-y-6">
+      <div><label class="input-label">活動名稱</label><input type="text" id="q-name" class="custom-input" placeholder="例如：第 88 次定期例會"></div>
+      <div class="grid grid-cols-2 gap-5">
+        <div><label class="input-label">活動類型</label><select id="q-type" class="custom-input"><option>例會</option><option>課程</option><option>講座</option><option>其他</option></select></div>
+        <div><label class="input-label">預設身份</label><select id="q-identity" class="custom-input"><option>會員</option><option>來賓</option></select></div>
       </div>
-      <input type="file" id="file-in" class="hidden" accept="image/*" onchange="handleImg(this)">
-      <input type="hidden" id="d-img">
-    </div>
-    <div class="row-item">
-      <span class="section-label">正式標題</span>
-      <input type="text" id="d-name" class="input-line">
-    </div>
-    <div class="row-item flex gap-4">
-      <div class="flex-1">
-        <span class="section-label">費用 (0為免費)</span>
-        <input type="number" id="d-price" class="input-line" value="0">
-      </div>
-      <div class="flex-1">
-        <span class="section-label">人數上限</span>
-        <input type="number" id="d-limit" class="input-line" placeholder="不限">
+      <div><label class="input-label">開始時間</label><input type="datetime-local" id="q-start" class="custom-input !text-xs text-gray-500"></div>
+      <div>
+        <label class="input-label">預約名單 (每行一個姓名)</label>
+        <textarea id="q-names" class="textarea-block h-40" placeholder="王小明&#10;李大華..."></textarea>
       </div>
     </div>
-    <div class="row-item">
-      <div class="btn-ai" onclick="aiBoost('d-desc')">AI 優化文案</div>
-      <span class="section-label">詳細說明</span>
-      <textarea id="d-desc" class="textarea-box" placeholder="活動細節..."></textarea>
-    </div>
-  </div>
 
-  <!-- 3. 系列梯次 (梯次版本) -->
-  <div id="view-batch" class="hidden">
-    <div class="row-item">
-      <span class="section-label">課程系列名稱</span>
-      <input type="text" id="b-name" class="input-line" placeholder="例：AI 行銷實戰班">
-    </div>
-    <div class="row-item">
-      <span class="section-label">課程總綱</span>
-      <textarea id="b-desc" class="textarea-box" placeholder="此系列的統一介紹..."></textarea>
-    </div>
-    <div id="batch-list">
-      <div class="row-item batch-item">
-        <div class="flex gap-2">
-          <div class="flex-1">
-            <span class="section-label">梯次/單堂名稱</span>
-            <input type="text" class="input-line b-sub-name" placeholder="第一堂：入門">
-          </div>
-          <div class="flex-1">
-            <span class="section-label">日期時間</span>
-            <input type="datetime-local" class="input-line b-sub-time text-xs">
-          </div>
-        </div>
-        <input type="text" class="input-line b-sub-loc" placeholder="地點/會議連結">
+    <!-- 2. 正式規格模式 -->
+    <div id="view-formal" class="hidden p-5 space-y-6">
+      <div onclick="document.getElementById('file-formal').click()" class="w-full h-44 bg-gray-50 rounded-lg flex flex-col items-center justify-center cursor-pointer overflow-hidden border border-dashed border-gray-200 relative">
+        <div id="hint-formal" class="text-center text-text-muted text-sm"><span class="material-symbols-outlined text-3xl mb-1">add_photo_alternate</span><br>上傳封面</div>
+        <img id="prev-formal" class="hidden w-full h-full object-cover absolute inset-0">
+        <input type="file" id="file-formal" class="hidden" accept="image/*" onchange="handleImg(this, 'formal')">
+        <input type="hidden" id="img-formal">
+      </div>
+      <div><label class="input-label">正式活動標題</label><input type="text" id="f-name" class="custom-input"></div>
+      <div class="grid grid-cols-2 gap-5">
+        <div><label class="input-label">費用 (0為免費)</label><input type="number" id="f-price" class="custom-input" value="0"></div>
+        <div><label class="input-label">人數上限</label><input type="number" id="f-limit" class="custom-input" placeholder="不限"></div>
+      </div>
+      <div>
+        <div onclick="aiBoost('f-desc')" class="text-[11px] text-blue-500 float-right cursor-pointer">🤖 AI 優化</div>
+        <label class="input-label">活動詳細介紹</label>
+        <textarea id="f-desc" class="textarea-block h-32"></textarea>
       </div>
     </div>
-    <div class="add-more" onclick="addBatchRow()">+ 新增一個梯次</div>
-  </div>
+
+    <!-- 3. 梯次建立模式 -->
+    <div id="view-batch" class="hidden p-5 space-y-6">
+      <div><label class="input-label">系列課程/活動標題</label><input type="text" id="b-name" class="custom-input" placeholder="例如：2026 AI 轉型實戰營"></div>
+      <div><label class="input-label">系列總綱介紹</label><textarea id="b-desc" class="textarea-block h-24"></textarea></div>
+      
+      <div id="batch-items" class="space-y-4">
+        <!-- 梯次項目由 JS 動態增減 -->
+      </div>
+      <button onclick="addBatchItem()" class="w-full py-3 text-sm text-blue-500 border border-blue-50 border-dashed rounded-lg">+ 新增一個梯次</button>
+    </div>
+  </main>
+
+  <button onclick="submit()" id="btn-submit" class="fixed bottom-0 left-0 w-full btn-primary z-50 pb-safe">確認並發布</button>
 </div>
-
-<button onclick="submit()" id="btn-main" class="btn-submit">確認並發布</button>
 
 <script>
   const LIFF_ID = '2009367829-5bIWGL8O';
@@ -135,9 +114,15 @@
 
   async function init() {
     p = new URLSearchParams(window.location.search).get('p');
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) { liff.login(); return; }
-    uid = (await liff.getProfile()).userId;
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      const profile = await liff.getProfile();
+      uid = profile.userId;
+      document.getElementById('user-avatar').src = profile.pictureUrl;
+      document.getElementById('user-badge').classList.remove('hidden');
+      addBatchItem(); // 初始化一個梯次欄位
+    } catch (e) { console.error('LIFF Error', e); }
   }
 
   function switchMode(m) {
@@ -148,27 +133,21 @@
     });
   }
 
-  function addBatchRow() {
-    const div = document.createElement('div');
-    div.className = 'row-item batch-item';
-    div.innerHTML = `
-      <div class="btn-remove" onclick="this.parentElement.remove()">移除</div>
-      <div class="flex gap-2">
-        <div class="flex-1">
-          <span class="section-label">梯次/單堂名稱</span>
-          <input type="text" class="input-line b-sub-name" placeholder="新梯次">
+  function addBatchItem() {
+    const id = Date.now();
+    const html = `
+      <div id="item-${id}" class="p-4 bg-gray-50 rounded-lg relative border border-gray-100">
+        <button onclick="document.getElementById('item-${id}').remove()" class="absolute top-2 right-2 text-red-400"><span class="material-symbols-outlined text-lg">close</span></button>
+        <div class="mb-3"><label class="input-label">梯次名稱</label><input type="text" class="b-sub-name custom-input !h-8 !text-sm" placeholder="第一梯次"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="input-label">開始時間</label><input type="datetime-local" class="b-sub-start custom-input !h-8 !text-[11px] !px-0"></div>
+          <div><label class="input-label">地點/連結</label><input type="text" class="b-sub-loc custom-input !h-8 !text-sm"></div>
         </div>
-        <div class="flex-1">
-          <span class="section-label">日期時間</span>
-          <input type="datetime-local" class="input-line b-sub-time text-xs">
-        </div>
-      </div>
-      <input type="text" class="input-line b-sub-loc" placeholder="地點/會議連結">
-    `;
-    document.getElementById('batch-list').appendChild(div);
+      </div>`;
+    document.getElementById('batch-items').insertAdjacentHTML('beforeend', html);
   }
 
-  function handleImg(input) {
+  function handleImg(input, mode) {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -182,10 +161,10 @@
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = '#FFF'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
         const b64 = canvas.toDataURL('image/jpeg', 0.7);
-        document.getElementById('prev').src = b64;
-        document.getElementById('prev').classList.remove('hidden');
-        document.getElementById('hint-text').classList.add('hidden');
-        document.getElementById('d-img').value = b64;
+        document.getElementById('prev-'+mode).src = b64;
+        document.getElementById('prev-'+mode).classList.remove('hidden');
+        document.getElementById('hint-'+mode).classList.add('hidden');
+        document.getElementById('img-'+mode).value = b64;
       };
       img.src = e.target.result;
     };
@@ -194,52 +173,60 @@
 
   async function aiBoost(targetId) {
     const el = document.getElementById(targetId);
-    if(!el.value) return alert('請輸入大綱');
-    const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'ai_optimize_activity', p, content: el.value }) });
+    if(!el.value) return alert('請先輸入大綱');
+    const res = await fetch(WORKER_URL, { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'ai_optimize_activity', p, content: el.value }) 
+    });
     el.value = await res.text();
   }
 
   async function submit() {
-    const btn = document.getElementById('btn-main');
-    btn.innerText = '處理中...'; btn.disabled = true;
+    const btn = document.getElementById('btn-submit');
+    const oriText = btn.innerText;
+    btn.innerText = '正在處理並發布...'; btn.disabled = true;
 
     let payload = { action: 'create_activity', mode: currentMode, p, uid };
 
-    if (currentMode === 'quick') {
-      payload.name = document.getElementById('q-name').value;
-      payload.start = document.getElementById('q-start').value;
-      payload.identity = document.getElementById('q-identity').value;
-      payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
-    } else if (currentMode === 'formal') {
-      payload.name = document.getElementById('d-name').value;
-      payload.price = document.getElementById('d-price').value;
-      payload.limit = document.getElementById('d-limit').value;
-      payload.desc = document.getElementById('d-desc').value;
-      payload.image = document.getElementById('d-img').value;
-    } else {
-      // 梯次模式
-      payload.name = document.getElementById('b-name').value;
-      payload.desc = document.getElementById('b-desc').value;
-      const subs = [];
-      document.querySelectorAll('.batch-item').forEach(item => {
-        subs.push({
-          name: item.querySelector('.b-sub-name').value,
-          time: item.querySelector('.b-sub-time').value,
-          loc: item.querySelector('.b-sub-loc').value
-        });
-      });
-      payload.sessions = subs;
-    }
-
-    if(!payload.name) { alert('請填寫活動名稱'); btn.innerText = '確認並發布'; btn.disabled = false; return; }
-
     try {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
-      const result = await res.json();
+      if (currentMode === 'quick') {
+        payload.name = document.getElementById('q-name').value;
+        payload.start = document.getElementById('q-start').value;
+        payload.identity = document.getElementById('q-identity').value;
+        payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
+      } else if (currentMode === 'formal') {
+        payload.name = document.getElementById('f-name').value;
+        payload.price = document.getElementById('f-price').value;
+        payload.limit = document.getElementById('f-limit').value;
+        payload.desc = document.getElementById('f-desc').value;
+        payload.image = document.getElementById('img-formal').value;
+      } else {
+        payload.name = document.getElementById('b-name').value;
+        payload.desc = document.getElementById('b-desc').value;
+        payload.sessions = Array.from(document.querySelectorAll('[id^="item-"]')).map(item => ({
+          name: item.querySelector('.b-sub-name').value,
+          time: item.querySelector('.b-sub-start').value,
+          loc: item.querySelector('.b-sub-loc').value
+        }));
+      }
+
+      if(!payload.name) throw new Error('請填寫活動名稱');
+
+      const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json();
       alert(result.message);
-      location.href = 'service_hub.html?p=' + p;
-    } catch(e) { alert('發布異常'); }
-    btn.innerText = '確認並發布'; btn.disabled = false;
+      if(result.status === 'success') location.href = 'service_hub.html?p=' + p;
+    } catch(e) { 
+      alert(e.message || '發布異常，請檢查網路連線或 GAS 權限'); 
+    } finally {
+      btn.innerText = oriText; btn.disabled = false;
+    }
   }
 
   init();
