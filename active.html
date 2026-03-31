@@ -8,7 +8,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 全局規範：15px, 不加粗, LINE 原生風格, 移除方框與陰影 */
+    /* 全局規範：15px, 不加粗, LINE 原生風格 */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
@@ -23,24 +23,23 @@
 
     .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
 
-    /* 活動模組分段選擇器 */
-    .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 15px 20px; }
-    .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
-    .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-    /* 清單選單樣式 */
-    .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
-    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
-    .menu-item:last-child { border-bottom: none; }
-    .menu-item:active { background: #F8F8F8; }
-    .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
-    .menu-item p { margin: 0; font-size: 15px; color: #999999; line-height: 1.4; }
-
-    /* 表單欄位：移除多餘邊框 */
+    /* 表單區塊樣式 */
     .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
-    .field-label { font-size: 15px; color: #666666; margin-bottom: 8px; display: block; }
-    .field-input, select { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; color: #333333; background: transparent; -webkit-appearance: none; border-radius: 0; }
-    .field-textarea { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; height: 120px; resize: none; color: #333333; background: transparent; line-height: 1.5; }
+    .field-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .field-label { font-size: 15px; color: #333333; }
+    .field-tag { font-size: 13px; color: #718096; background: #EDF2F7; padding: 2px 8px; border-radius: 4px; }
+    
+    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; }
+    .row-flex { display: flex; gap: 10px; background: #FFFFFF; padding: 0 20px 15px 20px; border-bottom: 1px solid #F9F9F9; }
+    .row-flex .col { flex: 1; }
+
+    /* 上傳大圖區 */
+    .image-upload-area { border: 1px dashed #CBD5E0; border-radius: 8px; padding: 40px 20px; text-align: center; background: #FFFFFF; cursor: pointer; margin: 10px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .image-upload-area i { color: #A0AEC0; margin-bottom: 10px; width: 32px; height: 32px; }
+    .image-upload-text { color: #A0AEC0; font-size: 14px; }
+
+    /* 名單文字域 */
+    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; font-size: 15px; outline: none; height: 120px; resize: none; box-sizing: border-box; background: #F8FAFC; color: #333333; }
 
     .btn-action { width: calc(100% - 40px); margin: 20px; padding: 15px; background: #06C755; color: white; border: none; font-size: 15px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 4px; display: block; }
     .btn-dark { background: #333333; }
@@ -54,137 +53,127 @@
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
     /* 載入遮罩 */
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
     .hidden { display: none !important; }
 
-    .ai-result-box { background: #FFFFFF; padding: 20px; line-height: 1.6; white-space: pre-wrap; font-size: 15px; color: #333333; }
-    .batch-item { border-bottom: 1px solid #F0F0F0; padding-bottom: 10px; margin-bottom: 15px; }
-    .upload-box { border: 1px dashed #CBD5E0; border-radius: 8px; padding: 30px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin: 20px; }
+    .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
+    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+    .menu-item:active { background: #F8F8F8; }
+    .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
+    .menu-item p { margin: 0; font-size: 15px; color: #999999; line-height: 1.4; }
   </style>
 </head>
 <body>
   <div id="loader" class="loading-overlay">
     <div id="loader-text">系統連線中...</div>
-    <div id="loader-error" style="margin-top:20px; color:#999; font-size:12px;"></div>
   </div>
 
   <div class="app-container">
-    <header><h2 id="brand-name">管理後台</h2></header>
+    <header><h2 id="brand-name">管理中心</h2></header>
 
     <div class="user-profile">
       <img id="user-avatar" class="user-avatar" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">辨識身份中...</p>
+        <p id="user-display-name" class="user-name">辨識中...</p>
         <span id="role-text" class="user-role">管理權限已開啟</span>
       </div>
     </div>
 
     <main id="main-content">
-      <!-- 1. 建立：包含三個活動模組 -->
+      <!-- 1. 建立視圖 (按截圖還原) -->
       <div id="view-create">
-        <div class="tab-selector">
-          <div id="create-tab-quick" class="tab-item active" onclick="switchCreateMode('quick')">快速匯入</div>
-          <div id="create-tab-full" class="tab-item" onclick="switchCreateMode('full')">詳細發布</div>
-          <div id="create-tab-batch" class="tab-item" onclick="switchCreateMode('batch')">系列梯次</div>
+        <div class="field-group">
+          <div class="field-label-row"><label class="field-label">活動名稱</label></div>
+          <input id="act-name" class="input-box" placeholder="輸入活動標題...">
         </div>
 
-        <div id="create-form">
-          <div class="field-group">
-            <label class="field-label" id="label-act-name">活動名稱</label>
-            <input id="act-name" class="field-input" placeholder="輸入活動標題">
+        <div class="row-flex">
+          <div class="col">
+            <div class="field-label-row"><label class="field-label">活動類型</label></div>
+            <input id="act-type" class="input-box" value="例會">
           </div>
-
-          <!-- 快速匯入 -->
-          <div id="group-quick">
-            <div class="field-group">
-              <label class="field-label">名單內容 (每行一位)</label>
-              <textarea id="act-list" class="field-textarea" placeholder="在此貼上參與者姓名..."></textarea>
-            </div>
+          <div class="col">
+            <div class="field-label-row"><label class="field-label">預設身份</label></div>
+            <input id="act-role" class="input-box" value="會員">
           </div>
-
-          <!-- 詳細發布 -->
-          <div id="group-full" class="hidden">
-            <div class="field-group"><label class="field-label">開始時間</label><input type="datetime-local" id="act-start" class="field-input"></div>
-            <div class="field-group"><label class="field-label">結束時間</label><input type="datetime-local" id="act-end" class="field-input"></div>
-            <div class="field-group"><label class="field-label">活動詳情</label><textarea id="act-desc" class="field-textarea" placeholder="描述活動內容..."></textarea></div>
-          </div>
-
-          <!-- 系列梯次 -->
-          <div id="group-batch" class="hidden">
-            <div class="field-group"><label class="field-label">系列描述</label><textarea id="batch-desc" class="field-textarea" placeholder="此系列活動的共通說明..."></textarea></div>
-            <div id="batch-items-container">
-              <div class="field-group batch-item">
-                <label class="field-label">梯次 1 名稱與時間</label>
-                <input type="text" class="field-input batch-name" placeholder="例：第一梯次" style="margin-bottom:8px; border-bottom:1px solid #EEE">
-                <input type="datetime-local" class="field-input batch-time">
-              </div>
-            </div>
-            <div style="padding:0 20px"><button onclick="addBatchRow()" style="width:100%; padding:10px; background:none; border:1px dashed #CCC; font-size:14px; color:#999">+ 新增梯次</button></div>
-          </div>
-
-          <button class="btn-action" onclick="submitActivity()">確認建立並發布</button>
         </div>
+
+        <div class="field-group" style="border-bottom: none; padding-bottom: 0;">
+          <div class="field-label-row"><label class="field-label">宣傳大圖 (選填)</label></div>
+        </div>
+        <div class="image-upload-area" onclick="document.getElementById('act-image-file').click()">
+          <i data-lucide="image"></i>
+          <span class="image-upload-text">點擊上傳圖片</span>
+          <input type="file" id="act-image-file" class="hidden" accept="image/*">
+        </div>
+
+        <div class="field-group">
+          <div class="field-label-row">
+            <label class="field-label">名單內容</label>
+            <span class="field-tag">支援批次輸入</span>
+          </div>
+          <textarea id="act-list" class="textarea-box" placeholder="請貼上參與者姓名，每行一位..."></textarea>
+        </div>
+
+        <button class="btn-action" onclick="submitActivity()">確認並建立活動</button>
       </div>
 
-      <!-- 2. 核銷 -->
+      <!-- 2. 核銷視圖 -->
       <div id="view-checkin" class="hidden">
-        <div class="section-title">簽到核銷</div>
+        <div class="section-title">活動簽到</div>
         <div class="field-group">
-          <select id="event-selector" onchange="loadRegistrants()"><option value="">讀取活動中...</option></select>
+          <select id="event-selector" class="input-box" onchange="loadRegistrants()"><option value="">載入中...</option></select>
         </div>
         <div id="registrant-list" class="menu-list"></div>
       </div>
 
-      <!-- 3. CRM -->
+      <!-- 3. CRM 視圖 -->
       <div id="view-crm" class="hidden">
-        <div class="section-title">會員參與統計</div>
+        <div class="section-title">會員總覽</div>
         <div id="crm-container" class="menu-list"></div>
       </div>
 
-      <!-- 4. 配對 -->
+      <!-- 4. 配對視圖 -->
       <div id="view-ai" class="hidden">
-        <div class="section-title">AI 智能配對</div>
-        <div id="ai-content" class="ai-result-box">啟動 AI 媒合分析，尋找潛在商機。</div>
-        <button class="btn-action btn-dark" onclick="getAiMatches()">執行 AI 媒合</button>
+        <div class="section-title">AI 智能商業配對</div>
+        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6;">點擊按鈕啟動媒合。</div>
+        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
       </div>
 
-      <!-- 5. 名片 (含 OCR) -->
+      <!-- 5. 名片視圖 -->
       <div id="view-card" class="hidden">
-        <div class="section-title">名片通訊錄管理</div>
-        <div class="upload-box" onclick="document.getElementById('ocr-file').click()">
-          <i data-lucide="camera"></i><p>掃描紙本名片 (AI 辨識)</p>
-        </div>
-        <input type="file" id="ocr-file" class="hidden" accept="image/*" onchange="handleOcr(this)">
-        <div class="field-group"><label class="field-label">姓名</label><input id="card-name" class="field-input"></div>
-        <div class="field-group"><label class="field-label">公司</label><input id="card-company" class="field-input"></div>
-        <div class="field-group"><label class="field-label">職稱</label><input id="card-job" class="field-input"></div>
-        <button class="btn-action">儲存至名片盒</button>
+        <div class="section-title">個人名片設定</div>
+        <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
+        <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
+        <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="input-box"></div>
+        <div class="field-group"><label class="field-label">資源</label><textarea id="f-resource" class="textarea-box" style="background:#FFF"></textarea></div>
+        <div class="field-group"><label class="field-label">需求</label><textarea id="f-need" class="textarea-box" style="background:#FFF"></textarea></div>
+        <button class="btn-action" onclick="saveProfile()">儲存並更新名片</button>
       </div>
 
-      <!-- 6. 參數 -->
+      <!-- 6. 參數視圖 -->
       <div id="view-settings" class="hidden">
         <div class="section-title">系統連線設定</div>
-        <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="field-input"></div>
-        <div class="field-group"><label class="field-label">Telegram Chat ID</label><input id="set-tg-chatid" class="field-input"></div>
-        <button class="btn-action btn-dark" onclick="saveSettings()">儲存設定</button>
+        <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="input-box"></div>
+        <div class="field-group"><label class="field-label">Telegram Chat ID</label><input id="set-tg-chatid" class="input-box"></div>
+        <button class="btn-action btn-dark" onclick="saveSettings()">儲存系統參數</button>
       </div>
     </main>
 
-    <!-- 底部 6 格導覽列 -->
     <nav id="bottom-nav">
       <div class="nav-item active" id="nav-create" onclick="switchNav('create')"><div class="icon-box"><i data-lucide="plus-circle"></i></div><span class="nav-text">建立</span></div>
       <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
       <div class="nav-item" id="nav-crm" onclick="switchNav('crm')"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
-      <div class="nav-item" id="nav-ai" onclick="switchView('ai')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
-      <div class="nav-item" id="nav-card" onclick="switchView('card')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
-      <div class="nav-item" id="nav-settings" onclick="switchView('settings')"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
+      <div class="nav-item" id="nav-ai" onclick="switchNav('ai')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
+      <div class="nav-item" id="nav-card" onclick="switchNav('card')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
+      <div class="nav-item" id="nav-settings" onclick="switchNav('settings')"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
     </nav>
   </div>
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-    let uid = '', p = '', createMode = 'quick';
+    let uid = '', p = '';
 
     const safetyTimeout = setTimeout(() => showLoader(false), 6000);
 
@@ -192,15 +181,17 @@
       lucide.createIcons();
       const urlParams = new URLSearchParams(window.location.search);
       p = urlParams.get('p');
-      if (!p) { document.getElementById('loader-text').innerText = '缺少商店參數 p'; return; }
+      if (!p) { document.getElementById('loader-text').innerText = '缺少 p 參數'; return; }
 
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        document.getElementById('user-avatar').src = profile.pictureUrl || '';
-        document.getElementById('user-display-name').innerText = profile.displayName;
+        const avatarEl = document.getElementById('user-avatar');
+        const nameEl = document.getElementById('user-display-name');
+        if(avatarEl) avatarEl.src = profile.pictureUrl || '';
+        if(nameEl) nameEl.innerText = profile.displayName;
         await loadHubData();
       } catch (err) {
         console.error(err);
@@ -211,16 +202,30 @@
     }
 
     async function loadHubData() {
-      const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
-      const result = await res.json();
-      if (result.status === 'success') {
-        const d = result.data;
-        document.getElementById('brand-name').innerText = d.brandName || "管理中心";
-        const sel = document.getElementById('event-selector');
-        if (sel && d.activities) {
-          sel.innerHTML = '<option value="">選擇活動...</option>' + d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_service_hub', p, uid })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          const d = result.data;
+          const bn = document.getElementById('brand-name');
+          if(bn) bn.innerText = d.brandName || "管理中心";
+          const sel = document.getElementById('event-selector');
+          if (sel && d.activities) {
+            sel.innerHTML = '<option value="">選擇活動...</option>' + d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+          }
+          if (d.myProfile) {
+            document.getElementById('f-name').value = d.myProfile.name || '';
+            document.getElementById('f-job').value = d.myProfile.job || '';
+            document.getElementById('f-industry').value = d.myProfile.industry || '';
+            document.getElementById('f-resource').value = d.myProfile.resource || '';
+            document.getElementById('f-need').value = d.myProfile.need || '';
+          }
         }
-      }
+      } catch (e) {}
     }
 
     function switchNav(v) {
@@ -253,35 +258,21 @@
       lucide.createIcons();
     }
 
-    function switchCreateMode(m) {
-      createMode = m;
-      ['quick', 'full', 'batch'].forEach(mode => {
-        document.getElementById('create-tab-' + mode).classList.toggle('active', mode === m);
-        document.getElementById('group-' + mode).classList.toggle('hidden', mode !== m);
-      });
-      document.getElementById('label-act-name').innerText = m === 'batch' ? '系列名稱' : '活動名稱';
-    }
-
-    function addBatchRow() {
-      const container = document.getElementById('batch-items-container');
-      const count = container.querySelectorAll('.batch-item').length + 1;
-      const div = document.createElement('div');
-      div.className = 'field-group batch-item';
-      div.innerHTML = `<label class="field-label">梯次 ${count} 名稱與時間</label>
-        <input type="text" class="field-input batch-name" placeholder="例：第 ${count} 梯次" style="margin-bottom:8px; border-bottom:1px solid #EEE">
-        <input type="datetime-local" class="field-input batch-time">`;
-      container.appendChild(div);
-    }
-
     async function submitActivity() {
       const name = document.getElementById('act-name').value;
       if (!name) return alert('填寫標題');
       showLoader(true);
       try {
-        let payload = { action: 'create_activity', p, uid, mode: createMode, name: name };
-        if (createMode === 'quick') payload.names = document.getElementById('act-list').value.split('\n');
+        const payload = { 
+          action: 'create_activity', 
+          p, uid, 
+          name: name,
+          type: document.getElementById('act-type').value,
+          role: document.getElementById('act-role').value,
+          names: document.getElementById('act-list').value.split('\n') 
+        };
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
-        alert('發布完成');
+        alert('建立成功');
         switchNav('checkin');
       } finally { showLoader(false); }
     }
@@ -293,8 +284,12 @@
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: act }) });
         const result = await res.json();
-        document.getElementById('registrant-list').innerHTML = result.data.map(r => `<div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
-          <h3>${r.姓名}</h3><p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊核銷'}</p></div>`).join('');
+        document.getElementById('registrant-list').innerHTML = result.data.map(r => `
+          <div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
+            <h3>${r.姓名}</h3>
+            <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊簽到'}</p>
+          </div>
+        `).join('');
       } finally { showLoader(false); }
     }
 
@@ -311,31 +306,24 @@
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
         const result = await res.json();
-        document.getElementById('crm-container').innerHTML = result.data.map(u => `<div class="menu-item"><h3>${u.name}</h3><p>累計出席：${u.attended} 次</p></div>`).join('');
+        document.getElementById('crm-container').innerHTML = result.data.map(u => `<div class="menu-item"><h3>${u.name}</h3><p>累積參與：${u.attended} 次</p></div>`).join('');
       } finally { showLoader(false); }
     }
 
     async function getAiMatches() {
       const el = document.getElementById('ai-content');
-      el.innerText = 'AI 媒合中...';
+      if(el) el.innerText = 'AI 媒合分析中...';
       const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
-      el.innerText = await res.text();
+      if(el) el.innerText = await res.text();
     }
 
-    async function handleOcr(input) {
-      const file = input.files[0];
-      if (!file) return;
+    async function saveProfile() {
       showLoader(true);
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'recognizeCard', base64Image: e.target.result }) });
-        const result = await res.json();
-        document.getElementById('card-name').value = result.data.Name || '';
-        document.getElementById('card-company').value = result.data.CompanyName || '';
-        document.getElementById('card-job').value = result.data.Title || '';
-        showLoader(false);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const prof = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
+        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: prof }) });
+        alert('名片已更新');
+      } finally { showLoader(false); }
     }
 
     async function loadSettings() {
@@ -355,8 +343,9 @@
 
     function showLoader(s) {
       const l = document.getElementById('loader');
-      if (s) { l.classList.remove('hidden'); l.style.opacity = '1'; }
-      else { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
+      if (!l) return;
+      if (s) { l.classList.remove('hidden'); }
+      else { l.classList.add('hidden'); }
     }
 
     init();
