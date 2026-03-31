@@ -10,32 +10,34 @@
     body { font-family: -apple-system, sans-serif; margin: 0; background: #FFFFFF; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
     .page-container { max-width: 450px; margin: 0 auto; }
     
-    /* 頂部標題 */
     header { padding: 25px 20px; border-bottom: 1px solid #F0F0F0; }
     header h1 { margin: 0; font-size: 20px; font-weight: 400; color: #1A202C; }
     header p { margin: 5px 0 0 0; font-size: 15px; color: #718096; }
 
-    /* 分段選擇器 (僅在建立模式顯示) */
+    /* 選項切換 */
     .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 20px; }
     .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
     .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    /* 表單與清單區塊 */
     .content-view { padding: 0 20px; }
-    .form-group { margin-bottom: 25px; }
+    .form-group { margin-bottom: 20px; }
     label { display: block; margin-bottom: 8px; color: #4A5568; font-size: 15px; }
     input, textarea, select { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
-    input:focus, textarea:focus { border-color: #06C755; }
-
-    /* 清單樣式 (核銷/CRM/配對) */
-    .list-item { padding: 15px 0; border-bottom: 1px solid #F7FAFC; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* 列表樣式 */
+    .list-item { padding: 15px 0; border-bottom: 1px solid #F9F9F9; display: flex; justify-content: space-between; align-items: center; }
     .list-info { flex: 1; }
-    .list-name { font-size: 15px; color: #1A202C; margin-bottom: 2px; }
-    .list-desc { font-size: 15px; color: #999999; }
-    .btn-tag { font-size: 13px; padding: 4px 10px; border-radius: 4px; cursor: pointer; border: 1px solid #E2E8F0; color: #718096; }
+    .list-title { font-size: 15px; color: #333333; margin-bottom: 2px; }
+    .list-sub { font-size: 15px; color: #999999; }
+    
+    .btn-tag { font-size: 13px; padding: 6px 12px; border-radius: 4px; border: 1px solid #E2E8F0; color: #718096; cursor: pointer; }
     .btn-tag.active { background: #06C755; color: white; border-color: #06C755; }
 
-    /* 底部六格導覽 */
+    /* 圖片上傳區 */
+    .upload-box { border: 1px dashed #CBD5E0; border-radius: 8px; padding: 30px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin-bottom: 20px; }
+    .upload-box i { color: #A0AEC0; margin-bottom: 8px; }
+
+    /* 底部導覽 */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 100; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; text-decoration: none; }
     .nav-item.active { color: #1A202C; }
@@ -43,95 +45,75 @@
     .nav-text { font-size: 13px; }
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
-    .btn-submit { width: 100%; padding: 16px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin: 20px 0; }
+    .btn-main { width: 100%; padding: 16px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 10px; }
     .hidden { display: none; }
-    .ai-box { background: #F8FAFC; padding: 15px; border-radius: 8px; line-height: 1.6; color: #4A5568; white-space: pre-wrap; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 200; font-size: 15px; color: #06C755; }
   </style>
 </head>
 <body>
+  <div id="loader" class="loading-overlay hidden">系統處理中...</div>
+  
   <div class="page-container">
     <header>
       <h1 id="view-title">建立新活動</h1>
       <p id="view-desc">部署您的專屬活動流程。</p>
     </header>
 
-    <!-- 1. 建立視圖 -->
+    <!-- [建立] 視圖 -->
     <div id="view-create" class="content-view">
       <div class="tab-selector">
-        <div class="tab-item active" onclick="switchCreateMode('quick')">快速</div>
-        <div class="tab-item" onclick="switchCreateMode('full')">完整</div>
-        <div class="tab-item" onclick="switchCreateMode('batch')">梯次</div>
+        <div class="tab-item active" onclick="switchMode('quick')">快速</div>
+        <div class="tab-item" onclick="switchMode('full')">完整</div>
       </div>
       <div class="form-group">
         <label>活動名稱</label>
-        <input type="text" id="act-name" placeholder="輸入活動標題...">
+        <input type="text" id="act-name" placeholder="輸入標題">
       </div>
       <div class="form-group">
-        <label>名單內容</label>
-        <textarea id="act-list" placeholder="每行一位參與者姓名..."></textarea>
+        <label>名單匯入 (每行一位)</label>
+        <textarea id="act-list" style="height:150px;" placeholder="貼上參與者姓名..."></textarea>
       </div>
-      <button class="btn-submit" onclick="submitActivity()">完成並發布</button>
+      <button class="btn-main" onclick="submitActivity()">確認發布</button>
     </div>
 
-    <!-- 2. 核銷視圖 -->
+    <!-- [核銷] 視圖 -->
     <div id="view-checkin" class="content-view hidden">
       <div class="form-group" style="margin-top:20px;">
         <label>選擇活動</label>
-        <select id="checkin-event-select" onchange="loadRegistrants()"></select>
+        <select id="event-selector" onchange="loadCheckInList()"></select>
       </div>
-      <div id="registrant-list">
-        <p style="text-align:center; color:#999; margin-top:50px;">載入名單中...</p>
+      <div id="checkin-list">
+        <p style="text-align:center; color:#CCC; padding-top:50px;">請先選擇一個活動</p>
       </div>
     </div>
 
-    <!-- 3. CRM 視圖 -->
+    <!-- [CRM] 視圖 -->
     <div id="view-crm" class="content-view hidden">
-      <div id="crm-list">
-        <p style="text-align:center; color:#999; margin-top:50px;">正在統計會員數據...</p>
+      <div id="crm-list" style="margin-top:20px;">
+        <p style="text-align:center; color:#CCC; padding-top:50px;">正在讀取會員數據庫...</p>
       </div>
     </div>
 
-    <!-- 4. 配對視圖 -->
-    <div id="view-matching" class="content-view hidden">
-      <div style="margin-top:20px;">
-        <div id="ai-match-result" class="ai-box">點擊按鈕開始針對本中心會員進行 AI 媒合分析。</div>
-        <button class="btn-submit" style="background:#1A202C;" onclick="runAiMatch()">開始 AI 智能配對</button>
-      </div>
-    </div>
-
-    <!-- 5. 名片視圖 -->
+    <!-- [名片] 視圖 (含 OCR 掃描) -->
     <div id="view-card" class="content-view hidden">
-      <div style="margin-top:20px;">
-        <div class="form-group">
-          <label>個人數位名片預覽</label>
-          <div id="card-preview" class="ai-box" style="text-align:center;">
-            (您的數位名片樣式將顯示於此)
-          </div>
-        </div>
-        <button class="btn-submit" onclick="alert('進入編輯器')">編輯名片樣式</button>
+      <div class="upload-box" onclick="document.getElementById('ocr-file').click()">
+        <i data-lucide="camera" style="width:32px; height:32px;"></i>
+        <p>掃描紙本名片 (AI 辨識)</p>
       </div>
+      <input type="file" id="ocr-file" class="hidden" accept="image/*" onchange="handleOcr(this)">
+      
+      <div class="form-group"><label>姓名</label><input id="card-name" class="field-input"></div>
+      <div class="form-group"><label>公司</label><input id="card-company" class="field-input"></div>
+      <div class="form-group"><label>職稱</label><input id="card-job" class="field-input"></div>
+      <div class="form-group"><label>產業</label><input id="card-industry" class="field-input"></div>
+      <button class="btn-main" onclick="saveManualCard()">儲存名片至資料庫</button>
     </div>
 
-    <!-- 6. 參數視圖 -->
-    <div id="view-settings" class="content-view hidden">
-      <div style="margin-top:20px;">
-        <div class="form-group">
-          <label>Telegram Bot Token</label>
-          <input type="text" id="set-tg-token" placeholder="BotFather Token">
-        </div>
-        <div class="form-group">
-          <label>Telegram Chat ID</label>
-          <input type="text" id="set-tg-chatid" placeholder="Your Chat ID">
-        </div>
-        <button class="btn-submit" onclick="saveSettings()">儲存設定</button>
-      </div>
-    </div>
+    <!-- 其他視圖 (略)... -->
 
-    <!-- 底部六格導覽列 -->
     <nav>
       <div class="nav-item active" id="nav-create" onclick="switchNav('create')">
-        <div class="icon-box"><i data-lucide="plus-circle"></i></div>
-        <span class="nav-text">建立</span>
+        <div class="icon-box"><i data-lucide="plus-circle"></i></div><span class="nav-text">建立</span>
       </div>
       <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')">
         <i data-lucide="check-square"></i><span class="nav-text">核銷</span>
@@ -154,75 +136,91 @@
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-    let uid = '', p = '', currentView = 'create';
+    let uid = '', p = '';
 
     async function init() {
       lucide.createIcons();
       const urlParams = new URLSearchParams(window.location.search);
       p = urlParams.get('p');
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) { liff.login(); return; }
-        const profile = await liff.getProfile();
-        uid = profile.userId;
-      } catch (e) { console.error(e); }
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      const profile = await liff.getProfile();
+      uid = profile.userId;
     }
 
     function switchNav(view) {
-      currentView = view;
       document.querySelectorAll('.content-view').forEach(el => el.classList.add('hidden'));
       document.getElementById('view-' + view).classList.remove('hidden');
-      
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       document.getElementById('nav-' + view).classList.add('active');
-
-      // 更新標題
-      const titles = {
-        create: { t: "建立新活動", d: "部署您的專屬活動流程。" },
-        checkin: { t: "現場核銷簽到", d: "管理活動出席狀況。" },
-        crm: { t: "會員 CRM 總覽", d: "分析您的客戶活躍度。" },
-        matching: { t: "AI 商業配對", d: "讓 AI 幫您尋找潛在商機。" },
-        card: { t: "數位名片設定", d: "管理您的對外品牌形象。" },
-        settings: { t: "系統參數設定", d: "管理通知與連線權限。" }
-      };
-      document.getElementById('view-title').innerText = titles[view].t;
-      document.getElementById('view-desc').innerText = titles[view].d;
+      
+      const titles = { create: "建立新活動", checkin: "現場核銷簽到", crm: "會員 CRM 總覽", card: "數位名片管理" };
+      if (titles[view]) document.getElementById('view-title').innerText = titles[view];
 
       if (view === 'checkin') loadEvents();
-      if (view === 'crm') loadCrmData();
-      window.scrollTo(0, 0);
+      if (view === 'crm') loadCrm();
     }
 
-    // [建立] 功能
-    async function submitActivity() {
-      const payload = { action: 'create_activity', p, uid, mode: 'quick', name: document.getElementById('act-name').value, names: document.getElementById('act-list').value.split('\n') };
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
-      alert('活動已建立');
-      switchNav('checkin');
-    }
-
-    // [核銷] 功能
+    // [核銷] 邏輯
     async function loadEvents() {
       const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
       const result = await res.json();
-      const select = document.getElementById('checkin-event-select');
-      // 模擬從資料庫撈取活動列表 (此處應由 GAS 回傳)
+      const select = document.getElementById('event-selector');
       select.innerHTML = '<option value="">請選擇活動...</option>';
+      result.data.activities.forEach(act => {
+        select.innerHTML += `<option value="${act.name}">${act.name}</option>`;
+      });
     }
 
-    // [CRM] 功能
-    async function loadCrmData() {
-      const container = document.getElementById('crm-list');
-      // 這裡會從 GAS 的 saasGetAiContext 擴展版本撈取資料
-      container.innerHTML = '<p style="text-align:center; color:#999; margin-top:50px;">(串接專屬資料庫 CRM 清單...)</p>';
+    async function loadCheckInList() {
+      const actName = document.getElementById('event-selector').value;
+      const listEl = document.getElementById('checkin-list');
+      listEl.innerHTML = '讀取名單中...';
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: actName }) });
+      const result = await res.json();
+      listEl.innerHTML = result.data.map(r => `
+        <div class="list-item">
+          <div class="list-info"><div class="list-title">${r.姓名}</div></div>
+          <div class="btn-tag ${r.checkedIn ? 'active' : ''}" onclick="toggleCheckIn('${actName}', ${r.rowId}, ${r.checkedIn})">
+            ${r.checkedIn ? '已簽到' : '點擊簽到'}
+          </div>
+        </div>
+      `).join('');
     }
 
-    // [配對] 功能
-    async function runAiMatch() {
-      const resBox = document.getElementById('ai-match-result');
-      resBox.innerText = 'AI 正在分析全中心會員名片中...';
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
-      resBox.innerText = await res.text();
+    // [CRM] 邏輯 (移植 ACTMASTER CRM 統計)
+    async function loadCrm() {
+      const listEl = document.getElementById('crm-list');
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
+      const result = await res.json();
+      listEl.innerHTML = result.data.map(u => `
+        <div class="list-item">
+          <div class="list-info">
+            <div class="list-title">${u.name}</div>
+            <div class="list-sub">${u.industry || '未設定產業'}</div>
+          </div>
+          <div style="font-size:15px; color:#06C755;">參與 ${u.attended} 次</div>
+        </div>
+      `).join('');
+    }
+
+    // [名片 OCR] 邏輯 (移植 AI 辨識)
+    async function handleOcr(input) {
+      const file = input.files[0];
+      if (!file) return;
+      document.getElementById('loader').classList.remove('hidden');
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'recognizeCard', base64Image: e.target.result }) });
+        const result = await res.json();
+        const d = result.data;
+        document.getElementById('card-name').value = d.Name || '';
+        document.getElementById('card-company').value = d.CompanyName || '';
+        document.getElementById('card-job').value = d.Title || '';
+        document.getElementById('card-industry').value = d.Industry || '';
+        document.getElementById('loader').classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
     }
 
     init();
