@@ -18,19 +18,23 @@
     input:focus { border-bottom-color: #06C755; }
     input::placeholder { color: #CCCCCC; }
 
-    button { width: 100%; padding: 15px; background-color: #06C755; color: white; border: none; border-radius: 0; font-size: 15px; font-weight: 400; margin-top: 20px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .btn-main { width: 100%; padding: 15px; background-color: #06C755; color: white; border: none; border-radius: 0; font-size: 15px; font-weight: 400; margin-top: 10px; cursor: pointer; text-align: center; display: block; text-decoration: none; box-sizing: border-box; }
+    .btn-dark { background-color: #333333; }
     
-    #message { margin-top: 20px; color: #FF4D4F; text-align: center; font-size: 15px; }
+    #message { margin-top: 20px; color: #666666; text-align: center; font-size: 15px; line-height: 1.6; }
+    .error { color: #FF4D4F; }
     .loading { color: #999999; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div class="page-container">
     <header>
-      <h2>2026 經銷商入駐申請</h2>
+      <h2 id="page-title">2026 經銷商入駐申請</h2>
     </header>
 
-    <div id="form-container" style="display:none;">
+    <!-- 註冊表單區塊 -->
+    <div id="form-container" class="hidden">
       <div class="form-group">
         <label>負責人姓名</label>
         <input type="text" id="name" placeholder="請輸入姓名" required>
@@ -55,40 +59,84 @@
         <label>預計推廣管道</label>
         <input type="text" id="channel" placeholder="FB、LINE群組、實體店面">
       </div>
-      <button onclick="submitForm()">送出申請</button>
+      <button class="btn-main" onclick="submitForm()">送出申請</button>
     </div>
     
-    <div id="message" class="loading">正在載入系統資料...</div>
+    <!-- 狀態顯示與快捷跳轉 -->
+    <div id="status-container" class="hidden">
+      <div id="message">正在驗證您的身分...</div>
+      <div id="action-buttons" class="hidden">
+        <a id="btn-admin" href="admin.html" class="btn-main btn-dark hidden">進入審核後台</a>
+        <a id="btn-hub" href="#" class="btn-main hidden">進入服務中台</a>
+      </div>
+    </div>
+
+    <div id="init-loader" class="message loading">系統初始化中...</div>
   </div>
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
     let userUid = '';
+    let storeP = '';
 
-    async function initLiff() {
+    async function init() {
+      // 1. 解析網址參數
+      const urlParams = new URLSearchParams(window.location.search);
+      storeP = urlParams.get('p');
+
+      // 2. 如果帶有店家代號 p，直接導向中台 (不需要在首頁判斷)
+      if (storeP) {
+        window.location.href = `service_hub.html?p=${storeP}`;
+        return;
+      }
+
+      // 3. 初始化 LIFF
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         userUid = profile.userId;
+        document.getElementById('init-loader').classList.add('hidden');
         checkStatus();
-      } catch (err) { document.getElementById('message').innerText = 'LIFF 初始化失敗'; }
+      } catch (err) { 
+        document.getElementById('init-loader').innerText = 'LIFF 初始化失敗'; 
+      }
     }
 
     async function checkStatus() {
+      const statusContainer = document.getElementById('status-container');
+      const msgEl = document.getElementById('message');
+      statusContainer.classList.remove('hidden');
+
       try {
-        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'check_status', uid: userUid }) });
+        const res = await fetch(WORKER_URL, { 
+          method: 'POST', 
+          body: JSON.stringify({ action: 'check_status', uid: userUid }) 
+        });
         const result = await res.json();
-        if (result.status === 'registered') {
-          document.getElementById('message').innerText = '您已提交申請，目前正在審核中。';
-          document.getElementById('form-container').style.display = 'none';
+        
+        // 根據 GAS 回傳的狀態處理 (status: success, data: { status: 'registered', message: '管理員' })
+        if (result.status === 'success' && result.data.status === 'registered') {
+          const stateMsg = result.data.message;
+          
+          if (stateMsg === '管理員') {
+            msgEl.innerText = '您已具備經銷商管理權限。';
+            document.getElementById('action-buttons').classList.remove('hidden');
+            document.getElementById('btn-admin').classList.remove('hidden');
+            
+            // 如果是管理員，嘗試找尋他自己的商店連結 (這裡簡化，通常管理員會有一個預設 SID)
+            // 實務上可以再從 data 中取出 SID 給予進入中台的按鈕
+          } else {
+            msgEl.innerText = '您的申請正在審核中，請稍候。';
+          }
         } else {
-          document.getElementById('message').innerText = '';
-          document.getElementById('form-container').style.display = 'block';
+          // 未註冊，顯示表單
+          statusContainer.classList.add('hidden');
+          document.getElementById('form-container').classList.remove('hidden');
         }
       } catch (e) {
-        document.getElementById('message').innerText = '系統連線異常';
+        msgEl.innerText = '系統連線異常，請重新整理。';
       }
     }
 
@@ -96,7 +144,10 @@
       const brand = document.getElementById('brand').value;
       if (!brand) { alert('請填寫品牌名稱'); return; }
 
+      document.getElementById('form-container').classList.add('hidden');
+      document.getElementById('status-container').classList.remove('hidden');
       document.getElementById('message').innerText = '正在提交申請...';
+
       const payload = {
         action: 'register_dealer',
         uid: userUid,
@@ -111,10 +162,13 @@
       try {
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
         document.getElementById('message').innerText = '申請成功！我們將盡快與您聯繫。';
-        document.getElementById('form-container').style.display = 'none';
-      } catch (e) { document.getElementById('message').innerText = '傳送失敗，請稍後再試。'; }
+      } catch (e) { 
+        document.getElementById('message').innerText = '傳送失敗，請稍後再試。'; 
+        document.getElementById('form-container').classList.remove('hidden');
+      }
     }
-    initLiff();
+
+    init();
   </script>
 </body>
 </html>
