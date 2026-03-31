@@ -13,7 +13,7 @@
     body { font-family: -apple-system, sans-serif; margin: 0; background: #FFFFFF; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    /* 頂部標頭 - 藍色背景還原 */
+    /* 頂部標頭 - 藍色背景還原 (對應 Admin 模式) */
     header { background: #2563eb; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .header-left { display: flex; align-items: center; gap: 8px; }
     .header-title { font-size: 19px; font-weight: 400; }
@@ -26,24 +26,22 @@
     .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #64748b; font-size: 15px; transition: all 0.2s; }
     .tab-item.active { background: #FFFFFF; color: #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    /* 表單欄位 */
     .field-group { padding: 15px 20px; }
     .field-label { font-size: 15px; color: #333333; margin-bottom: 8px; display: block; }
-    .field-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .field-tag { font-size: 11px; color: #718096; background: #F1F5F9; padding: 4px 10px; border-radius: 4px; }
+    .field-tag { font-size: 11px; color: #718096; background: #EDF2F7; padding: 2px 8px; border-radius: 4px; float: right; margin-top: -26px; }
     
     .input-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; -webkit-appearance: none; }
     select.input-box { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 36px; }
     .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px 15px 20px; }
 
-    /* 宣傳大圖區 */
     .image-upload-area { border: 1px dashed #cbd5e1; border-radius: 16px; padding: 40px 20px; text-align: center; background: #f8fafc; cursor: pointer; margin: 10px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; }
     .image-upload-area i { color: #94a3b8; margin-bottom: 12px; width: 42px; height: 42px; }
     .image-upload-text { color: #94a3b8; font-size: 15px; }
     #preview-image { max-width: 100%; border-radius: 12px; display: none; }
 
-    /* 系列梯次項目 */
-    .batch-list-area { border-top: 1px solid #F1F5F9; margin-top: 10px; }
+    .textarea-box { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; font-size: 15px; outline: none; height: 150px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
+
+    /* 系列梯次複製模式 */
     .batch-item { background: #FFFFFF; border-bottom: 1px solid #F1F5F9; padding: 20px; position: relative; }
     .batch-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 12px; color: #cbd5e1; }
     .batch-action-btn { cursor: pointer; transition: color 0.2s; }
@@ -52,7 +50,6 @@
 
     .btn-action { width: calc(100% - 40px); margin: 25px 20px; padding: 18px; background: #06C755; color: white; border: none; font-size: 16px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
 
-    /* 底部 6 格導覽列 */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #475569; cursor: pointer; padding-top: 8px; }
     .nav-item.active { color: #0f172a; }
@@ -61,11 +58,11 @@
     .nav-item.active .icon-box { border: 1.5px solid #0f172a; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
     .hidden { display: none !important; }
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #2563eb; transition: opacity 0.5s; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #2563eb; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">系統連線中...</div>
+  <div id="loader" class="loading-overlay">系統載入中...</div>
 
   <div class="app-container">
     <header>
@@ -77,7 +74,8 @@
         <span class="admin-badge">Admin</span>
       </div>
       <div class="header-right">
-        <img id="user-avatar-img" class="user-avatar-top" src="">
+        <img id="user-avatar-top" class="user-avatar-top" src="">
+        <!-- 前台切換按鈕 -->
         <i data-lucide="arrow-left-right" style="color: white; width: 20px; height: 20px; cursor: pointer;" onclick="switchToHub()"></i>
       </div>
     </header>
@@ -100,8 +98,7 @@
             <div>
               <label class="field-label">活動類型</label>
               <select id="act-type" class="input-box">
-                <option>例會</option><option>課程</option><option>教學</option>
-                <option>聯誼</option><option>參訪</option><option>講座</option><option>其他</option>
+                <option>例會</option><option>課程</option><option>教學</option><option>聯誼</option><option>參訪</option><option>講座</option><option>其他</option>
               </select>
             </div>
             <div>
@@ -120,43 +117,24 @@
             <input type="file" id="act-image-file" class="hidden" accept="image/*" onchange="previewFile(this)">
           </div>
 
-          <!-- 快速匯入 -->
           <div id="module-quick">
-            <div class="field-group">
-              <div class="field-label-row"><label class="field-label">名單內容</label><span class="field-tag">支援批次輸入</span></div>
-              <textarea id="act-list" class="input-box h-40" placeholder="請貼上參與者姓名，每行一位..." style="resize:none;"></textarea>
-            </div>
+            <div class="field-group"><div class="field-label-row"><label class="field-label">名單內容</label><span class="field-tag">支援批次輸入</span></div><textarea id="act-list" class="textarea-box" placeholder="請貼上參與者姓名，每行一位..." style="resize:none;"></textarea></div>
           </div>
 
-          <!-- 完整發佈 -->
           <div id="module-full" class="hidden">
-            <div class="field-group">
-              <label class="field-label">開始時間</label><input type="datetime-local" id="d-start" class="input-box">
-            </div>
-            <div class="field-group">
-              <label class="field-label">結束時間</label><input type="datetime-local" id="d-end" class="input-box">
-            </div>
-            <div class="field-group">
-              <label class="field-label">活動詳情</label>
-              <textarea id="d-desc" class="input-box h-32" placeholder="描述活動內容..." style="resize:none;"></textarea>
-            </div>
+            <div class="field-group"><label class="field-label">開始時間</label><input type="datetime-local" id="d-start" class="input-box"></div>
+            <div class="field-group"><label class="field-label">結束時間</label><input type="datetime-local" id="d-end" class="input-box"></div>
+            <div class="field-group"><label class="field-label">活動詳情</label><textarea id="d-desc" class="textarea-box h-32" placeholder="描述內容..."></textarea></div>
           </div>
 
-          <!-- 系列梯次 -->
           <div id="module-batch" class="hidden">
-            <div class="field-group"><label class="field-label">系列描述</label><textarea id="b-desc" class="input-box h-24" placeholder="共通說明..." style="resize:none;"></textarea></div>
-            <div id="batch-container" class="batch-list-area">
+            <div class="field-group"><label class="field-label">系列描述</label><textarea id="b-desc" class="textarea-box h-24" placeholder="共通說明..."></textarea></div>
+            <div id="batch-container">
               <div class="batch-item">
-                <div class="batch-actions">
-                  <i data-lucide="copy" class="batch-action-btn" onclick="copyBatch(this)"></i>
-                  <i data-lucide="x" class="batch-action-btn" onclick="this.closest('.batch-item').remove(); updateBatchNumbers();"></i>
-                </div>
+                <div class="batch-actions"><i data-lucide="copy" class="batch-action-btn" onclick="copyBatch(this)"></i><i data-lucide="x" class="batch-action-btn" onclick="this.closest('.batch-item').remove(); updateBatchNumbers();"></i></div>
                 <label class="field-label batch-num-label">梯次 1 名稱與時間</label>
                 <input type="text" class="input-box b-name mb-3" placeholder="梯次名稱">
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                  <input type="datetime-local" class="input-box b-start !text-[12px]">
-                  <input type="datetime-local" class="input-box b-end !text-[12px]">
-                </div>
+                <div class="grid grid-cols-2 gap-3 mb-3"><input type="datetime-local" class="input-box b-start !text-[12px]"><input type="datetime-local" class="input-box b-end !text-[12px]"></div>
                 <input type="number" class="input-box b-limit" placeholder="人數限制">
               </div>
             </div>
@@ -166,8 +144,6 @@
           <button class="btn-action" onclick="submitActivity()">確認建立並發布</button>
         </div>
       </div>
-
-      <!-- CRM / 核銷略 -->
       <div id="view-checkin" class="hidden"></div>
       <div id="view-crm" class="hidden"></div>
     </main>
@@ -191,13 +167,13 @@
       lucide.createIcons();
       const params = new URLSearchParams(window.location.search);
       p = params.get('p');
-      if (!p) { document.getElementById('loader').innerText = '缺少商店代碼'; return; }
+      if (!p) { document.getElementById('loader').innerText = '缺少商店參數'; return; }
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        document.getElementById('user-avatar-img').src = profile.pictureUrl || '';
+        document.getElementById('user-avatar-top').src = profile.pictureUrl || '';
       } catch (err) { console.error(err); } 
       finally { document.getElementById('loader').classList.add('hidden'); }
     }
@@ -206,7 +182,8 @@
       currentMode = m;
       ['quick', 'full', 'batch'].forEach(id => {
         document.getElementById('tab-' + id).classList.toggle('active', id === m);
-        document.getElementById('module-' + id).classList.toggle('hidden', id !== m);
+        const mod = document.getElementById('module-' + id);
+        if(mod) mod.classList.toggle('hidden', id !== m);
       });
       document.getElementById('label-act-name').innerText = (m === 'batch' ? '系列名稱' : '活動名稱');
     }
@@ -216,16 +193,11 @@
       const div = document.createElement('div');
       div.className = 'batch-item animate-in fade-in';
       div.innerHTML = `
-        <div class="batch-actions">
-          <i data-lucide="copy" class="batch-action-btn" onclick="copyBatch(this)"></i>
-          <i data-lucide="x" class="batch-action-btn" onclick="this.closest('.batch-item').remove(); updateBatchNumbers();"></i>
-        </div>
+        <div class="batch-actions"><i data-lucide="copy" class="batch-action-btn" onclick="copyBatch(this)"></i><i data-lucide="x" class="batch-action-btn" onclick="this.closest('.batch-item').remove(); updateBatchNumbers();"></i></div>
         <label class="field-label batch-num-label">梯次名稱與時間</label>
         <input type="text" class="input-box b-name mb-3" placeholder="梯次名稱" value="${data?data.name:''}">
-        <div class="grid grid-cols-2 gap-3 mb-3">
-          <input type="datetime-local" class="input-box b-start !text-[12px]" value="${data?data.start:''}">
-          <input type="datetime-local" class="input-box b-end !text-[12px]" value="${data?data.end:''}">
-        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3"><input type="datetime-local" class="input-box b-start !text-[12px]" value="${data?data.start:''}">
+        <input type="datetime-local" class="input-box b-end !text-[12px]" value="${data?data.end:''}"></div>
         <input type="number" class="input-box b-limit" placeholder="人數限制" value="${data?data.limit:''}">
       `;
       container.appendChild(div);
@@ -235,12 +207,7 @@
 
     function copyBatch(btn) {
       const parent = btn.closest('.batch-item');
-      addBatchRow({
-        name: parent.querySelector('.b-name').value,
-        start: parent.querySelector('.b-start').value,
-        end: parent.querySelector('.b-end').value,
-        limit: parent.querySelector('.b-limit').value
-      });
+      addBatchRow({ name: parent.querySelector('.b-name').value, start: parent.querySelector('.b-start').value, end: parent.querySelector('.b-end').value, limit: parent.querySelector('.b-limit').value });
     }
 
     function updateBatchNumbers() {
@@ -248,6 +215,12 @@
     }
 
     function switchToHub() { window.location.href = `service_hub.html?p=${p}`; }
+    
+    function switchNav(v) {
+      document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById('view-' + v);
+      if(target) target.classList.remove('hidden');
+    }
 
     function previewFile(input) {
       const file = input.files[0];
@@ -272,15 +245,10 @@
         if (currentMode === 'quick') payload.names = document.getElementById('act-list').value.split('\n');
         if (currentMode === 'batch') {
           payload.desc = document.getElementById('b-desc').value;
-          payload.batches = Array.from(document.querySelectorAll('.batch-item')).map(it => ({
-            name: it.querySelector('.b-name').value,
-            start: it.querySelector('.b-start').value,
-            end: it.querySelector('.b-end').value,
-            limit: it.querySelector('.b-limit').value
-          }));
+          payload.batches = Array.from(document.querySelectorAll('.batch-item')).map(it => ({ name: it.querySelector('.b-name').value, start: it.querySelector('.b-start').value, end: it.querySelector('.b-end').value, limit: it.querySelector('.b-limit').value }));
         }
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
-        alert('建立成功並已自動新增 Google Drive 資料夾');
+        alert('活動建立成功');
         location.reload();
       } finally { document.getElementById('loader').classList.add('hidden'); }
     }
