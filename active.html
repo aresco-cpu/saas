@@ -29,8 +29,16 @@
 <body class="flex justify-center">
 
 <div class="w-full max-w-[450px] min-h-screen bg-white relative pb-24">
-  <header class="bg-[#06C755] text-white p-4 text-center sticky top-0 z-20">
-    <h2 class="text-lg font-medium">建立新活動</h2>
+  <!-- 頂部標題列：含頭像與商店代號 -->
+  <header class="bg-[#06C755] text-white p-3 sticky top-0 z-20 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <img id="user-avatar" src="" class="w-10 h-10 rounded-full border-2 border-white/30 hidden">
+      <div>
+        <h2 class="text-base font-medium leading-tight">建立新活動</h2>
+        <div id="store-display" class="text-[10px] opacity-80">商店代號: 載入中...</div>
+      </div>
+    </div>
+    <div id="user-name" class="text-[11px] opacity-90 max-w-[80px] truncate"></div>
   </header>
 
   <div class="flex bg-gray-50 border-b border-gray-200">
@@ -146,14 +154,14 @@
     const urlParams = new URLSearchParams(window.location.search);
     p = urlParams.get('p');
     
-    // 如果網址沒有 p，嘗試從 localStorage 拿
     if (!p) p = localStorage.getItem('current_p');
     if (p) {
       localStorage.setItem('current_p', p);
       document.getElementById('front-link').href = `service_hub.html?p=${p}`;
       document.getElementById('admin-link').href = `admin.html?p=${p}`;
+      document.getElementById('store-display').innerText = `商店代號: ${p}`;
     } else {
-      console.warn('缺少經銷商參數 (p)');
+      document.getElementById('store-display').innerText = `商店代號: 未帶入`;
     }
 
     try {
@@ -161,6 +169,15 @@
       if (!liff.isLoggedIn()) { liff.login(); return; }
       const profile = await liff.getProfile();
       uid = profile.userId;
+
+      // 更新頭像與姓名
+      if (profile.pictureUrl) {
+        const avatar = document.getElementById('user-avatar');
+        avatar.src = profile.pictureUrl;
+        avatar.classList.remove('hidden');
+      }
+      document.getElementById('user-name').innerText = profile.displayName;
+
     } catch (e) {
       console.error('LIFF Init Error', e);
     }
