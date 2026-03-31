@@ -9,14 +9,13 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 全局規範：15px, 不加粗, LINE 原生風格, 移除浪費空間的包框 */
+    /* 全局規範：15px, 不加粗, LINE 原生風格 */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; background: #F4F4F4; min-height: 100vh; }
     
     header { background: #06C755; color: white; padding: 30px 20px; text-align: center; }
     header h2 { margin: 0; font-size: 15px; font-weight: 400; letter-spacing: 1px; }
 
-    /* 用戶資訊區 */
     .user-profile { background: #FFFFFF; padding: 20px; display: flex; align-items: center; border-bottom: 1px solid #EEEEEE; }
     .user-avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; object-fit: cover; }
     .user-info { flex: 1; }
@@ -26,24 +25,24 @@
     /* 區塊標題 */
     .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
 
-    /* 清單樣式：全扁平化、無方框、無陰影 */
+    /* 清單選單樣式 */
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
     .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+    .menu-item:last-child { border-bottom: none; }
     .menu-item:active { background: #F8F8F8; }
     .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
     .menu-item p { margin: 0; font-size: 15px; color: #999999; line-height: 1.4; }
 
-    /* 表單輸入 */
+    /* 表單欄位 */
     .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
     .field-label { font-size: 15px; color: #666666; margin-bottom: 8px; display: block; }
     .field-input, select { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; color: #333333; background: transparent; -webkit-appearance: none; border-radius: 0; }
     .field-textarea { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; height: 100px; resize: none; color: #333333; background: transparent; line-height: 1.5; }
 
-    /* 按鈕樣式 */
     .btn-action { width: calc(100% - 40px); margin: 20px; padding: 15px; background: #06C755; color: white; border: none; font-size: 15px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 4px; }
     .btn-dark { background: #333333; }
 
-    /* 底部導覽列 (六格核心功能) */
+    /* 底部導覽列 (六格樣式) */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 100; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
@@ -66,13 +65,13 @@
     <div class="user-profile">
       <img id="user-avatar" class="user-avatar" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">載入用戶中...</p>
+        <p id="user-display-name" class="user-name">正在載入用戶...</p>
         <span id="role-text" class="user-role" style="display:none;">管理權限已開啟</span>
       </div>
     </div>
 
     <main id="main-content">
-      <!-- 1. 建立 (Admin) -->
+      <!-- 1. 建立活動 (預設隱藏) -->
       <div id="view-create" class="hidden">
         <div class="section-title">快速活動發布</div>
         <div class="field-group"><label class="field-label">活動名稱</label><input id="act-name" class="field-input" placeholder="例：3月例會"></div>
@@ -80,7 +79,7 @@
         <button class="btn-action" onclick="submitActivity()">確認建立活動</button>
       </div>
 
-      <!-- 2. 核銷 (Admin) -->
+      <!-- 2. 核銷簽到 (預設隱藏) -->
       <div id="view-checkin" class="hidden">
         <div class="section-title">現場核銷清單</div>
         <div class="field-group">
@@ -90,22 +89,22 @@
         <div id="registrant-list" class="menu-list"></div>
       </div>
 
-      <!-- 3. CRM (Admin) -->
+      <!-- 3. CRM 會員 (預設隱藏) -->
       <div id="view-crm" class="hidden">
-        <div class="section-title">中心成員參與統計</div>
+        <div class="section-title">成員參與統計</div>
         <div id="crm-container" class="menu-list"></div>
       </div>
 
-      <!-- 4. 配對 (User/Admin) -->
+      <!-- 4. 配對商機 -->
       <div id="view-ai" class="hidden">
         <div class="section-title">AI 智能商業配對</div>
-        <div id="ai-content" class="ai-result-box">分析所有會員資源中，請稍後...</div>
+        <div id="ai-content" class="ai-result-box">點擊按鈕，啟動 AI 會員資源分析。</div>
         <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
       </div>
 
-      <!-- 5. 名片 (User/Admin) -->
+      <!-- 5. 數位名片 (預設顯示) -->
       <div id="view-profile">
-        <div class="section-title">數位名片設定</div>
+        <div class="section-title">我的數位名片設定</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="field-input"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="field-input"></div>
         <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="field-input"></div>
@@ -114,7 +113,7 @@
         <button class="btn-action" onclick="saveProfile()">儲存並更新名片</button>
       </div>
 
-      <!-- 6. 參數 (Admin) -->
+      <!-- 6. 參數設定 (預設隱藏) -->
       <div id="view-settings" class="hidden">
         <div class="section-title">管理參數設定</div>
         <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="field-input"></div>
@@ -123,7 +122,7 @@
       </div>
     </main>
 
-    <!-- 底部六格導覽 (針對 Admin 顯示完整版) -->
+    <!-- 底部六格導覽列 -->
     <nav id="bottom-nav">
       <div class="nav-item" id="nav-create" onclick="switchView('create')"><i data-lucide="plus-circle"></i><span class="nav-text">建立</span></div>
       <div class="nav-item" id="nav-checkin" onclick="switchView('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
@@ -143,40 +142,60 @@
       lucide.createIcons();
       const urlParams = new URLSearchParams(window.location.search);
       p = urlParams.get('p');
-      if (!p) { document.getElementById('brand-name').innerText = '無效店家'; return; }
+      if (!p) { document.getElementById('brand-name').innerText = '缺少店家參數'; return; }
       
+      showLoader(true);
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        document.getElementById('user-avatar').src = profile.pictureUrl;
+        document.getElementById('user-avatar').src = profile.pictureUrl || '';
         document.getElementById('user-display-name').innerText = profile.displayName;
-        loadHubData();
-      } catch (e) { console.error(e); }
+        await loadHubData();
+      } catch (e) { 
+        console.error(e);
+        document.getElementById('brand-name').innerText = '系統初始化失敗';
+      } finally {
+        showLoader(false);
+      }
     }
 
     async function loadHubData() {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
-      const result = await res.json();
-      if (result.status === 'success') {
-        const d = result.data;
-        document.getElementById('brand-name').innerText = d.brandName || "服務中心";
-        if (d.isAdmin) {
-          document.getElementById('role-text').style.display = 'block';
-        } else {
-          ['create', 'checkin', 'crm', 'settings'].forEach(id => document.getElementById('nav-' + id).style.display = 'none');
+      try {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
+        const result = await res.json();
+        if (result.status === 'success') {
+          const d = result.data;
+          document.getElementById('brand-name').innerText = d.brandName || "服務中心";
+          
+          if (d.isAdmin) {
+            document.getElementById('role-text').style.display = 'block';
+          } else {
+            // 非管理員則隱藏對應導覽
+            ['create', 'checkin', 'crm', 'settings'].forEach(id => {
+              const el = document.getElementById('nav-' + id);
+              if (el) el.style.display = 'none';
+            });
+          }
+          
+          if (d.myProfile) {
+            document.getElementById('f-name').value = d.myProfile.name || '';
+            document.getElementById('f-job').value = d.myProfile.job || '';
+            document.getElementById('f-industry').value = d.myProfile.industry || '';
+            document.getElementById('f-resource').value = d.myProfile.resource || '';
+            document.getElementById('f-need').value = d.myProfile.need || '';
+          }
+          
+          const sel = document.getElementById('event-selector');
+          if (d.activities && Array.isArray(d.activities)) {
+            sel.innerHTML = '<option value="">請選擇活動...</option>' + d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+          } else {
+            sel.innerHTML = '<option value="">尚無活動分頁</option>';
+          }
         }
-        
-        if (d.myProfile) {
-          document.getElementById('f-name').value = d.myProfile.name || '';
-          document.getElementById('f-job').value = d.myProfile.job || '';
-          document.getElementById('f-industry').value = d.myProfile.industry || '';
-          document.getElementById('f-resource').value = d.myProfile.resource || '';
-          document.getElementById('f-need').value = d.myProfile.need || '';
-        }
-        const sel = document.getElementById('event-selector');
-        sel.innerHTML = '<option value="">請選擇活動...</option>' + d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+      } catch (e) {
+        console.error("Data Load Error", e);
       }
     }
 
@@ -192,51 +211,82 @@
     }
 
     async function submitActivity() {
+      const name = document.getElementById('act-name').value;
+      if (!name) return alert('請輸入活動名稱');
       showLoader(true);
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'create_activity', p, uid, mode: 'quick', name: document.getElementById('act-name').value, names: document.getElementById('act-list').value.split('\n') }) });
-      alert('活動已發布');
-      showLoader(false);
-      switchView('checkin');
+      try {
+        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'create_activity', p, uid, mode: 'quick', name: name, names: document.getElementById('act-list').value.split('\n') }) });
+        alert('活動已發布');
+        switchView('checkin');
+      } finally {
+        showLoader(false);
+      }
     }
 
     async function loadRegistrants() {
       const act = document.getElementById('event-selector').value;
       if (!act) return;
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: act }) });
-      const result = await res.json();
-      document.getElementById('registrant-list').innerHTML = result.data.map(r => `
-        <div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
-          <h3>${r.姓名}</h3>
-          <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊簽到'}</p>
-        </div>
-      `).join('');
+      showLoader(true);
+      try {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: act }) });
+        const result = await res.json();
+        document.getElementById('registrant-list').innerHTML = result.data.map(r => `
+          <div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
+            <h3>${r.姓名}</h3>
+            <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊簽到'}</p>
+          </div>
+        `).join('');
+      } finally {
+        showLoader(false);
+      }
     }
 
     async function toggleCheckIn(act, row, status) {
       showLoader(true);
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_checkin', p, activityName: act, rowId: row, status: status }) });
-      await loadRegistrants();
-      showLoader(false);
+      try {
+        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_checkin', p, activityName: act, rowId: row, status: status }) });
+        await loadRegistrants();
+      } finally {
+        showLoader(false);
+      }
     }
 
     async function loadCrmData() {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
-      const result = await res.json();
-      document.getElementById('crm-container').innerHTML = result.data.map(u => `<div class="menu-item"><h3>${u.name}</h3><p>累積參與：${u.attended} 次</p></div>`).join('');
+      showLoader(true);
+      try {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
+        const result = await res.json();
+        document.getElementById('crm-container').innerHTML = result.data.map(u => `
+          <div class="menu-item">
+            <h3>${u.name}</h3>
+            <p>累計出席：${u.attended} 次</p>
+          </div>
+        `).join('');
+      } finally {
+        showLoader(false);
+      }
     }
 
     async function getAiMatches() {
-      document.getElementById('ai-content').innerText = 'AI 分析中...';
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
-      document.getElementById('ai-content').innerText = await res.text();
+      document.getElementById('ai-content').innerText = 'AI 正在分析全中心名片中...';
+      try {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
+        document.getElementById('ai-content').innerText = await res.text();
+      } catch (e) {
+        document.getElementById('ai-content').innerText = 'AI 配對暫時不可用。';
+      }
     }
 
     async function saveProfile() {
       showLoader(true);
-      const prof = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: prof }) });
-      alert('名片已更新');
-      showLoader(false);
+      try {
+        const prof = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
+        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: prof }) });
+        alert('名片已更新');
+        switchView('ai');
+      } finally {
+        showLoader(false);
+      }
     }
 
     async function loadSettings() {
@@ -248,10 +298,13 @@
 
     async function saveSettings() {
       showLoader(true);
-      const s = { TG_BOT_TOKEN: document.getElementById('set-tg-token').value, TG_CHAT_ID: document.getElementById('set-tg-chatid').value };
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_settings', p, settings: s }) });
-      alert('設定儲存成功');
-      showLoader(false);
+      try {
+        const s = { TG_BOT_TOKEN: document.getElementById('set-tg-token').value, TG_CHAT_ID: document.getElementById('set-tg-chatid').value };
+        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_settings', p, settings: s }) });
+        alert('設定儲存成功');
+      } finally {
+        showLoader(false);
+      }
     }
 
     function showLoader(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
