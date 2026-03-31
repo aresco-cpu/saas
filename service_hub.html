@@ -5,96 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>服務中心</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 80px; }
-    .app-container { max-width: 450px; margin: 0 auto; background: #F4F4F4; min-h-screen: 100vh; }
+    /* 全局規範：15px, 不加粗, LINE 原生風格 */
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
+    .app-container { max-width: 450px; margin: 0 auto; background: #F4F4F4; min-height: 100vh; }
     
     header { background: #06C755; color: white; padding: 30px 20px; text-align: center; }
     header h2 { margin: 0; font-size: 15px; font-weight: 400; letter-spacing: 1px; }
 
     .user-profile { background: #FFFFFF; padding: 20px; display: flex; align-items: center; border-bottom: 1px solid #EEEEEE; }
-    .user-avatar { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; }
+    .user-avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; object-fit: cover; }
     .user-info { flex: 1; }
     .user-name { margin: 0; font-size: 15px; color: #333333; }
     .user-role { font-size: 15px; color: #06C755; margin-top: 4px; display: block; }
 
-    .container { padding: 15px; }
-    .menu-card { background: #FFFFFF; padding: 20px; border-radius: 0; margin-bottom: 1px; display: flex; flex-direction: column; cursor: pointer; }
-    .menu-card h3 { margin: 0 0 8px 0; font-size: 15px; font-weight: 400; color: #333333; }
-    .menu-card p { margin: 0; font-size: 15px; color: #999999; }
+    /* 區塊標題 */
+    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
 
-    /* 表單樣式 */
+    /* 清單選單樣式 */
+    .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
+    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+    .menu-item:active { background: #F8F8F8; }
+    .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
+    .menu-item p { margin: 0; font-size: 15px; color: #999999; line-height: 1.4; }
+
+    /* 表單欄位 */
     .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
     .field-label { font-size: 15px; color: #666666; margin-bottom: 8px; display: block; }
-    .field-input { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; color: #333333; background: transparent; }
-    .field-textarea { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; height: 80px; resize: none; color: #333333; background: transparent; }
+    .field-input, select { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; color: #333333; background: transparent; -webkit-appearance: none; }
+    .field-textarea { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; height: 100px; resize: none; color: #333333; background: transparent; line-height: 1.5; }
 
-    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 15px; background: #06C755; color: white; border: none; font-size: 15px; cursor: pointer; text-align: center; }
+    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 15px; background: #06C755; color: white; border: none; font-size: 15px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 4px; }
+    .btn-dark { background: #333333; }
 
-    /* 底部導覽 */
-    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 65px; left: 50%; transform: translateX(-50%); }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999999; cursor: pointer; }
-    .nav-item.active { color: #06C755; }
-    .nav-text { font-size: 15px; margin-top: 2px; }
+    /* 底部導覽列 (六格樣式) */
+    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 100; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
+    .nav-item.active { color: #1A202C; }
+    .nav-item i { width: 22px; height: 22px; margin-bottom: 5px; }
+    .nav-text { font-size: 13px; }
+    .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
+    /* 輔助樣式 */
     .ai-result-box { background: #FFFFFF; padding: 20px; line-height: 1.6; white-space: pre-wrap; font-size: 15px; color: #333333; }
+    .empty-msg { text-align: center; padding: 50px 20px; color: #999999; background: #FFFFFF; }
+    .hidden { display: none; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 200; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; }
   </style>
 </head>
 <body>
+  <div id="loader" class="loading-overlay hidden">處理中...</div>
+
   <div class="app-container">
-    <header><h2 id="brand-name">載入中...</h2></header>
+    <header><h2 id="brand-name">服務中心</h2></header>
 
     <div class="user-profile">
       <img id="user-avatar" class="user-avatar" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">使用者</p>
+        <p id="user-display-name" class="user-name">正在載入用戶...</p>
         <span id="role-text" class="user-role" style="display:none;">管理權限已開啟</span>
       </div>
     </div>
 
-    <div id="view-home" class="container">
-      <div class="menu-card" onclick="switchView('profile')">
-        <h3>📇 數位名片設定</h3>
-        <p>完善產業資訊，開啟 AI 配對功能。</p>
+    <!-- 視圖區域 -->
+    <main id="main-content">
+      <!-- 1. 建立活動 -->
+      <div id="view-create" class="hidden">
+        <div class="section-title">快速建立活動</div>
+        <div class="field-group"><label class="field-label">活動名稱</label><input id="act-name" class="field-input" placeholder="例：每週例會"></div>
+        <div class="field-group"><label class="field-label">名單匯入 (每行一位)</label><textarea id="act-list" class="field-textarea" placeholder="直接貼上參與者姓名..."></textarea></div>
+        <button class="btn-action" onclick="submitActivity()">立即發布活動</button>
       </div>
-      <div class="menu-card" onclick="switchView('activity')">
-        <h3>📅 活動報名中心</h3>
-        <p>查看並報名此商圈最新的活動。</p>
+
+      <!-- 2. 核銷簽到 -->
+      <div id="view-checkin" class="hidden">
+        <div class="section-title">活動核銷</div>
+        <div class="field-group">
+          <label class="field-label">選擇活動</label>
+          <select id="event-selector" onchange="loadRegistrants()"><option>載入活動中...</option></select>
+        </div>
+        <div id="registrant-list" class="menu-list"></div>
       </div>
-      <div class="menu-card" onclick="switchView('ai')">
-        <h3>🤖 AI 智能配對</h3>
-        <p>分析資源與需求，尋找合作商機。</p>
+
+      <!-- 3. CRM 會員 -->
+      <div id="view-crm" class="hidden">
+        <div class="section-title">會員總覽 (按出席次數排序)</div>
+        <div id="crm-container" class="menu-list"></div>
       </div>
-    </div>
 
-    <div id="view-profile" style="display:none;">
-      <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="field-input"></div>
-      <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="field-input"></div>
-      <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="field-input"></div>
-      <div class="field-group"><label class="field-label">我的資源</label><textarea id="f-resource" class="field-textarea"></textarea></div>
-      <div class="field-group"><label class="field-label">我的需求</label><textarea id="f-need" class="field-textarea"></textarea></div>
-      <button class="btn-action" onclick="saveProfile()">儲存並更新名片</button>
-    </div>
+      <!-- 4. 配對商機 -->
+      <div id="view-ai" class="hidden">
+        <div class="section-title">AI 智能商機配對</div>
+        <div id="ai-content" class="ai-result-box">點擊按鈕，由 AI 針對全中心會員名片進行深度分析。</div>
+        <button class="btn-action btn-dark" onclick="getAiMatches()">開始 AI 智能配對</button>
+      </div>
 
-    <div id="view-ai" style="display:none;">
-      <div id="ai-content" class="ai-result-box">點擊下方按鈕開始 AI 配對分析...</div>
-      <button class="btn-action" style="background:#333;" onclick="getAiMatches()">重新獲取配對建議</button>
-    </div>
+      <!-- 5. 我的名片 -->
+      <div id="view-profile">
+        <div class="section-title">數位名片設定</div>
+        <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="field-input"></div>
+        <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="field-input"></div>
+        <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="field-input"></div>
+        <div class="field-group"><label class="field-label">我的資源</label><textarea id="f-resource" class="field-textarea"></textarea></div>
+        <div class="field-group"><label class="field-label">我的需求</label><textarea id="f-need" class="field-textarea"></textarea></div>
+        <button class="btn-action" onclick="saveProfile()">儲存並更新名片</button>
+      </div>
 
-    <nav>
-      <div class="nav-item active" id="nav-home" onclick="switchView('home')"><span class="nav-text">首頁</span></div>
-      <div class="nav-item" id="nav-profile" onclick="switchView('profile')"><span class="nav-text">名片</span></div>
-      <div class="nav-item" id="nav-activity" onclick="switchView('activity')"><span class="nav-text">活動</span></div>
-      <div class="nav-item" id="nav-ai" onclick="switchView('ai')"><span class="nav-text">配對</span></div>
+      <!-- 6. 參數設定 -->
+      <div id="view-settings" class="hidden">
+        <div class="section-title">系統參數</div>
+        <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="field-input"></div>
+        <div class="field-group"><label class="field-label">Telegram Chat ID</label><input id="set-tg-chatid" class="field-input"></div>
+        <button class="btn-action btn-dark" onclick="saveSettings()">儲存設定</button>
+      </div>
+    </main>
+
+    <!-- 底部導覽 (動態渲染或隱藏) -->
+    <nav id="bottom-nav">
+      <div class="nav-item" id="nav-create" onclick="switchView('create')"><i data-lucide="plus-circle"></i><span class="nav-text">建立</span></div>
+      <div class="nav-item" id="nav-checkin" onclick="switchView('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
+      <div class="nav-item" id="nav-crm" onclick="switchView('crm')"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
+      <div class="nav-item" id="nav-ai" onclick="switchView('ai')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
+      <div class="nav-item active" id="nav-profile" onclick="switchView('profile')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
+      <div class="nav-item" id="nav-settings" onclick="switchView('settings')"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
     </nav>
   </div>
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-    let uid = '', p = '';
+    let uid = '', p = '', isAdmin = false;
 
     async function init() {
+      lucide.createIcons();
+      const urlParams = new URLSearchParams(window.location.search);
+      p = urlParams.get('p');
+      if (!p) { document.body.innerHTML = '<div class="empty-msg">缺少店家代碼 p</div>'; return; }
+      
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
@@ -102,9 +150,6 @@
         uid = profile.userId;
         document.getElementById('user-avatar').src = profile.pictureUrl;
         document.getElementById('user-display-name').innerText = profile.displayName;
-
-        const urlParams = new URLSearchParams(window.location.search);
-        p = urlParams.get('p');
         loadHubData();
       } catch (e) { console.error(e); }
     }
@@ -113,42 +158,126 @@
       const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
       const result = await res.json();
       if (result.status === 'success') {
-        document.getElementById('brand-name').innerText = result.data.brandName || "服務中心";
-        if (result.data.isAdmin) document.getElementById('role-text').style.display = 'block';
-        
-        const prof = result.data.myProfile;
-        if (prof) {
-          document.getElementById('f-name').value = prof.name || '';
-          document.getElementById('f-job').value = prof.job || '';
-          document.getElementById('f-industry').value = prof.industry || '';
-          document.getElementById('f-resource').value = prof.resource || '';
-          document.getElementById('f-need').value = prof.need || '';
+        const d = result.data;
+        isAdmin = d.isAdmin;
+        document.getElementById('brand-name').innerText = d.brandName || "服務中心";
+        if (isAdmin) {
+          document.getElementById('role-text').style.display = 'block';
+        } else {
+          // 非管理員則隱藏管理按鈕
+          ['create', 'checkin', 'crm', 'settings'].forEach(id => {
+            document.getElementById('nav-' + id).style.display = 'none';
+          });
         }
+        
+        if (d.myProfile) {
+          document.getElementById('f-name').value = d.myProfile.name || '';
+          document.getElementById('f-job').value = d.myProfile.job || '';
+          document.getElementById('f-industry').value = d.myProfile.industry || '';
+          document.getElementById('f-resource').value = d.myProfile.resource || '';
+          document.getElementById('f-need').value = d.myProfile.need || '';
+        }
+        updateEventSelector(d.activities);
       }
     }
 
-    async function saveProfile() {
-      const data = {
-        name: document.getElementById('f-name').value,
-        job: document.getElementById('f-job').value,
-        industry: document.getElementById('f-industry').value,
-        resource: document.getElementById('f-resource').value,
-        need: document.getElementById('f-need').value
-      };
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
-      alert('資料已更新');
-      switchView('home');
-    }
-
     function switchView(v) {
-      ['home', 'profile', 'ai'].forEach(id => {
-        const el = document.getElementById('view-' + id);
-        if (el) el.style.display = (id === v) ? 'block' : 'none';
-        const nav = document.getElementById('nav-' + id);
-        if (nav) nav.classList.toggle('active', id === v);
-      });
+      document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
+      document.getElementById('view-' + v).classList.remove('hidden');
+      
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('nav-' + v).classList.add('active');
+      
+      if (v === 'crm') loadCrmData();
+      if (v === 'checkin') loadHubData(); // 重新整理活動選單
+      if (v === 'settings') loadSettings();
       window.scrollTo(0, 0);
     }
+
+    // [建立]
+    async function submitActivity() {
+      const name = document.getElementById('act-name').value;
+      if (!name) return alert('請輸入活動名稱');
+      showLoader(true);
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'create_activity', p, uid, mode: 'quick', name: name, names: document.getElementById('act-list').value.split('\n') }) });
+      alert('活動已發布');
+      showLoader(false);
+      switchView('checkin');
+    }
+
+    // [核銷]
+    function updateEventSelector(list) {
+      const sel = document.getElementById('event-selector');
+      if (!list || list.length === 0) { sel.innerHTML = '<option>尚無活動</option>'; return; }
+      sel.innerHTML = '<option value="">請選擇活動...</option>' + list.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+    }
+
+    async function loadRegistrants() {
+      const actName = document.getElementById('event-selector').value;
+      if (!actName) return;
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: actName }) });
+      const result = await res.json();
+      document.getElementById('registrant-list').innerHTML = result.data.map(r => `
+        <div class="menu-item" onclick="toggleCheckIn('${actName}', ${r.rowId}, ${r.checkedIn})">
+          <h3>${r.姓名}</h3>
+          <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊核銷'}</p>
+        </div>
+      `).join('');
+    }
+
+    async function toggleCheckIn(act, row, status) {
+      showLoader(true);
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_checkin', p, activityName: act, rowId: row, status: status }) });
+      await loadRegistrants();
+      showLoader(false);
+    }
+
+    // [CRM]
+    async function loadCrmData() {
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
+      const result = await res.json();
+      document.getElementById('crm-container').innerHTML = result.data.map(u => `
+        <div class="menu-item">
+          <h3>${u.name}</h3>
+          <p>累計出席：${u.attended} 次</p>
+        </div>
+      `).join('');
+    }
+
+    // [配對]
+    async function getAiMatches() {
+      const content = document.getElementById('ai-content');
+      content.innerText = 'AI 正在分析本中心會員名片中...';
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
+      content.innerText = await res.text();
+    }
+
+    // [參數]
+    async function loadSettings() {
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_settings', p }) });
+      const result = await res.json();
+      document.getElementById('set-tg-token').value = result.data.TG_BOT_TOKEN || '';
+      document.getElementById('set-tg-chatid').value = result.data.TG_CHAT_ID || '';
+    }
+
+    async function saveSettings() {
+      showLoader(true);
+      const s = { TG_BOT_TOKEN: document.getElementById('set-tg-token').value, TG_CHAT_ID: document.getElementById('set-tg-chatid').value };
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_settings', p, settings: s }) });
+      alert('設定已儲存');
+      showLoader(false);
+    }
+
+    // [名片]
+    async function saveProfile() {
+      showLoader(true);
+      const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
+      alert('名片已更新');
+      showLoader(false);
+    }
+
+    function showLoader(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
 
     init();
   </script>
