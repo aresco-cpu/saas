@@ -1,127 +1,140 @@
-<!-- Version: v1.1.4 (報名大師 SaaS 穩定版 - 嚴格遵循無粗體、無包框、支援複製梯次) -->
+<!-- Version: v1.1.6 (報名大師 SaaS 商業版 - 恢復高質感 UI 與智慧複製功能) -->
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html class="light" lang="zh-TW">
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-  <title>建立活動</title>
+  <link rel="icon" href="data:,">
+  <title>建立新活動 - 報名大師</title>
   
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=Noto+Sans+TC:wght@400;500;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  <script>
+  <script id="tailwind-config">
     window.tailwind = window.tailwind || {};
     window.tailwind.config = {
       theme: {
         extend: {
-          colors: { primary: "#06C755", "text-main": "#111111", "text-muted": "#8e8e93", link: "#007aff" }
+          colors: { 
+            primary: "#2563eb", 
+            "primary-light": "#eff6ff", 
+            background: "#ffffff", 
+            "text-main": "#0f172a", 
+            "text-muted": "#64748b", 
+            error: "#ef4444" 
+          },
+          fontFamily: { 
+            headline: ["Manrope", "Noto Sans TC", "sans-serif"],
+            sans: ["Inter", "Noto Sans TC", "sans-serif"] 
+          },
+          boxShadow: {
+            'app-card': '0 4px 20px -2px rgba(0,0,0,0.05)',
+            'app-nav': '0 -4px 20px rgba(0,0,0,0.03)',
+          }
         }
       }
     }
   </script>
   <style>
-    body { font-family: 'Noto Sans TC', sans-serif; background-color: #ffffff; color: #111; -webkit-font-smoothing: antialiased; }
-    .nav-tabs { display: flex; border-bottom: 1px solid #f2f2f2; position: sticky; top: 0; background: #fff; z-index: 30; }
-    .tab { flex: 1; text-align: center; padding: 14px 0; font-size: 14px; color: #8e8e93; cursor: pointer; border-bottom: 2px solid transparent; }
-    .tab-active { color: #06C755; border-bottom-color: #06C755; font-weight: 400; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400; vertical-align: middle; }
+    body { background-color: #ffffff; -webkit-tap-highlight-color: transparent; }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 1.5rem); }
     
-    /* LINE 原生風格：極簡底線、無包框、無粗體 */
-    .row-item { padding: 12px 20px; border-bottom: 1px solid #f8f8f8; display: flex; align-items: center; min-height: 52px; }
-    .row-label { width: 85px; font-size: 14px; color: #111; flex-shrink: 0; font-weight: 400; }
-    .row-input { flex: 1; border: none; font-size: 15px; outline: none; padding: 0; background: transparent; color: #111; font-weight: 400; }
-    .row-input::placeholder { color: #c7c7cc; }
+    .input-label { @apply block text-[15px] text-slate-800 mb-1.5 font-normal; }
+    .custom-input { @apply w-full h-[44px] px-3 bg-white border border-slate-400 rounded outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-text-main text-[15px] shadow-none; }
+    .textarea-block { @apply w-full p-3 bg-white border border-slate-400 rounded outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-[15px] text-text-main resize-none leading-relaxed shadow-none; }
 
-    .textarea-box { width: 100%; padding: 15px 20px; border-bottom: 1px solid #f8f8f8; font-size: 14px; outline: none; resize: none; background: #fdfdfd; font-weight: 400; }
-    
-    .btn-main { width: 100%; padding: 18px; background-color: #06C755; color: #fff; font-size: 16px; border: none; position: fixed; bottom: 0; left: 0; z-index: 40; font-weight: 400; }
-    .btn-main:disabled { background-color: #c7c7cc; }
+    .btn-primary { @apply w-full py-4 bg-primary text-white rounded font-bold text-[16px] shadow-sm active:opacity-80 transition-opacity flex items-center justify-center gap-2 hover:bg-blue-700; }
+    .tab-btn { @apply flex-1 py-2.5 rounded text-[14px] font-bold transition-all border border-transparent; }
+    .tab-active { @apply bg-white text-primary shadow-sm border-slate-200; }
+    .tab-inactive { @apply text-slate-500 hover:text-slate-700; }
 
-    .img-upload { padding: 20px; text-align: center; border-bottom: 1px solid #f8f8f8; cursor: pointer; }
-    .img-prev { width: 100%; height: 160px; object-fit: cover; border-radius: 4px; display: none; margin-bottom: 10px; }
-    .img-hint { font-size: 13px; color: #007aff; }
-
-    .batch-item { padding: 15px 20px; border-bottom: 1px solid #f2f2f2; position: relative; background: #fcfcfc; }
-    .batch-actions { position: absolute; right: 20px; top: 15px; display: flex; gap: 15px; }
-    .batch-btn { font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px; font-weight: 400; }
-    .btn-copy { color: #007aff; }
-    .btn-remove { color: #ff3b30; }
-    
-    .batch-add { color: #007aff; font-size: 14px; padding: 16px; cursor: pointer; text-align: center; border-bottom: 1px solid #f8f8f8; font-weight: 400; }
+    .batch-card { @apply bg-slate-50 border border-slate-300 rounded p-4 relative animate-in fade-in zoom-in-95 duration-200 mb-4; }
+    .action-btn { @apply w-8 h-8 flex items-center justify-center bg-white border border-slate-200 rounded shadow-sm transition-colors; }
 
     .hidden { display: none !important; }
   </style>
 </head>
-<body class="pb-24">
+<body class="font-sans text-text-main min-h-screen">
 
-<div id="app" class="max-w-md mx-auto">
-  <nav class="nav-tabs">
-    <div onclick="switchTab('quick')" id="tab-quick" class="tab tab-active">快速上架</div>
-    <div onclick="switchTab('formal')" id="tab-formal" class="tab">正式規格</div>
-    <div onclick="switchTab('batch')" id="tab-batch" class="tab">系列梯次</div>
+<div id="app-container" class="max-w-md mx-auto min-h-screen flex flex-col relative bg-white shadow-2xl">
+  
+  <!-- 頂部導覽 -->
+  <nav class="sticky top-0 z-40 bg-white/95 backdrop-blur-xl px-5 py-3.5 flex justify-between items-center border-b border-slate-200 shadow-sm">
+    <div class="text-[19px] font-extrabold text-slate-800 flex items-center gap-2 font-headline tracking-tight">
+      <div class="w-8 h-8 rounded bg-primary text-white flex items-center justify-center shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">add_circle</span>
+      </div>
+      建立新活動
+      <span class="bg-slate-800 text-white text-[9px] px-2 py-0.5 rounded uppercase tracking-wider font-bold ml-1">Admin</span>
+    </div>
+    <div id="user-badge" class="hidden"><img id="user-avatar" class="w-9 h-9 rounded-full border border-slate-200 shadow-sm"></div>
   </nav>
 
-  <main>
-    <section id="form-quick">
-      <div class="row-item">
-        <span class="row-label">活動名稱</span>
-        <input type="text" id="q-name" class="row-input" placeholder="例：第 88 次例會">
+  <main class="flex-1 overflow-y-auto pt-5 px-5 pb-32">
+    <!-- 分頁選單 (漂亮版) -->
+    <div class="flex p-1 rounded border border-slate-200 bg-slate-100 mb-6">
+      <button onclick="switchTab('quick')" id="tab-quick" class="tab-btn tab-active">快速匯入</button>
+      <button onclick="switchTab('formal')" id="tab-formal" class="tab-btn tab-inactive">完整發佈</button>
+      <button onclick="switchTab('batch')" id="tab-batch" class="tab-btn tab-inactive">梯次建立</button>
+    </div>
+
+    <!-- 1. 快速匯入 -->
+    <section id="form-quick" class="space-y-6">
+      <div><label class="input-label">活動名稱</label><input type="text" id="q-name" class="custom-input" placeholder="輸入活動標題..."></div>
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="input-label">活動類型</label><select id="q-type" class="custom-input"><option>例會</option><option>課程</option><option>講座</option><option>其他</option></select></div>
+        <div><label class="input-label">預設身份</label><select id="q-identity" class="custom-input"><option>會員</option><option>來賓</option></select></div>
       </div>
-      <div class="row-item">
-        <span class="row-label">活動類型</span>
-        <select id="q-type" class="row-input">
-          <option>例會</option><option>課程</option><option>聯誼</option><option>參訪</option><option>講座</option><option>其他</option>
-        </select>
-      </div>
-      <div class="row-item">
-        <span class="row-label">開始時間</span>
-        <input type="datetime-local" id="q-start" class="row-input text-gray-500">
-      </div>
-      <div class="px-5 py-4 border-b border-gray-50">
-        <div class="text-[12px] text-gray-400 mb-2">匯入名單 (每行姓名)</div>
-        <textarea id="q-names" class="w-full h-40 text-sm outline-none resize-none" placeholder="王小明&#10;李大華..."></textarea>
+      <div><label class="input-label">開始時間</label><input type="datetime-local" id="q-start" class="custom-input !px-2 text-slate-700"></div>
+      <div>
+        <div class="flex justify-between items-center mb-1.5"><label class="input-label !mb-0">名單內容</label><span class="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">支援批次</span></div>
+        <textarea id="q-names" class="textarea-block h-36" placeholder="請貼上參與者姓名，每行一位..."></textarea>
       </div>
     </section>
 
-    <section id="form-formal" class="hidden">
-      <div onclick="document.getElementById('file-formal').click()" class="img-upload">
-        <img id="prev-formal" class="img-prev">
-        <div id="hint-formal" class="img-hint">+ 選擇封面圖片</div>
+    <!-- 2. 完整發佈 -->
+    <section id="form-formal" class="hidden space-y-6">
+      <div onclick="document.getElementById('file-formal').click()" class="w-full h-40 border border-slate-300 rounded flex flex-col items-center justify-center bg-slate-50 cursor-pointer overflow-hidden transition-colors hover:bg-slate-100 relative group">
+        <div id="hint-formal" class="text-center text-slate-400 flex flex-col items-center z-10"><span class="material-symbols-outlined text-[32px] mb-1">add_photo_alternate</span><p class="text-[14px] font-medium">點圖上傳封面</p></div>
+        <img id="prev-formal" class="hidden w-full h-full object-cover absolute inset-0 z-0">
         <input type="file" id="file-formal" class="hidden" accept="image/*" onchange="handleImg(this, 'formal')">
         <input type="hidden" id="img-formal">
       </div>
-      <div class="row-item">
-        <span class="row-label">活動標題</span>
-        <input type="text" id="f-name" class="row-input">
+      <div><label class="input-label">活動標題</label><input type="text" id="f-name" class="custom-input"></div>
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="input-label">費用</label><input type="number" id="f-price" class="custom-input" placeholder="0"></div>
+        <div><label class="input-label">人數上限</label><input type="number" id="f-limit" class="custom-input" placeholder="不限"></div>
       </div>
-      <div class="row-item">
-        <span class="row-label">費用</span>
-        <input type="number" id="f-price" class="row-input" placeholder="0 為免費">
-      </div>
-      <div class="px-5 py-4 border-b border-gray-50">
-        <div class="text-[11px] text-link float-right" onclick="aiBoost('f-desc')">🤖 AI 優化</div>
-        <div class="text-[12px] text-gray-400 mb-2">詳細介紹</div>
-        <textarea id="f-desc" class="w-full h-32 text-sm outline-none resize-none"></textarea>
+      <div>
+        <div onclick="aiBoost('f-desc')" class="text-[11px] font-bold text-blue-600 cursor-pointer float-right">🤖 AI 優化</div>
+        <label class="input-label">活動介紹</label>
+        <textarea id="f-desc" class="textarea-block h-32"></textarea>
       </div>
     </section>
 
-    <section id="form-batch" class="hidden">
-      <div class="row-item">
-        <span class="row-label">系列標題</span>
-        <input type="text" id="b-name" class="row-input" placeholder="例：AI 轉型實戰班">
-      </div>
-      <div class="px-5 py-3 border-b border-gray-50">
-        <div class="text-[12px] text-gray-400 mb-2">系列介紹</div>
-        <textarea id="b-desc" class="w-full h-24 text-sm outline-none resize-none"></textarea>
+    <!-- 3. 梯次建立 -->
+    <section id="form-batch" class="hidden space-y-6">
+      <div><label class="input-label">系列標題</label><input type="text" id="b-name" class="custom-input" placeholder="例如：2026 AI 轉型實戰營"></div>
+      <div><label class="input-label">統整說明</label><textarea id="b-desc" class="textarea-block h-24"></textarea></div>
+      
+      <div class="flex justify-between items-center border-t border-slate-100 pt-5">
+        <label class="input-label !mb-0 font-bold text-slate-800 text-[16px]">場次列表</label>
+        <button onclick="addBatchRow()" class="px-3 py-1.5 bg-blue-50 text-blue-600 font-bold text-[13px] rounded flex items-center gap-1 active:bg-blue-100 transition-colors shadow-sm border border-blue-100">+ 新增場次</button>
       </div>
       <div id="batch-container"></div>
-      <div class="batch-add" onclick="addBatchRow()">+ 新增一個空白梯次</div>
     </section>
   </main>
 
-  <button onclick="submit()" id="btn-submit" class="btn-main">確認並發布活動</button>
+  <button onclick="handleSubmit()" id="btn-submit" class="fixed bottom-0 left-0 w-full btn-primary z-50 rounded-none py-5">
+    確認並發布
+  </button>
 </div>
+
+<!-- Toast 通知 -->
+<div id="toast" class="hidden fixed top-16 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl bg-slate-800 text-white text-[14px] shadow-2xl z-[10000] font-bold flex items-center gap-2 transition-all opacity-0"></div>
 
 <script>
   const LIFF_ID = '2009367829-5bIWGL8O';
@@ -129,22 +142,23 @@
   let p = '', uid = '', currentMode = 'quick';
 
   async function init() {
-    const params = new URLSearchParams(window.location.search);
-    p = params.get('p');
+    p = new URLSearchParams(window.location.search).get('p');
     try {
       await liff.init({ liffId: LIFF_ID });
       if (!liff.isLoggedIn()) { liff.login(); return; }
       const profile = await liff.getProfile();
       uid = profile.userId;
-      addBatchRow();
+      document.getElementById('user-avatar').src = profile.pictureUrl;
+      document.getElementById('user-badge').classList.remove('hidden');
+      addBatchRow(); // 初始化一個
     } catch (e) { console.error('LIFF Error', e); }
   }
 
   function switchTab(m) {
     currentMode = m;
     ['quick', 'formal', 'batch'].forEach(t => {
-      document.getElementById('tab-' + t).classList.toggle('tab-active', t === m);
-      document.getElementById('form-' + t).classList.toggle('hidden', t !== m);
+      document.getElementById('tab-' + t).className = `tab-btn ${m === t ? 'tab-active' : 'tab-inactive'}`;
+      document.getElementById('form-' + t).classList.toggle('hidden', m !== t);
     });
   }
 
@@ -155,119 +169,117 @@
     const loc = data ? data.loc : '';
 
     const html = `
-      <div id="batch-${id}" class="batch-item">
-        <div class="batch-actions">
-          <div class="batch-btn btn-copy" onclick="cloneBatch('${id}')">
-            <span class="material-symbols-outlined text-[14px]">content_copy</span>複製
-          </div>
-          <div class="batch-btn btn-remove" onclick="document.getElementById('batch-${id}').remove()">
-            <span class="material-symbols-outlined text-[14px]">delete</span>移除
-          </div>
+      <div id="batch-${id}" class="batch-card">
+        <div class="absolute top-2.5 right-2.5 flex gap-2">
+          <button onclick="cloneBatch('${id}')" class="action-btn text-blue-500 hover:text-blue-700" title="複製"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+          <button onclick="document.getElementById('batch-${id}').remove()" class="action-btn text-slate-400 hover:text-red-500"><span class="material-symbols-outlined text-[18px]">delete</span></button>
         </div>
-        <div class="flex items-center mb-2">
-          <span class="text-[12px] text-gray-400 w-20">梯次名稱</span>
-          <input type="text" class="b-sub-name row-input !text-sm" placeholder="第一梯次" value="${name}">
+        <div class="flex flex-col mb-4 pr-20">
+          <label class="input-label !text-[13px] !text-slate-600 !mb-1">梯次名稱</label>
+          <input type="text" class="custom-input batch-name-in !h-[38px] !text-[14px]" placeholder="例：第一梯次" value="${name}">
         </div>
-        <div class="flex items-center mb-2">
-          <span class="text-[12px] text-gray-400 w-20">開始時間</span>
-          <input type="datetime-local" class="b-sub-time row-input !text-[12px]" value="${time}">
-        </div>
-        <div class="flex items-center">
-          <span class="text-[12px] text-gray-400 w-20">活動地點</span>
-          <input type="text" class="b-sub-loc row-input !text-sm" placeholder="未定" value="${loc}">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col"><label class="input-label !text-[13px] !text-slate-600 !mb-1">時間</label><input type="datetime-local" class="custom-input batch-time-in !h-[38px] !px-2 !text-[13px]" value="${time}"></div>
+          <div class="flex flex-col"><label class="input-label !text-[13px] !text-slate-600 !mb-1">地點</label><input type="text" class="custom-input batch-loc-in !h-[38px] !text-[14px]" value="${loc}"></div>
         </div>
       </div>`;
     document.getElementById('batch-container').insertAdjacentHTML('beforeend', html);
   }
 
-  function cloneBatch(sourceId) {
-    const sourceEl = document.getElementById(`batch-${sourceId}`);
+  function cloneBatch(sid) {
+    const el = document.getElementById(`batch-${sid}`);
     const data = {
-      name: sourceEl.querySelector('.b-sub-name').value,
-      time: sourceEl.querySelector('.b-sub-time').value,
-      loc: sourceEl.querySelector('.b-sub-loc').value
+      name: el.querySelector('.batch-name-in').value,
+      time: el.querySelector('.batch-time-in').value,
+      loc: el.querySelector('.batch-loc-in').value
     };
     addBatchRow(data);
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    showToast("✅ 已複製內容");
   }
 
   function handleImg(input, mode) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
+    const file = input.files[0]; if (!file) return;
+    showToast("壓縮中...");
+    const r = new FileReader();
+    r.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let w = img.width, h = img.height;
-        if (w > 800) { h = Math.round(h * (800 / w)); w = 800; }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        const b64 = canvas.toDataURL('image/jpeg', 0.7);
+        const cvs = document.createElement('canvas');
+        let w = img.width, h = img.height, max = 800;
+        if (w > max) { h = Math.round(h * (max / w)); w = max; }
+        cvs.width = w; cvs.height = h;
+        cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+        const b64 = cvs.toDataURL('image/jpeg', 0.7);
         document.getElementById('prev-'+mode).src = b64;
-        document.getElementById('prev-'+mode).style.display = 'block';
+        document.getElementById('prev-'+mode).classList.remove('hidden');
         document.getElementById('hint-'+mode).classList.add('hidden');
         document.getElementById('img-'+mode).value = b64;
+        showToast("✅ 上傳成功");
       };
       img.src = e.target.result;
     };
-    reader.readAsDataURL(file);
+    r.readAsDataURL(file);
   }
 
   async function aiBoost(id) {
-    const el = document.getElementById(id);
-    if(!el.value) return;
+    const el = document.getElementById(id); if(!el.value) return;
+    showToast("AI 正在撰寫文案...");
     const res = await fetch(WORKER_URL, { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'ai_optimize_activity', p, content: el.value }) 
     });
     el.value = await res.text();
+    showToast("✅ AI 優化完成");
   }
 
-  async function submit() {
+  async function handleSubmit() {
     const btn = document.getElementById('btn-submit');
-    const oldText = btn.innerText;
-    btn.innerText = '處理中...'; btn.disabled = true;
+    const oriText = btn.innerText;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">refresh</span> 處理中...';
+    btn.disabled = true;
 
     let payload = { action: 'create_activity', mode: currentMode, p, uid };
-
     try {
       if (currentMode === 'quick') {
-        payload.name = document.getElementById('q-name').value;
+        payload.name = document.getElementById('q-name').value.trim();
         payload.start = document.getElementById('q-start').value;
+        payload.identity = document.getElementById('q-identity').value;
         payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
       } else if (currentMode === 'formal') {
-        payload.name = document.getElementById('f-name').value;
+        payload.name = document.getElementById('f-name').value.trim();
         payload.price = document.getElementById('f-price').value;
+        payload.limit = document.getElementById('f-limit').value;
         payload.desc = document.getElementById('f-desc').value;
         payload.image = document.getElementById('img-formal').value;
       } else {
-        payload.name = document.getElementById('b-name').value;
+        payload.name = document.getElementById('b-name').value.trim();
         payload.desc = document.getElementById('b-desc').value;
-        payload.sessions = Array.from(document.querySelectorAll('.batch-item')).map(item => ({
-          name: item.querySelector('.b-sub-name').value,
-          time: item.querySelector('.b-sub-time').value,
-          loc: item.querySelector('.b-sub-loc').value
+        payload.sessions = Array.from(document.querySelectorAll('.batch-card')).map(el => ({
+          name: el.querySelector('.batch-name-in').value,
+          time: el.querySelector('.batch-time-in').value,
+          loc: el.querySelector('.batch-loc-in').value
         }));
       }
 
       if(!payload.name) throw new Error('標題不能為空');
 
       const response = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
       const result = await response.json();
-      alert(result.message);
-      if(result.status === 'success') location.href = 'service_hub.html?p=' + p;
-    } catch(e) { 
-      alert(e.message || '連線異常'); 
-    } finally {
-      btn.innerText = oldText; btn.disabled = false;
-    }
+      showToast(result.message);
+      if(result.status === 'success') setTimeout(() => location.href = 'service_hub.html?p=' + p, 1500);
+    } catch(e) { showToast(e.message || '異常', true); }
+    finally { btn.innerText = oriText; btn.disabled = false; }
+  }
+
+  function showToast(m, isErr = false) {
+    const t = document.getElementById('toast');
+    t.innerText = m;
+    t.className = `fixed top-16 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl shadow-2xl z-[10000] font-bold transition-all opacity-100 ${isErr ? 'bg-red-500' : 'bg-slate-800'} text-white`;
+    setTimeout(() => { t.style.opacity = '0'; }, 2000);
   }
 
   init();
