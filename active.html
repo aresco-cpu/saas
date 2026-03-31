@@ -3,292 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>建立新活動 - 服務中台</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>活動管理</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; background-color: #f8f8f8; color: #333; margin: 0; }
-    .input-group { margin-bottom: 16px; }
-    .label-text { display: block; font-size: 13px; color: #666; margin-bottom: 4px; }
-    .form-input { width: 100%; padding: 12px; border: 1px solid #e5e5e5; border-radius: 8px; font-size: 15px; outline: none; background: #fff; box-sizing: border-box; }
-    .form-input:focus { border-color: #06C755; }
-    .tab-btn { flex: 1; text-align: center; padding: 12px; font-size: 14px; cursor: pointer; color: #999; border-bottom: 2px solid transparent; }
-    .tab-btn.active { color: #06C755; border-bottom-color: #06C755; font-weight: 500; }
-    .btn-main { background: #06C755; color: white; border: none; width: 100%; padding: 14px; border-radius: 8px; font-size: 16px; cursor: pointer; }
-    .btn-main:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-ai { background: #333; color: white; padding: 4px 10px; border-radius: 4px; font-size: 11px; float: right; margin-top: -24px; cursor: pointer; }
-    .image-preview { width: 100%; aspect-ratio: 16/9; background: #fff; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px dashed #ddd; margin-bottom: 8px; }
-    .image-preview img { width: 100%; height: 100%; object-fit: cover; }
-    .batch-item { background: #fff; border: 1px solid #eee; padding: 12px; border-radius: 8px; margin-bottom: 10px; position: relative; }
-    .nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: white; display: flex; border-top: 1px solid #eee; height: 60px; z-index: 10; }
-    .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #999; text-decoration: none; }
-    .nav-btn.active { color: #06C755; }
-    .del-icon { position: absolute; top: 8px; right: 8px; color: #ff4d4f; font-size: 12px; cursor: pointer; padding: 4px; }
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #FFFFFF; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
+    .page-container { max-width: 450px; margin: 0 auto; padding: 25px 20px; }
+    header { margin-bottom: 25px; }
+    header h1 { margin: 0; font-size: 24px; font-weight: 400; color: #1A202C; margin-bottom: 8px; }
+    header p { margin: 0; font-size: 15px; color: #718096; }
+    .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin-bottom: 30px; }
+    .tab-item { flex: 1; text-align: center; padding: 12px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
+    .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .form-group { margin-bottom: 25px; position: relative; }
+    label { display: block; margin-bottom: 10px; color: #4A5568; font-size: 15px; }
+    input, textarea { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
+    .btn-submit { width: 100%; padding: 16px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 10px; }
+    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 75px; left: 50%; transform: translateX(-50%); z-index: 100; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; text-decoration: none; }
+    .nav-item.active { color: #1A202C; }
+    .nav-text { font-size: 13px; margin-top: 4px; }
+    .hidden { display: none; }
   </style>
 </head>
-<body class="flex justify-center">
+<body>
+  <div class="page-container">
+    <header>
+      <h1 id="header-title">建立新活動</h1>
+      <p id="header-desc">部署您的專屬活動流程。</p>
+    </header>
 
-<div class="w-full max-w-[450px] min-h-screen bg-white relative pb-24">
-  <!-- 頂部標題列：含頭像與商店代號 -->
-  <header class="bg-[#06C755] text-white p-3 sticky top-0 z-20 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <img id="user-avatar" src="" class="w-10 h-10 rounded-full border-2 border-white/30 hidden">
-      <div>
-        <h2 class="text-base font-medium leading-tight">建立新活動</h2>
-        <div id="store-display" class="text-[10px] opacity-80">商店代號: 載入中...</div>
-      </div>
+    <div id="main-tabs" class="tab-selector">
+      <div id="tab-quick" class="tab-item active" onclick="switchTab('quick')">快速</div>
+      <div id="tab-full" class="tab-item" onclick="switchTab('full')">完整</div>
+      <div id="tab-batch" class="tab-item" onclick="switchTab('batch')">梯次</div>
     </div>
-    <div id="user-name" class="text-[11px] opacity-90 max-w-[80px] truncate"></div>
-  </header>
 
-  <div class="flex bg-gray-50 border-b border-gray-200">
-    <div onclick="switchTab('quick')" id="tab-quick" class="tab-btn active">快速匯入</div>
-    <div onclick="switchTab('detailed')" id="tab-detailed" class="tab-btn">詳細發佈</div>
-    <div onclick="switchTab('batch')" id="tab-batch" class="tab-btn">梯次建立</div>
+    <!-- 設定頁面標籤 (當導航點擊參數時) -->
+    <div id="settings-tabs" class="tab-selector hidden">
+      <div class="tab-item active">Telegram 設定</div>
+    </div>
+
+    <main id="view-create">
+      <div class="form-group">
+        <label>活動名稱</label>
+        <input type="text" id="act-name" placeholder="輸入活動標題...">
+      </div>
+      <div id="section-quick" class="form-group">
+        <label>名單內容</label>
+        <textarea id="act-list" placeholder="請貼上參與者姓名，每行一位"></textarea>
+      </div>
+      <button class="btn-submit" onclick="submitData()">完成並建立</button>
+    </main>
+
+    <main id="view-settings" class="hidden">
+      <div class="form-group">
+        <label>Telegram Bot Token</label>
+        <input type="text" id="tg-token" placeholder="請貼上 BotFather 給予的 Token">
+      </div>
+      <div class="form-group">
+        <label>Telegram Chat ID</label>
+        <input type="text" id="tg-chatid" placeholder="請貼上您的 Chat ID">
+      </div>
+      <button class="btn-submit" onclick="saveSettings()">儲存參數設定</button>
+    </main>
+
+    <nav>
+      <div class="nav-item active" onclick="switchNav('create')">
+        <i data-lucide="plus-circle"></i><span class="nav-text">建立</span>
+      </div>
+      <div class="nav-item"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
+      <div class="nav-item" id="nav-settings" onclick="switchNav('settings')">
+        <i data-lucide="settings"></i><span class="nav-text">參數</span>
+      </div>
+      <a id="link-front" href="#" class="nav-item">
+        <i data-lucide="layout-dashboard"></i><span class="nav-text">中台</span>
+      </a>
+    </nav>
   </div>
 
-  <main class="p-4">
-    <!-- 圖片上傳 -->
-    <div class="input-group">
-      <span class="label-text">活動圖片</span>
-      <div class="image-preview" onclick="document.getElementById('img-file').click()">
-        <img id="preview-img" src="" class="hidden">
-        <span id="preview-placeholder" class="text-gray-400 text-sm">點擊上傳封面圖</span>
-      </div>
-      <input type="file" id="img-file" class="hidden" accept="image/*" onchange="previewFile()">
-    </div>
+  <script>
+    const LIFF_ID = '2009367829-5bIWGL8O';
+    const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
+    let uid = '', p = '';
 
-    <!-- 1. 快速模式 -->
-    <div id="form-quick" class="space-y-4">
-      <div class="input-group">
-        <span class="label-text">活動標題</span>
-        <input type="text" id="q-name" class="form-input" placeholder="例：每週例會">
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div class="input-group">
-          <span class="label-text">開始時間</span>
-          <input type="datetime-local" id="q-start" class="form-input !text-xs">
-        </div>
-        <div class="input-group">
-          <span class="label-text">結束時間</span>
-          <input type="datetime-local" id="q-end" class="form-input !text-xs">
-        </div>
-      </div>
-      <div class="input-group">
-        <span class="label-text">活動說明</span>
-        <div onclick="aiOptimizeDesc('q-desc')" class="btn-ai">🤖 AI 優化</div>
-        <textarea id="q-desc" class="form-input h-24" placeholder="輸入活動介紹..."></textarea>
-      </div>
-      <div class="input-group">
-        <span class="label-text">名單匯入 (每行一位)</span>
-        <textarea id="q-names" class="form-input h-32" placeholder="請貼上參與者姓名..."></textarea>
-      </div>
-      <button onclick="submitActivity('quick')" id="btn-q" class="btn-main">立即建立並匯入</button>
-    </div>
-
-    <!-- 2. 詳細模式 -->
-    <div id="form-detailed" class="hidden space-y-4">
-      <div class="input-group">
-        <span class="label-text">正式活動標題</span>
-        <input type="text" id="d-name" class="form-input">
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div class="input-group">
-          <span class="label-text">開始時間</span>
-          <input type="datetime-local" id="d-start" class="form-input !text-xs">
-        </div>
-        <div class="input-group">
-          <span class="label-text">結束時間</span>
-          <input type="datetime-local" id="d-end" class="form-input !text-xs">
-        </div>
-      </div>
-      <div class="input-group">
-        <span class="label-text">活動詳細介紹</span>
-        <div onclick="aiOptimizeDesc('d-desc')" class="btn-ai">🤖 AI 優化</div>
-        <textarea id="d-desc" class="form-input h-40" placeholder="活動細節說明..."></textarea>
-      </div>
-      <button onclick="submitActivity('detailed')" id="btn-d" class="btn-main">發布正式活動</button>
-    </div>
-
-    <!-- 3. 梯次模式 -->
-    <div id="form-batch" class="hidden space-y-4">
-      <div class="input-group">
-        <span class="label-text">系列標題</span>
-        <input type="text" id="b-name" class="form-input">
-      </div>
-      <div class="input-group">
-        <span class="label-text">系列說明</span>
-        <div onclick="aiOptimizeDesc('b-desc')" class="btn-ai">🤖 AI 優化</div>
-        <textarea id="b-desc" class="form-input h-24" placeholder="系列活動共通說明..."></textarea>
-      </div>
-      <div id="batch-container">
-        <div class="batch-item">
-          <input type="text" class="form-input b-item-name mb-2" placeholder="梯次名稱">
-          <div class="grid grid-cols-2 gap-2">
-            <input type="datetime-local" class="form-input b-item-start text-xs">
-            <input type="datetime-local" class="form-input b-item-end text-xs">
-          </div>
-        </div>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="addBatchRow(false)" class="flex-1 py-2 border border-gray-300 rounded text-gray-500 text-sm font-medium">+ 空白梯次</button>
-        <button onclick="addBatchRow(true)" class="flex-1 py-2 border border-dashed border-[#06C755] rounded text-[#06C755] text-sm font-medium">⧉ 複製前梯</button>
-      </div>
-      <button onclick="submitActivity('batch')" id="btn-b" class="btn-main mt-4">發布梯次活動</button>
-    </div>
-  </main>
-
-  <nav class="nav">
-    <a id="admin-link" href="admin.html" class="nav-btn"><span>後台</span></a>
-    <div class="nav-btn active"><span>建立</span></div>
-    <a id="front-link" href="#" class="nav-btn"><span>前台</span></a>
-  </nav>
-</div>
-
-<script>
-  const LIFF_ID = '2009367829-5bIWGL8O';
-  const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-  let uid = '', p = '', imgData = '';
-
-  async function init() {
-    const urlParams = new URLSearchParams(window.location.search);
-    p = urlParams.get('p');
-    
-    if (!p) p = localStorage.getItem('current_p');
-    if (p) {
-      localStorage.setItem('current_p', p);
-      document.getElementById('front-link').href = `service_hub.html?p=${p}`;
-      document.getElementById('admin-link').href = `admin.html?p=${p}`;
-      document.getElementById('store-display').innerText = `商店代號: ${p}`;
-    } else {
-      document.getElementById('store-display').innerText = `商店代號: 未帶入`;
-    }
-
-    try {
+    async function init() {
+      lucide.createIcons();
+      const urlParams = new URLSearchParams(window.location.search);
+      p = urlParams.get('p');
+      if (p) document.getElementById('link-front').href = `service_hub.html?p=${p}`;
       await liff.init({ liffId: LIFF_ID });
       if (!liff.isLoggedIn()) { liff.login(); return; }
       const profile = await liff.getProfile();
       uid = profile.userId;
-
-      // 更新頭像與姓名
-      if (profile.pictureUrl) {
-        const avatar = document.getElementById('user-avatar');
-        avatar.src = profile.pictureUrl;
-        avatar.classList.remove('hidden');
-      }
-      document.getElementById('user-name').innerText = profile.displayName;
-
-    } catch (e) {
-      console.error('LIFF Init Error', e);
     }
-  }
 
-  function previewFile() {
-    const file = document.getElementById('img-file').files[0];
-    const preview = document.getElementById('preview-img');
-    const placeholder = document.getElementById('preview-placeholder');
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      imgData = reader.result;
-      preview.src = imgData;
-      preview.classList.remove('hidden');
-      placeholder.classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function switchTab(m) {
-    ['quick', 'detailed', 'batch'].forEach(t => {
-      document.getElementById('tab-' + t).classList.toggle('active', t === m);
-      document.getElementById('form-' + t).classList.toggle('hidden', t !== m);
-    });
-  }
-
-  function addBatchRow(copyLast = false) {
-    const container = document.getElementById('batch-container');
-    const items = container.querySelectorAll('.batch-item');
-    const lastItem = items[items.length - 1];
-    const div = document.createElement('div');
-    div.className = 'batch-item';
-    let name = "", start = "", end = "";
-    if (copyLast && lastItem) {
-      name = lastItem.querySelector('.b-item-name').value;
-      start = lastItem.querySelector('.b-item-start').value;
-      end = lastItem.querySelector('.b-item-end').value;
-    }
-    div.innerHTML = `<div class="del-icon" onclick="this.parentElement.remove()">移除</div><input type="text" class="form-input b-item-name mb-2" value="${name}" placeholder="梯次名稱"><div class="grid grid-cols-2 gap-2"><input type="datetime-local" class="form-input b-item-start text-xs" value="${start}"><input type="datetime-local" class="form-input b-item-end text-xs" value="${end}"></div>`;
-    container.appendChild(div);
-  }
-
-  async function aiOptimizeDesc(id) {
-    const el = document.getElementById(id);
-    if (!el.value) return alert('請先輸入大綱');
-    const oldVal = el.value;
-    el.value = 'AI 優化中...';
-    try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'ai_optimize_activity', p, content: oldVal })
-      });
-      el.value = await res.text();
-    } catch (e) { el.value = oldVal; }
-  }
-
-  async function submitActivity(mode) {
-    if (!p) return alert('缺少必要參數 p，活動無法正確存檔。');
-    const btn = document.getElementById('btn-' + (mode === 'quick' ? 'q' : mode === 'detailed' ? 'd' : 'b'));
-    let payload = { action: 'create_activity', mode, p, uid, img: imgData };
-    
-    if (mode === 'quick') {
-      payload.name = document.getElementById('q-name').value;
-      payload.start = document.getElementById('q-start').value;
-      payload.end = document.getElementById('q-end').value;
-      payload.desc = document.getElementById('q-desc').value;
-      payload.names = document.getElementById('q-names').value.split('\n').filter(n => n.trim());
-    } else if (mode === 'detailed') {
-      payload.name = document.getElementById('d-name').value;
-      payload.start = document.getElementById('d-start').value;
-      payload.end = document.getElementById('d-end').value;
-      payload.desc = document.getElementById('d-desc').value;
-    } else if (mode === 'batch') {
-      payload.name = document.getElementById('b-name').value;
-      payload.desc = document.getElementById('b-desc').value;
-      payload.batches = Array.from(document.querySelectorAll('.batch-item')).map(it => ({
-        name: it.querySelector('.b-item-name').value,
-        start: it.querySelector('.b-item-start').value,
-        end: it.querySelector('.b-item-end').value
-      }));
-    }
-    
-    if (!payload.name) return alert('請填寫標題');
-    btn.disabled = true;
-    btn.innerText = '儲存中...';
-
-    try {
-      const res = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const text = await res.text();
-      let result;
-      try { result = JSON.parse(text); } catch(e) { result = { message: text, status: 'unknown' }; }
+    function switchNav(view) {
+      document.getElementById('view-create').classList.toggle('hidden', view !== 'create');
+      document.getElementById('main-tabs').classList.toggle('hidden', view !== 'create');
+      document.getElementById('view-settings').classList.toggle('hidden', view !== 'settings');
+      document.getElementById('settings-tabs').classList.toggle('hidden', view !== 'settings');
       
-      alert(result.message || '儲存成功');
-      if (result.status === 'success' || text.includes('成功')) {
-        location.href = `service_hub.html?p=${p}`;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      if (view === 'settings') {
+        document.getElementById('nav-settings').classList.add('active');
+        document.getElementById('header-title').innerText = "參數設定";
+        document.getElementById('header-desc').innerText = "管理您的通知與 API 設定。";
+        loadSettings();
+      } else {
+        document.querySelector('[onclick="switchNav(\'create\')"]').classList.add('active');
+        document.getElementById('header-title').innerText = "建立新活動";
+        document.getElementById('header-desc').innerText = "部署您的專屬活動流程。";
       }
-    } catch (e) {
-      alert('連線失敗，請稍後再試');
-    } finally {
-      btn.disabled = false;
-      btn.innerText = '完成發布';
     }
-  }
 
-  init();
-</script>
+    async function loadSettings() {
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_settings', p, uid }) });
+      const result = await res.json();
+      if (result.status === 'success') {
+        document.getElementById('tg-token').value = result.data.TG_BOT_TOKEN || '';
+        document.getElementById('tg-chatid').value = result.data.TG_CHAT_ID || '';
+      }
+    }
+
+    async function saveSettings() {
+      const settings = {
+        TG_BOT_TOKEN: document.getElementById('tg-token').value,
+        TG_CHAT_ID: document.getElementById('tg-chatid').value
+      };
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_settings', p, uid, settings }) });
+      alert('設定已儲存');
+    }
+
+    async function submitData() {
+      const payload = { action: 'create_activity', p, uid, mode: 'quick', name: document.getElementById('act-name').value, names: document.getElementById('act-list').value.split('\n') };
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
+      alert('活動建立成功，已發送 TG 通知');
+    }
+
+    init();
+  </script>
 </body>
 </html>
