@@ -9,7 +9,7 @@
   <style>
     body { font-family: -apple-system, sans-serif; background-color: #f8f8f8; color: #333; margin: 0; }
     .input-group { margin-bottom: 16px; }
-    .label-text { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+    .label-text { display: block; font-size: 13px; color: #666; margin-bottom: 4px; }
     .form-input { width: 100%; padding: 12px; border: 1px solid #e5e5e5; border-radius: 8px; font-size: 15px; outline: none; background: #fff; box-sizing: border-box; }
     .form-input:focus { border-color: #06C755; }
     .tab-btn { flex: 1; text-align: center; padding: 12px; font-size: 14px; cursor: pointer; color: #999; border-bottom: 2px solid transparent; }
@@ -40,12 +40,12 @@
   </div>
 
   <main class="p-4">
-    <!-- 圖片上傳 (通用) -->
+    <!-- 圖片上傳 -->
     <div class="input-group">
       <span class="label-text">活動圖片</span>
       <div class="image-preview" onclick="document.getElementById('img-file').click()">
         <img id="preview-img" src="" class="hidden">
-        <span id="preview-placeholder" class="text-gray-400 text-sm">點擊上傳活動封面</span>
+        <span id="preview-placeholder" class="text-gray-400 text-sm">點擊上傳封面圖</span>
       </div>
       <input type="file" id="img-file" class="hidden" accept="image/*" onchange="previewFile()">
     </div>
@@ -54,7 +54,7 @@
     <div id="form-quick" class="space-y-4">
       <div class="input-group">
         <span class="label-text">活動標題</span>
-        <input type="text" id="q-name" class="form-input" placeholder="例：每週固定會議">
+        <input type="text" id="q-name" class="form-input" placeholder="例：每週例會">
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div class="input-group">
@@ -69,13 +69,13 @@
       <div class="input-group">
         <span class="label-text">活動說明</span>
         <div onclick="aiOptimizeDesc('q-desc')" class="btn-ai">🤖 AI 優化</div>
-        <textarea id="q-desc" class="form-input h-24" placeholder="簡單說明內容..."></textarea>
+        <textarea id="q-desc" class="form-input h-24" placeholder="輸入活動介紹..."></textarea>
       </div>
       <div class="input-group">
-        <span class="label-text">匯入名單 (每行一位姓名)</span>
-        <textarea id="q-names" class="form-input h-32" placeholder="王小明\n李大華..."></textarea>
+        <span class="label-text">名單匯入 (每行一位)</span>
+        <textarea id="q-names" class="form-input h-32" placeholder="請貼上參與者姓名..."></textarea>
       </div>
-      <button onclick="submitActivity('quick')" id="btn-q" class="btn-main">發布並匯入名單</button>
+      <button onclick="submitActivity('quick')" id="btn-q" class="btn-main">立即建立並匯入</button>
     </div>
 
     <!-- 2. 詳細模式 -->
@@ -97,7 +97,7 @@
       <div class="input-group">
         <span class="label-text">活動詳細介紹</span>
         <div onclick="aiOptimizeDesc('d-desc')" class="btn-ai">🤖 AI 優化</div>
-        <textarea id="d-desc" class="form-input h-40" placeholder="輸入活動細節..."></textarea>
+        <textarea id="d-desc" class="form-input h-40" placeholder="活動細節說明..."></textarea>
       </div>
       <button onclick="submitActivity('detailed')" id="btn-d" class="btn-main">發布正式活動</button>
     </div>
@@ -105,36 +105,33 @@
     <!-- 3. 梯次模式 -->
     <div id="form-batch" class="hidden space-y-4">
       <div class="input-group">
-        <span class="label-text">系列活動標題</span>
-        <input type="text" id="b-name" class="form-input" placeholder="例：2024 年度教育訓練">
+        <span class="label-text">系列標題</span>
+        <input type="text" id="b-name" class="form-input">
       </div>
       <div class="input-group">
-        <span class="label-text">系列活動說明</span>
+        <span class="label-text">系列說明</span>
         <div onclick="aiOptimizeDesc('b-desc')" class="btn-ai">🤖 AI 優化</div>
-        <textarea id="b-desc" class="form-input h-24" placeholder="輸入各梯次共同的介紹..."></textarea>
+        <textarea id="b-desc" class="form-input h-24" placeholder="系列活動共通說明..."></textarea>
       </div>
-      
       <div id="batch-container">
-        <!-- 梯次項目 -->
         <div class="batch-item">
-          <input type="text" class="form-input b-item-name mb-2" placeholder="梯次名稱 (如：第 1 梯)">
+          <input type="text" class="form-input b-item-name mb-2" placeholder="梯次名稱">
           <div class="grid grid-cols-2 gap-2">
             <input type="datetime-local" class="form-input b-item-start text-xs">
             <input type="datetime-local" class="form-input b-item-end text-xs">
           </div>
         </div>
       </div>
-
       <div class="flex gap-2">
         <button onclick="addBatchRow(false)" class="flex-1 py-2 border border-gray-300 rounded text-gray-500 text-sm font-medium">+ 空白梯次</button>
         <button onclick="addBatchRow(true)" class="flex-1 py-2 border border-dashed border-[#06C755] rounded text-[#06C755] text-sm font-medium">⧉ 複製前梯</button>
       </div>
-      <button onclick="submitActivity('batch')" id="btn-b" class="btn-main mt-4">發布系列活動</button>
+      <button onclick="submitActivity('batch')" id="btn-b" class="btn-main mt-4">發布梯次活動</button>
     </div>
   </main>
 
   <nav class="nav">
-    <a href="admin.html" class="nav-btn"><span>後台</span></a>
+    <a id="admin-link" href="admin.html" class="nav-btn"><span>後台</span></a>
     <div class="nav-btn active"><span>建立</span></div>
     <a id="front-link" href="#" class="nav-btn"><span>前台</span></a>
   </nav>
@@ -147,8 +144,17 @@
 
   async function init() {
     const urlParams = new URLSearchParams(window.location.search);
-    p = urlParams.get('p') || '';
-    document.getElementById('front-link').href = `service_hub.html?p=${p}`;
+    p = urlParams.get('p');
+    
+    // 如果網址沒有 p，嘗試從 localStorage 拿
+    if (!p) p = localStorage.getItem('current_p');
+    if (p) {
+      localStorage.setItem('current_p', p);
+      document.getElementById('front-link').href = `service_hub.html?p=${p}`;
+      document.getElementById('admin-link').href = `admin.html?p=${p}`;
+    } else {
+      console.warn('缺少經銷商參數 (p)');
+    }
 
     try {
       await liff.init({ liffId: LIFF_ID });
@@ -186,34 +192,23 @@
     const container = document.getElementById('batch-container');
     const items = container.querySelectorAll('.batch-item');
     const lastItem = items[items.length - 1];
-
     const div = document.createElement('div');
     div.className = 'batch-item';
-
     let name = "", start = "", end = "";
     if (copyLast && lastItem) {
       name = lastItem.querySelector('.b-item-name').value;
       start = lastItem.querySelector('.b-item-start').value;
       end = lastItem.querySelector('.b-item-end').value;
     }
-
-    div.innerHTML = `
-      <div class="del-icon" onclick="this.parentElement.remove()">移除</div>
-      <input type="text" class="form-input b-item-name mb-2" value="${name}" placeholder="梯次名稱">
-      <div class="grid grid-cols-2 gap-2">
-        <input type="datetime-local" class="form-input b-item-start text-xs" value="${start}">
-        <input type="datetime-local" class="form-input b-item-end text-xs" value="${end}">
-      </div>
-    `;
+    div.innerHTML = `<div class="del-icon" onclick="this.parentElement.remove()">移除</div><input type="text" class="form-input b-item-name mb-2" value="${name}" placeholder="梯次名稱"><div class="grid grid-cols-2 gap-2"><input type="datetime-local" class="form-input b-item-start text-xs" value="${start}"><input type="datetime-local" class="form-input b-item-end text-xs" value="${end}"></div>`;
     container.appendChild(div);
   }
 
   async function aiOptimizeDesc(id) {
     const el = document.getElementById(id);
-    if (!el.value) return alert('請先輸入簡短大綱');
+    if (!el.value) return alert('請先輸入大綱');
     const oldVal = el.value;
-    el.value = 'AI 正在優化中...';
-    
+    el.value = 'AI 優化中...';
     try {
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -221,13 +216,11 @@
         body: JSON.stringify({ action: 'ai_optimize_activity', p, content: oldVal })
       });
       el.value = await res.text();
-    } catch (e) {
-      el.value = oldVal;
-      alert('AI 連線失敗');
-    }
+    } catch (e) { el.value = oldVal; }
   }
 
   async function submitActivity(mode) {
+    if (!p) return alert('缺少必要參數 p，活動無法正確存檔。');
     const btn = document.getElementById('btn-' + (mode === 'quick' ? 'q' : mode === 'detailed' ? 'd' : 'b'));
     let payload = { action: 'create_activity', mode, p, uid, img: imgData };
     
@@ -253,9 +246,8 @@
     }
     
     if (!payload.name) return alert('請填寫標題');
-    
     btn.disabled = true;
-    btn.innerText = '處理中...';
+    btn.innerText = '儲存中...';
 
     try {
       const res = await fetch(WORKER_URL, {
@@ -263,11 +255,16 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const result = await res.json();
-      alert(result.message);
-      if (result.status === 'success') location.reload();
+      const text = await res.text();
+      let result;
+      try { result = JSON.parse(text); } catch(e) { result = { message: text, status: 'unknown' }; }
+      
+      alert(result.message || '儲存成功');
+      if (result.status === 'success' || text.includes('成功')) {
+        location.href = `service_hub.html?p=${p}`;
+      }
     } catch (e) {
-      alert('連線失敗，請檢查網路');
+      alert('連線失敗，請稍後再試');
     } finally {
       btn.disabled = false;
       btn.innerText = '完成發布';
