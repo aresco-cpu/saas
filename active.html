@@ -21,34 +21,37 @@
     .user-name { margin: 0; font-size: 15px; color: #333333; }
     .user-role { font-size: 15px; color: #06C755; margin-top: 4px; display: block; }
 
-    /* 三模組頁籤選擇器 (依據 image_3f0cbb.png) */
+    /* 頂部切換 (image_3f1802.png 頂部) */
     .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 15px 20px; }
-    .tab-item { flex: 1; text-align: center; padding: 12px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
-    .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #007AFF; font-size: 15px; }
+    .tab-item.active { background: #FFFFFF; color: #007AFF; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    /* 區塊標題 */
     .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
 
-    /* 表單欄位：移除邊框感，模擬 LINE 資訊流 */
-    .field-group { background: #FFFFFF; padding: 20px; border-bottom: 1px solid #F9F9F9; }
-    .field-label { font-size: 15px; color: #666666; margin-bottom: 10px; display: block; }
-    .field-input, select { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; color: #333333; background: transparent; -webkit-appearance: none; border-radius: 0; }
-    .field-textarea { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; height: 100px; resize: none; color: #333333; background: transparent; line-height: 1.5; }
+    /* 表單佈局 (依據圖解) */
+    .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
+    .field-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .field-label { font-size: 15px; color: #333333; }
+    .field-tag { font-size: 12px; color: #718096; background: #EDF2F7; padding: 2px 8px; border-radius: 4px; }
+    
+    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; }
+    
+    .row-flex { display: flex; gap: 12px; background: #FFFFFF; padding: 0 20px 15px 20px; border-bottom: 1px solid #F9F9F9; }
+    .row-flex .col { flex: 1; }
 
-    /* 專屬：名單與描述區域 (淺灰背景區分) */
-    .input-area-box { background: #FFFFFF; padding: 0 20px 20px 20px; border-bottom: 1px solid #EEEEEE; }
-    .placeholder-text { color: #CCCCCC; }
+    /* 宣傳大圖區 (圖解中間區塊) */
+    .image-upload-area { border: 1px dashed #CBD5E0; border-radius: 12px; padding: 40px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin: 10px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; }
+    .image-upload-area i { color: #A0AEC0; margin-bottom: 12px; width: 42px; height: 42px; }
+    .image-upload-text { color: #A0AEC0; font-size: 15px; }
+    #preview-image { max-width: 100%; border-radius: 8px; display: none; }
 
-    /* 批次輸入專用樣式 */
-    .batch-row { border-bottom: 1px solid #F0F0F0; padding: 15px 0; }
-    .batch-row:last-child { border-bottom: none; }
-    .btn-add-row { width: 100%; padding: 12px; background: none; border: 1px dashed #CBD5E0; color: #A0AEC0; font-size: 14px; border-radius: 8px; margin-top: 10px; cursor: pointer; }
+    /* 名單文字域 */
+    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 12px; padding: 15px; font-size: 15px; outline: none; height: 150px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
 
-    /* 主要按鈕 (確認建立並發布) */
     .btn-action { width: calc(100% - 40px); margin: 25px 20px; padding: 18px; background: #06C755; color: white; border: none; font-size: 15px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
     .btn-dark { background: #333333; }
 
-    /* 底部 6 格導覽列 (與 ACTMASTER 圖示一致) */
+    /* 底部 6 格導覽列 (與 ACTMASTER 同步) */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
@@ -56,12 +59,12 @@
     .nav-text { font-size: 12px; }
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
-    /* 載入遮罩 */
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
+    /* 隱藏輔助 */
     .hidden { display: none !important; }
-
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; }
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
     .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; }
+    .menu-item:active { background: #F8F8F8; }
     .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; }
     .menu-item p { margin: 0; font-size: 14px; color: #999; }
   </style>
@@ -80,65 +83,47 @@
       </div>
     </div>
 
-    <!-- 主視圖切換區 -->
     <main id="main-content">
-      
-      <!-- 1. 建立視圖 (包含三個核心模組) -->
+      <!-- 1. 建立視圖：完全按照 image_3f1802.png 排版 -->
       <div id="view-create">
         <div class="tab-selector">
-          <div id="tab-quick" class="tab-item active" onclick="switchCreateSubTab('quick')">快速匯入</div>
-          <div id="tab-full" class="tab-item" onclick="switchCreateSubTab('full')">詳細發布</div>
-          <div id="tab-batch" class="tab-item" onclick="switchCreateSubTab('batch')">系列梯次</div>
+          <div id="tab-quick" class="tab-item active" onclick="switchMode('quick')">快速匯入</div>
+          <div id="tab-full" class="tab-item" onclick="switchMode('full')">完整發佈</div>
         </div>
 
-        <div id="create-form-content">
-          <!-- 活動/系列名稱 -->
+        <div id="create-form">
           <div class="field-group">
-            <label class="field-label" id="label-act-name">活動名稱</label>
-            <input id="act-name" class="field-input" placeholder="輸入活動標題">
+            <div class="field-label-row"><label class="field-label">活動名稱</label></div>
+            <input id="act-name" class="input-box" placeholder="輸入活動標題...">
           </div>
 
-          <!-- 模組 A: 快速匯入 (image_3f0cbb.png) -->
-          <div id="group-quick">
-            <div class="field-group">
-              <label class="field-label">名單內容 (每行一位)</label>
-              <textarea id="act-list" class="field-textarea" placeholder="在此貼上參與者姓名..."></textarea>
+          <div class="row-flex">
+            <div class="col">
+              <div class="field-label-row"><label class="field-label">活動類型</label></div>
+              <input id="act-type" class="input-box" value="例會">
             </div>
-          </div>
-
-          <!-- 模組 B: 詳細發布 (image_3f0cdb.png) -->
-          <div id="group-full" class="hidden">
-            <div class="field-group">
-              <label class="field-label">開始時間</label>
-              <input type="datetime-local" id="act-start" class="field-input">
-            </div>
-            <div class="field-group">
-              <label class="field-label">結束時間</label>
-              <input type="datetime-local" id="act-end" class="field-input">
-            </div>
-            <div class="field-group">
-              <label class="field-label">活動詳情</label>
-              <textarea id="act-desc" class="field-textarea" placeholder="描述活動內容..."></textarea>
+            <div class="col">
+              <div class="field-label-row"><label class="field-label">預設身份</label></div>
+              <input id="act-role" class="input-box" value="會員">
             </div>
           </div>
 
-          <!-- 模組 C: 系列梯次 (image_3f0d15.png) -->
-          <div id="group-batch" class="hidden">
-            <div class="field-group">
-              <label class="field-label">系列描述</label>
-              <textarea id="batch-desc" class="field-textarea" placeholder="此系列活動的共通說明..."></textarea>
+          <div class="field-group" style="border-bottom: none; padding-bottom: 0;">
+            <div class="field-label-row"><label class="field-label">宣傳大圖 (選填)</label></div>
+          </div>
+          <div class="image-upload-area" onclick="document.getElementById('act-image-file').click()">
+            <i data-lucide="image" id="upload-icon"></i>
+            <img id="preview-image" src="">
+            <span class="image-upload-text" id="upload-text">點擊上傳圖片</span>
+            <input type="file" id="act-image-file" class="hidden" accept="image/*" onchange="previewFile(this)">
+          </div>
+
+          <div class="field-group">
+            <div class="field-label-row">
+              <label class="field-label">名單內容</label>
+              <span class="field-tag">支援批次輸入</span>
             </div>
-            <div id="batch-items-container" class="field-group" style="padding-top: 0;">
-              <!-- 動態產生列 -->
-              <div class="batch-row">
-                <label class="field-label" style="font-size:14px; color:#AAA">梯次 1 名稱與時間</label>
-                <input type="text" class="field-input batch-name" placeholder="例：第一梯次" style="margin-bottom:10px; border-bottom:1px solid #F0F0F0">
-                <input type="datetime-local" class="field-input batch-time">
-              </div>
-            </div>
-            <div style="padding: 10px 20px">
-              <button class="btn-add-row" onclick="addBatchRow()">+ 新增梯次</button>
-            </div>
+            <textarea id="act-list" class="textarea-box" placeholder="請貼上參與者姓名，每行一位..."></textarea>
           </div>
 
           <button class="btn-action" onclick="submitActivity()">確認建立並發布</button>
@@ -147,67 +132,84 @@
 
       <!-- 2. 核銷視圖 -->
       <div id="view-checkin" class="hidden">
-        <div class="section-title">現場核銷清單</div>
+        <div class="section-title">活動現場核銷</div>
         <div class="field-group">
-          <select id="event-selector" onchange="loadRegistrants()"><option value="">讀取活動中...</option></select>
+          <select id="event-selector" class="input-box" onchange="loadRegistrants()"><option value="">載入活動中...</option></select>
         </div>
         <div id="registrant-list" class="menu-list"></div>
       </div>
 
       <!-- 3. CRM 視圖 -->
       <div id="view-crm" class="hidden">
-        <div class="section-title">會員參與度統計</div>
+        <div class="section-title">中心成員參與度統計</div>
         <div id="crm-container" class="menu-list"></div>
       </div>
 
       <!-- 4. 配對視圖 -->
       <div id="view-ai" class="hidden">
         <div class="section-title">AI 智能媒合分析</div>
-        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6;">點擊啟動，分析全中心會員名片。</div>
+        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">點擊按鈕，啟動中心會員資料分析。</div>
         <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
       </div>
 
       <!-- 5. 名片視圖 -->
       <div id="view-card" class="hidden">
-        <div class="section-title">數位名片設定</div>
-        <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="field-input"></div>
-        <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="field-input"></div>
-        <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="field-input"></div>
-        <div class="field-group"><label class="field-label">我的資源</label><textarea id="f-resource" class="field-textarea"></textarea></div>
-        <div class="field-group"><label class="field-label">我的需求</label><textarea id="f-need" class="field-textarea"></textarea></div>
+        <div class="section-title">管理員數位名片</div>
+        <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
+        <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
+        <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="input-box"></div>
+        <div class="field-group"><label class="field-label">資源</label><textarea id="f-resource" class="textarea-box" style="background:#FFF"></textarea></div>
+        <div class="field-group"><label class="field-label">需求</label><textarea id="f-need" class="textarea-box" style="background:#FFF"></textarea></div>
         <button class="btn-action" onclick="saveProfile()">儲存更新</button>
       </div>
 
       <!-- 6. 參數視圖 -->
       <div id="view-settings" class="hidden">
         <div class="section-title">系統連線參數</div>
-        <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="field-input"></div>
-        <div class="field-group"><label class="field-label">Telegram Chat ID</label><input id="set-tg-chatid" class="field-input"></div>
-        <button class="btn-action btn-dark" onclick="saveSettings()">儲存設定</button>
+        <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="input-box"></div>
+        <div class="field-group"><label class="field-label">Chat ID</label><input id="set-tg-chatid" class="input-box"></div>
+        <button class="btn-action btn-dark" onclick="saveSettings()">儲存參數</button>
       </div>
-
     </main>
 
     <!-- 底部 6 格導覽列 -->
     <nav id="bottom-nav">
-      <div class="nav-item active" id="nav-create" onclick="switchNav('create')"><div class="icon-box"><i data-lucide="plus-circle"></i></div><span class="nav-text">建立</span></div>
-      <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
-      <div class="nav-item" id="nav-crm" onclick="switchNav('crm')"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
-      <div class="nav-item" id="nav-ai" onclick="switchNav('ai')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
-      <div class="nav-item" id="nav-card" onclick="switchNav('card')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
-      <div class="nav-item" id="nav-settings" onclick="switchNav('settings')"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
+      <div class="nav-item active" id="nav-create" onclick="switchNav('create')">
+        <div class="icon-box"><i data-lucide="plus-circle"></i></div>
+        <span class="nav-text">建立</span>
+      </div>
+      <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')">
+        <i data-lucide="check-square"></i>
+        <span class="nav-text">核銷</span>
+      </div>
+      <div class="nav-item" id="nav-crm" onclick="switchNav('crm')">
+        <i data-lucide="users"></i>
+        <span class="nav-text">CRM</span>
+      </div>
+      <div class="nav-item" id="nav-ai" onclick="switchNav('ai')">
+        <i data-lucide="brain-circuit"></i>
+        <span class="nav-text">配對</span>
+      </div>
+      <div class="nav-item" id="nav-card" onclick="switchNav('card')">
+        <i data-lucide="contact"></i>
+        <span class="nav-text">名片</span>
+      </div>
+      <div class="nav-item" id="nav-settings" onclick="switchNav('settings')">
+        <i data-lucide="settings"></i>
+        <span class="nav-text">參數</span>
+      </div>
     </nav>
   </div>
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-    let uid = '', p = '', currentCreateMode = 'quick';
+    let uid = '', p = '', currentMode = 'quick';
 
     async function init() {
       lucide.createIcons();
-      const urlParams = new URLSearchParams(window.location.search);
-      p = urlParams.get('p');
+      const params = new URLSearchParams(window.location.search);
+      p = params.get('p');
       if (!p) { document.getElementById('loader').innerText = '缺少 p 參數'; return; }
 
       try {
@@ -238,29 +240,25 @@
       }
     }
 
-    function switchCreateSubTab(m) {
-      currentCreateMode = m;
-      ['quick', 'full', 'batch'].forEach(id => {
-        const tab = document.getElementById('tab-' + id);
-        const group = document.getElementById('group-' + id);
-        if(tab) tab.classList.toggle('active', id === m);
-        if(group) group.classList.toggle('hidden', id !== m);
-      });
-      const lbl = document.getElementById('label-act-name');
-      if(lbl) lbl.innerText = m === 'batch' ? '系列名稱' : '活動名稱';
+    function switchMode(m) {
+      currentMode = m;
+      document.getElementById('tab-quick').classList.toggle('active', m === 'quick');
+      document.getElementById('tab-full').classList.toggle('active', m === 'full');
     }
 
-    function addBatchRow() {
-      const container = document.getElementById('batch-items-container');
-      const count = container.querySelectorAll('.batch-row').length + 1;
-      const div = document.createElement('div');
-      div.className = 'batch-row';
-      div.innerHTML = `
-        <label class="field-label" style="font-size:14px; color:#AAA">梯次 ${count} 名稱與時間</label>
-        <input type="text" class="field-input batch-name" placeholder="例：第 ${count} 梯次" style="margin-bottom:10px; border-bottom:1px solid #F0F0F0">
-        <input type="datetime-local" class="field-input batch-time">
-      `;
-      container.appendChild(div);
+    function previewFile(input) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.getElementById('preview-image');
+          img.src = e.target.result;
+          img.style.display = 'block';
+          document.getElementById('upload-icon').style.display = 'none';
+          document.getElementById('upload-text').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
     function switchNav(v) {
@@ -293,25 +291,19 @@
 
     async function submitActivity() {
       const name = document.getElementById('act-name').value;
-      if (!name) return alert('填寫標題');
+      if (!name) return alert('請填寫活動名稱');
       document.getElementById('loader').classList.remove('hidden');
       try {
-        let payload = { action: 'create_activity', p, uid, name, mode: currentCreateMode };
-        if (currentCreateMode === 'quick') payload.names = document.getElementById('act-list').value.split('\n');
-        if (currentCreateMode === 'full') {
-          payload.start = document.getElementById('act-start').value;
-          payload.end = document.getElementById('act-end').value;
-          payload.desc = document.getElementById('act-desc').value;
-        }
-        if (currentCreateMode === 'batch') {
-          payload.desc = document.getElementById('batch-desc').value;
-          payload.batches = Array.from(document.querySelectorAll('.batch-row')).map(it => ({
-            name: it.querySelector('.batch-name').value,
-            time: it.querySelector('.batch-time').value
-          }));
-        }
+        const payload = { 
+          action: 'create_activity', p, uid, 
+          name: name,
+          type: document.getElementById('act-type').value,
+          role: document.getElementById('act-role').value,
+          mode: currentMode,
+          names: document.getElementById('act-list').value.split('\n') 
+        };
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
-        alert('發布成功');
+        alert('建立成功');
         switchNav('checkin');
       } finally { document.getElementById('loader').classList.add('hidden'); }
     }
@@ -324,7 +316,7 @@
       document.getElementById('registrant-list').innerHTML = result.data.map(r => `
         <div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
           <h3>${r.姓名}</h3>
-          <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊核銷'}</p>
+          <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊簽到'}</p>
         </div>
       `).join('');
     }
@@ -337,7 +329,12 @@
     async function loadCrmData() {
       const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
       const result = await res.json();
-      document.getElementById('crm-container').innerHTML = result.data.map(u => `<div class="menu-item"><h3>${u.name}</h3><p>累積參與：${u.attended} 次</p></div>`).join('');
+      document.getElementById('crm-container').innerHTML = result.data.map(u => `
+        <div class="menu-item">
+          <h3>${u.name}</h3>
+          <p>累積參與：${u.attended} 次</p>
+        </div>
+      `).join('');
     }
 
     init();
