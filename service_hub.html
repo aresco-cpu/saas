@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="icon" href="data:,">
-  <title>服務中心</title>
+  <title>Service Hub</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -23,9 +23,14 @@
 
     .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
 
-    /* 扁平化選單 */
+    /* 分段選擇器 (Sub-tabs for Create View) */
+    .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 15px 20px; }
+    .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
+    .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* 清單選單樣式 */
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
-    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; position: relative; }
+    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
     .menu-item:last-child { border-bottom: none; }
     .menu-item:active { background: #F8F8F8; }
     .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
@@ -50,13 +55,13 @@
 
     /* 載入遮罩 */
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
-    .hidden { display: none !important; opacity: 0; pointer-events: none; }
+    .hidden { display: none !important; }
 
     .ai-result-box { background: #FFFFFF; padding: 20px; line-height: 1.6; white-space: pre-wrap; font-size: 15px; color: #333333; }
+    .batch-item { border-bottom: 1px solid #F0F0F0; padding-bottom: 10px; margin-bottom: 15px; }
   </style>
 </head>
 <body>
-  <!-- 修復後的載入畫面 -->
   <div id="loader" class="loading-overlay">
     <div id="loader-text">系統連線中...</div>
     <div id="loader-error" style="margin-top:20px; color:#999; font-size:12px;"></div>
@@ -66,65 +71,102 @@
     <header><h2 id="brand-name">服務中心</h2></header>
 
     <div class="user-profile">
-      <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/55">
+      <img id="user-avatar" class="user-avatar" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">辨識身分中...</p>
+        <p id="user-display-name" class="user-name">正在識別身份...</p>
         <span id="role-text" class="user-role" style="display:none;">管理權限已開啟</span>
       </div>
     </div>
 
     <main id="main-content">
-      <!-- 1. 建立 -->
+      <!-- 1. 建立視圖 -->
       <div id="view-create" class="hidden">
-        <div class="section-title">活動發布</div>
-        <div class="field-group"><label class="field-label">活動名稱</label><input id="act-name" class="field-input" placeholder="輸入標題"></div>
-        <div class="field-group"><label class="field-label">名單內容 (每行一位)</label><textarea id="act-list" class="field-textarea" placeholder="貼上姓名..."></textarea></div>
-        <button class="btn-action" onclick="submitActivity()">確認建立活動</button>
+        <div class="tab-selector">
+          <div id="create-tab-quick" class="tab-item active" onclick="switchCreateSubTab('quick')">快速匯入</div>
+          <div id="create-tab-full" class="tab-item" onclick="switchCreateSubTab('full')">詳細發布</div>
+          <div id="create-tab-batch" class="tab-item" onclick="switchCreateSubTab('batch')">系列梯次</div>
+        </div>
+
+        <div id="create-content">
+          <div class="field-group">
+            <label class="field-label" id="label-act-name">活動名稱</label>
+            <input id="act-name" class="field-input" placeholder="輸入活動標題">
+          </div>
+
+          <!-- 快速匯入模式 -->
+          <div id="group-quick">
+            <div class="field-group">
+              <label class="field-label">名單內容 (每行一位)</label>
+              <textarea id="act-list" class="field-textarea" placeholder="在此貼上參與者姓名..."></textarea>
+            </div>
+          </div>
+
+          <!-- 詳細發布模式 -->
+          <div id="group-full" class="hidden">
+            <div class="field-group"><label class="field-label">開始時間</label><input type="datetime-local" id="act-start" class="field-input"></div>
+            <div class="field-group"><label class="field-label">結束時間</label><input type="datetime-local" id="act-end" class="field-input"></div>
+            <div class="field-group"><label class="field-label">活動詳情</label><textarea id="act-desc" class="field-textarea" placeholder="描述活動內容..."></textarea></div>
+          </div>
+
+          <!-- 系列梯次模式 -->
+          <div id="group-batch" class="hidden">
+            <div class="field-group"><label class="field-label">系列描述</label><textarea id="batch-desc" class="field-textarea" placeholder="此系列活動的共通說明..."></textarea></div>
+            <div id="batch-items-container">
+              <div class="field-group batch-item">
+                <label class="field-label">梯次 1 名稱與時間</label>
+                <input type="text" class="field-input batch-name" placeholder="例：第一梯次" style="margin-bottom:8px; border-bottom:1px solid #EEE">
+                <input type="datetime-local" class="field-input batch-time">
+              </div>
+            </div>
+            <div style="padding:0 20px"><button onclick="addBatchRow()" style="width:100%; padding:10px; background:none; border:1px dashed #CCC; font-size:14px; color:#999">+ 新增梯次</button></div>
+          </div>
+
+          <button class="btn-action" onclick="submitActivity()">確認建立並發布</button>
+        </div>
       </div>
 
-      <!-- 2. 核銷 -->
+      <!-- 2. 核銷視圖 -->
       <div id="view-checkin" class="hidden">
         <div class="section-title">簽到核銷</div>
         <div class="field-group">
-          <select id="event-selector" onchange="loadRegistrants()"><option value="">讀取活動中...</option></select>
+          <select id="event-selector" onchange="loadRegistrants()"><option value="">讀取中...</option></select>
         </div>
         <div id="registrant-list" class="menu-list"></div>
       </div>
 
-      <!-- 3. CRM -->
+      <!-- 3. CRM 視圖 -->
       <div id="view-crm" class="hidden">
-        <div class="section-title">會員資料總覽</div>
+        <div class="section-title">會員總覽</div>
         <div id="crm-container" class="menu-list"></div>
       </div>
 
-      <!-- 4. 配對 -->
+      <!-- 4. 配對視圖 -->
       <div id="view-ai" class="hidden">
-        <div class="section-title">AI 智能商業配對</div>
-        <div id="ai-content" class="ai-result-box">分析會員資料中，請點擊按鈕啟動。</div>
+        <div class="section-title">AI 智能配對分析</div>
+        <div id="ai-content" class="ai-result-box">啟動 AI 媒合分析，尋找潛在商機。</div>
         <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
       </div>
 
-      <!-- 5. 名片 (預設顯示) -->
+      <!-- 5. 名片視圖 (預設) -->
       <div id="view-profile">
-        <div class="section-title">個人數位名片</div>
+        <div class="section-title">個人名片資料</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="field-input"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="field-input"></div>
         <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="field-input"></div>
-        <div class="field-group"><label class="field-label">我的資源</label><textarea id="f-resource" class="field-textarea"></textarea></div>
-        <div class="field-group"><label class="field-label">我的需求</label><textarea id="f-need" class="field-textarea"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">儲存名片設定</button>
+        <div class="field-group"><label class="field-label">資源</label><textarea id="f-resource" class="field-textarea"></textarea></div>
+        <div class="field-group"><label class="field-label">需求</label><textarea id="f-need" class="field-textarea"></textarea></div>
+        <button class="btn-action" onclick="saveProfile()">儲存並更新名片</button>
       </div>
 
-      <!-- 6. 參數 -->
+      <!-- 6. 參數視圖 -->
       <div id="view-settings" class="hidden">
-        <div class="section-title">系統參數</div>
+        <div class="section-title">系統連線設定</div>
         <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="field-input"></div>
         <div class="field-group"><label class="field-label">Telegram Chat ID</label><input id="set-tg-chatid" class="field-input"></div>
-        <button class="btn-action btn-dark" onclick="saveSettings()">儲存</button>
+        <button class="btn-action btn-dark" onclick="saveSettings()">更新系統參數</button>
       </div>
     </main>
 
-    <!-- 底部 6 格導覽列 -->
     <nav id="bottom-nav">
       <div class="nav-item" id="nav-create" onclick="switchView('create')"><i data-lucide="plus-circle"></i><span class="nav-text">建立</span></div>
       <div class="nav-item" id="nav-checkin" onclick="switchView('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
@@ -138,23 +180,21 @@
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-    let uid = '', p = '', isAdmin = false;
+    let uid = '', p = '', isAdmin = false, currentCreateSubTab = 'quick';
 
-    // 安全超時機制
     const safetyTimeout = setTimeout(() => {
       showLoader(false);
-      const errorEl = document.getElementById('loader-error');
-      if (errorEl) errorEl.innerText = '連線較慢，請檢查網路狀況';
+      const errEl = document.getElementById('loader-error');
+      if (errEl) errEl.innerText = '連線較慢，請檢查網路狀況';
     }, 6000);
 
     async function init() {
       lucide.createIcons();
       const urlParams = new URLSearchParams(window.location.search);
       p = urlParams.get('p');
-      
       if (!p) {
-        const textEl = document.getElementById('loader-text');
-        if (textEl) textEl.innerText = '錯誤：網址缺少店家代碼 p';
+        const txtEl = document.getElementById('loader-text');
+        if (txtEl) txtEl.innerText = '錯誤：缺少店家代碼 p';
         return;
       }
 
@@ -163,14 +203,13 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        const avatarEl = document.getElementById('user-avatar');
-        const nameEl = document.getElementById('user-display-name');
-        if (avatarEl) avatarEl.src = profile.pictureUrl || '';
-        if (nameEl) nameEl.innerText = profile.displayName;
-        
+        const av = document.getElementById('user-avatar');
+        const dn = document.getElementById('user-display-name');
+        if (av) av.src = profile.pictureUrl || '';
+        if (dn) dn.innerText = profile.displayName;
         await loadHubData();
       } catch (err) {
-        console.error("Init Error:", err);
+        console.error("Init Fail", err);
       } finally {
         clearTimeout(safetyTimeout);
         showLoader(false);
@@ -179,99 +218,114 @@
 
     async function loadHubData() {
       try {
-        const res = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_service_hub', p, uid })
-        });
+        const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
         const result = await res.json();
-        
         if (result.status === 'success') {
           const d = result.data;
           isAdmin = d.isAdmin;
-          const brandEl = document.getElementById('brand-name');
-          if (brandEl) brandEl.innerText = d.brandName || "服務中心";
-          
-          const roleEl = document.getElementById('role-text');
+          const bn = document.getElementById('brand-name');
+          if (bn) bn.innerText = d.brandName || "服務中心";
           if (isAdmin) {
-            if (roleEl) roleEl.style.display = 'block';
+            const rt = document.getElementById('role-text');
+            if (rt) rt.style.display = 'block';
           } else {
-            // 非管理員隱藏按鈕
             ['create', 'checkin', 'crm', 'settings'].forEach(id => {
               const el = document.getElementById('nav-' + id);
               if (el) el.style.display = 'none';
             });
           }
-          
           if (d.myProfile) {
-            const fields = { 'f-name': 'name', 'f-job': 'job', 'f-industry': 'industry', 'f-resource': 'resource', 'f-need': 'need' };
-            for(let id in fields) {
+            const map = { 'f-name': 'name', 'f-job': 'job', 'f-industry': 'industry', 'f-resource': 'resource', 'f-need': 'need' };
+            Object.keys(map).forEach(id => {
               const el = document.getElementById(id);
-              if (el) el.value = d.myProfile[fields[id]] || '';
-            }
+              if (el) el.value = d.myProfile[map[id]] || '';
+            });
           }
-          
           const sel = document.getElementById('event-selector');
           if (sel) {
             if (d.activities && Array.isArray(d.activities)) {
-              sel.innerHTML = '<option value="">請選擇活動...</option>' + 
-                d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+              sel.innerHTML = '<option value="">選擇活動...</option>' + d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
             } else {
               sel.innerHTML = '<option value="">尚無活動</option>';
             }
           }
         }
-      } catch (e) {
-        console.error("Load Data Error:", e);
-      }
+      } catch (e) { console.error(e); }
     }
 
     function switchView(v) {
       document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
-      const targetView = document.getElementById('view-' + v);
-      if (targetView) targetView.classList.remove('hidden');
+      const target = document.getElementById('view-' + v);
+      if (target) target.classList.remove('hidden');
       
       document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.remove('active');
         const box = el.querySelector('.icon-box');
         if (box) {
-          // 還原圖示層級
-          const icon = box.querySelector('i');
-          if (icon) {
-            el.prepend(icon);
-            el.removeChild(box);
-          }
+          const content = box.innerHTML;
+          el.removeChild(box);
+          el.insertAdjacentHTML('afterbegin', content);
         }
       });
 
       const activeNav = document.getElementById('nav-' + v);
       if (activeNav) {
         activeNav.classList.add('active');
-        const icon = activeNav.querySelector('i');
-        if (icon) {
-          const box = document.createElement('div');
-          box.className = 'icon-box';
-          activeNav.prepend(box);
-          box.appendChild(icon);
-        }
+        const content = activeNav.innerHTML;
+        const iconPart = content.split('<span')[0];
+        const textPart = content.includes('<span') ? '<span' + content.split('<span')[1] : '';
+        activeNav.innerHTML = `<div class="icon-box">${iconPart}</div>${textPart}`;
       }
-      
       if (v === 'crm') loadCrmData();
       if (v === 'settings') loadSettings();
-      
       window.scrollTo(0, 0);
       lucide.createIcons();
     }
 
+    function switchCreateSubTab(mode) {
+      currentCreateSubTab = mode;
+      ['quick', 'full', 'batch'].forEach(m => {
+        const tab = document.getElementById('create-tab-' + m);
+        const group = document.getElementById('group-' + m);
+        if (tab) tab.classList.toggle('active', m === mode);
+        if (group) group.classList.toggle('hidden', m !== mode);
+      });
+      const lbl = document.getElementById('label-act-name');
+      if (lbl) lbl.innerText = mode === 'batch' ? '系列名稱' : '活動名稱';
+    }
+
+    function addBatchRow() {
+      const container = document.getElementById('batch-items-container');
+      const count = container.querySelectorAll('.batch-item').length + 1;
+      const div = document.createElement('div');
+      div.className = 'field-group batch-item';
+      div.innerHTML = `<label class="field-label">梯次 ${count} 名稱與時間</label>
+        <input type="text" class="field-input batch-name" placeholder="例：第 ${count} 梯次" style="margin-bottom:8px; border-bottom:1px solid #EEE">
+        <input type="datetime-local" class="field-input batch-time">`;
+      container.appendChild(div);
+    }
+
     async function submitActivity() {
       const name = document.getElementById('act-name').value;
-      if (!name) return;
+      if (!name) return alert('請填寫標題');
       showLoader(true);
       try {
-        await fetch(WORKER_URL, { 
-          method: 'POST', 
-          body: JSON.stringify({ action: 'create_activity', p, uid, mode: 'quick', name: name, names: document.getElementById('act-list').value.split('\n') }) 
-        });
+        let payload = { action: 'create_activity', p, uid, mode: currentCreateSubTab, name: name };
+        if (currentCreateSubTab === 'quick') payload.names = document.getElementById('act-list').value.split('\n');
+        if (currentCreateSubTab === 'full') {
+          payload.start = document.getElementById('act-start').value;
+          payload.end = document.getElementById('act-end').value;
+          payload.desc = document.getElementById('act-desc').value;
+        }
+        if (currentCreateSubTab === 'batch') {
+          payload.desc = document.getElementById('batch-desc').value;
+          payload.batches = Array.from(document.querySelectorAll('.batch-item')).map(it => ({
+            name: it.querySelector('.batch-name').value,
+            time: it.querySelector('.batch-time').value
+          }));
+        }
+        await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        alert('活動建立成功');
         switchView('checkin');
       } finally {
         showLoader(false);
@@ -285,18 +339,12 @@
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: act }) });
         const result = await res.json();
-        const listContainer = document.getElementById('registrant-list');
-        if (listContainer) {
-          listContainer.innerHTML = result.data.map(r => `
-            <div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
-              <h3>${r.姓名}</h3>
-              <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊核銷'}</p>
-            </div>
-          `).join('');
+        const list = document.getElementById('registrant-list');
+        if (list) {
+          list.innerHTML = result.data.map(r => `<div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
+            <h3>${r.姓名}</h3><p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊核銷'}</p></div>`).join('');
         }
-      } finally {
-        showLoader(false);
-      }
+      } finally { showLoader(false); }
     }
 
     async function toggleCheckIn(act, row, status) {
@@ -304,9 +352,7 @@
       try {
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_checkin', p, activityName: act, rowId: row, status: status }) });
         await loadRegistrants();
-      } finally {
-        showLoader(false);
-      }
+      } finally { showLoader(false); }
     }
 
     async function loadCrmData() {
@@ -316,27 +362,18 @@
         const result = await res.json();
         const container = document.getElementById('crm-container');
         if (container) {
-          container.innerHTML = result.data.map(u => `
-            <div class="menu-item">
-              <h3>${u.name}</h3>
-              <p>累積參與：${u.attended} 次</p>
-            </div>
-          `).join('');
+          container.innerHTML = result.data.map(u => `<div class="menu-item"><h3>${u.name}</h3><p>累計出席：${u.attended} 次</p></div>`).join('');
         }
-      } finally {
-        showLoader(false);
-      }
+      } finally { showLoader(false); }
     }
 
     async function getAiMatches() {
-      const content = document.getElementById('ai-content');
-      if (content) content.innerText = 'AI 分析中...';
+      const el = document.getElementById('ai-content');
+      if (el) el.innerText = 'AI 分析中...';
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
-        if (content) content.innerText = await res.text();
-      } catch (e) {
-        if (content) content.innerText = '連線失敗。';
-      }
+        if (el) el.innerText = await res.text();
+      } catch (e) { if (el) el.innerText = '連線失敗'; }
     }
 
     async function saveProfile() {
@@ -344,10 +381,8 @@
       try {
         const prof = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: prof }) });
-        alert('設定已儲存');
-      } finally {
-        showLoader(false);
-      }
+        alert('名片已儲存');
+      } finally { showLoader(false); }
     }
 
     async function loadSettings() {
@@ -367,21 +402,14 @@
         const s = { TG_BOT_TOKEN: document.getElementById('set-tg-token').value, TG_CHAT_ID: document.getElementById('set-tg-chatid').value };
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_settings', p, settings: s }) });
         alert('設定儲存成功');
-      } finally {
-        showLoader(false);
-      }
+      } finally { showLoader(false); }
     }
 
     function showLoader(s) {
-      const loader = document.getElementById('loader');
-      if (!loader) return;
-      if (s) {
-        loader.classList.remove('hidden');
-        loader.style.opacity = '1';
-      } else {
-        loader.style.opacity = '0';
-        setTimeout(() => loader.classList.add('hidden'), 500);
-      }
+      const l = document.getElementById('loader');
+      if (!l) return;
+      if (s) { l.classList.remove('hidden'); l.style.opacity = '1'; }
+      else { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
     }
 
     init();
