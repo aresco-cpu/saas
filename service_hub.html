@@ -9,11 +9,11 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 全局規範：15px, 不加粗, LINE 原生風格, 移除所有 bold */
+    /* 全局規範：15px, 不加粗, LINE 原生風格 */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    /* 頂部標頭 - LINE 綠色 (#06C755) */
+    /* 頂部標頭 - LINE 綠色對應 image_68769f.png */
     header { background: #06C755; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .header-left { display: flex; align-items: center; gap: 8px; }
     .header-title { font-size: 17px; font-weight: 400; }
@@ -28,7 +28,7 @@
 
     .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; font-weight: 400; }
 
-    /* 清單選單樣式 - 扁平化無邊框 */
+    /* 清單樣式 (無方框) */
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
     .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
     .menu-item:last-child { border-bottom: none; }
@@ -45,7 +45,7 @@
     .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; font-weight: 400; }
     .btn-dark { background: #333333; }
 
-    /* 底部導覽列 */
+    /* 底部導覽 */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
@@ -55,13 +55,12 @@
 
     .hidden { display: none !important; }
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; }
-    
-    /* 錯誤提示樣式 */
-    .error-box { padding: 40px 20px; text-align: center; color: #FF4D4F; font-size: 14px; line-height: 1.6; }
+    .error-msg { padding: 40px 20px; text-align: center; color: #FF4D4F; font-size: 14px; line-height: 1.6; font-weight: 400; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">正在讀取中心資料...</div>
+  <!-- 載入遮罩 -->
+  <div id="loader" class="loading-overlay">正在載入中心資料...</div>
 
   <div class="app-container">
     <header>
@@ -85,47 +84,47 @@
     </div>
 
     <main id="main-content">
-      <!-- 1. 首頁選單 -->
+      <!-- 首頁選單 -->
       <div id="view-home">
         <div class="section-title">功能導航</div>
         <div class="menu-list">
           <div class="menu-item" onclick="switchView('profile')">
             <h3>📇 數位名片設定</h3>
-            <p>完善個人資源與需求，精準媒合商機。</p>
+            <p>完善您的產業資訊，開啟 AI 媒合商機。</p>
           </div>
           <div class="menu-item" onclick="switchView('activity')">
             <h3>📅 活動報名中心</h3>
-            <p>查看商圈最新推出的精彩活動並報名。</p>
+            <p>查看並參加商圈最新的精彩活動。</p>
           </div>
-          <div class="menu-item" onclick="switchView('ai')">
-            <h3>🤖 AI 商機配對</h3>
-            <p>透過 AI 分析尋找中心內最合適的合作夥伴。</p>
+          <div id="btn-match" class="menu-item" onclick="switchView('ai')">
+            <h3>🤖 AI 智能配對</h3>
+            <p>分析資源與需求，尋找最佳商務夥伴。</p>
           </div>
         </div>
       </div>
 
-      <!-- 2. 活動清單 -->
+      <!-- 活動列表 -->
       <div id="view-activity" class="hidden">
-        <div class="section-title">可報名活動</div>
+        <div class="section-title">進行中活動</div>
         <div id="activity-list-container" class="menu-list">
-          <div style="padding: 40px; color: #999; text-align: center;">正在同步活動資料...</div>
+          <div style="padding: 40px; text-align: center; color: #CCC;">正在讀取活動列表...</div>
         </div>
       </div>
 
-      <!-- 3. 名片設定 -->
+      <!-- 名片設定 -->
       <div id="view-profile" class="hidden">
-        <div class="section-title">個人名片編輯</div>
+        <div class="section-title">名片資訊設定</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
-        <div class="field-group"><label class="field-label">職務角色</label><input id="f-job" class="input-box"></div>
-        <div class="field-group"><label class="field-label">我擁有的資源</label><textarea id="f-resource" class="textarea-box" placeholder="例如：10年電商經驗、工廠貨源..."></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">更新名片資料</button>
+        <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
+        <div class="field-group"><label class="field-label">提供資源</label><textarea id="f-resource" class="textarea-box" placeholder="例如：電商資源、場地提供..."></textarea></div>
+        <button class="btn-action" onclick="saveProfile()">更新名片內容</button>
       </div>
 
-      <!-- 4. AI 配對 -->
+      <!-- AI 配對 -->
       <div id="view-ai" class="hidden">
         <div class="section-title">AI 智能媒合分析</div>
-        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444; font-size: 15px;">請確認名片已填寫完整，接著點擊按鈕啟動。</div>
-        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
+        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">準備進行深度數據分析，請稍候...</div>
+        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合</button>
       </div>
     </main>
 
@@ -140,31 +139,30 @@
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
+    const SUPER_ADMIN = 'Uf729764dbb5b652a5a90a467320bea29';
     let uid = '', p = '', isAdmin = false;
 
     async function init() {
       lucide.createIcons();
       const params = new URLSearchParams(window.location.search);
       p = params.get('p');
-      if (!p) { document.getElementById('loader').innerText = '錯誤：缺少店家代碼 p'; return; }
+      if (!p) { document.getElementById('loader').innerText = '缺少 p 參數，請確認網址。'; return; }
+      
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
         
-        // 處理頭像回顯
         const avatarUrl = profile.pictureUrl || '';
-        if (avatarUrl) {
-          document.getElementById('user-avatar-top').src = avatarUrl;
-          document.getElementById('user-avatar-mid').src = avatarUrl;
-        }
-        
+        document.getElementById('user-avatar-top').src = avatarUrl;
+        document.getElementById('user-avatar-mid').src = avatarUrl;
         document.getElementById('user-display-name').innerText = profile.displayName;
+        
         await loadHubData();
       } catch (err) { 
         console.error(err);
-        document.getElementById('loader').innerHTML = `<div class="error-box">LIFF 初始化失敗<br><small>${err.message}</small></div>`;
+        document.getElementById('loader').innerHTML = `<div class="error-msg">LIFF 初始化失敗<br><small>${err.message}</small></div>`;
       } 
       finally { 
         setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500);
@@ -173,27 +171,24 @@
 
     async function loadHubData() {
       try {
-        // 修正：加入 headers 以免某些環境下 Worker 無法正確解析 body
         const res = await fetch(WORKER_URL, { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'get_service_hub', p, uid }) 
         });
         
-        const textRes = await res.text();
-        let result;
-        try {
-          result = JSON.parse(textRes);
-        } catch(e) {
-          throw new Error("伺服器回傳格式錯誤");
+        if (!res.ok) {
+          throw new Error(`伺服器回應錯誤 (${res.status})`);
         }
 
+        const result = await res.json();
+        
         if (result.status === 'success') {
           const d = result.data;
           isAdmin = d.isAdmin;
           document.getElementById('brand-name-header').innerText = d.brandName || "服務中心";
           
-          if (isAdmin) {
+          if (isAdmin || uid === SUPER_ADMIN) {
             document.getElementById('btn-switch-admin').classList.remove('hidden');
             document.getElementById('role-text').style.display = 'block';
           }
@@ -207,22 +202,17 @@
           throw new Error(result.message || "讀取資料失敗");
         }
       } catch (err) {
-        document.getElementById('activity-list-container').innerHTML = `<div class="error-box">連線異常<br><small>${err.message}</small></div>`;
+        document.getElementById('activity-list-container').innerHTML = `<div class="error-msg">數據讀取失敗：GAS 回傳非 JSON 或權限未開放<br><small>${err.message}</small></div>`;
       }
     }
 
     function renderActivities(list) {
       const container = document.getElementById('activity-list-container');
       if (!list || list.length === 0) { 
-        container.innerHTML = '<div style="padding:40px; text-align:center; color:#CCC; font-weight:400;">目前尚無公開活動</div>'; 
+        container.innerHTML = '<div style="padding:40px; text-align:center; color:#CCC;">目前尚無活動</div>'; 
         return; 
       }
-      container.innerHTML = list.map(act => `
-        <div class="menu-item">
-          <h3>${act.name}</h3>
-          <p>${act.type || '一般活動'}</p>
-        </div>
-      `).join('');
+      container.innerHTML = list.map(act => `<div class="menu-item"><h3>${act.name}</h3><p>${act.type}</p></div>`).join('');
     }
 
     function switchView(v) {
@@ -247,37 +237,28 @@
     function switchToAdmin() { window.location.href = `active.html?p=${p}`; }
 
     async function saveProfile() {
-      const data = { 
-        name: document.getElementById('f-name').value, 
-        job: document.getElementById('f-job').value, 
-        resource: document.getElementById('f-resource').value 
-      };
+      const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, resource: document.getElementById('f-resource').value };
       try {
-        const res = await fetch(WORKER_URL, { 
+        await fetch(WORKER_URL, { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) 
         });
-        alert('名片已同步至中心資料庫');
-      } catch(e) {
-        alert('儲存失敗，請檢查網路連線');
-      }
+        alert('名片已同步更新');
+      } catch(e) { alert('儲存失敗，請檢查連線'); }
     }
 
     async function getAiMatches() {
       const el = document.getElementById('ai-content');
-      el.innerText = 'AI 正在進行深度媒合分析，請稍候...';
+      el.innerText = 'AI 媒合分析中...';
       try {
         const res = await fetch(WORKER_URL, { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'get_ai_matches', p, uid }) 
         });
-        const result = await res.text();
-        el.innerText = result;
-      } catch(e) {
-        el.innerText = 'AI 媒合暫時無法使用';
-      }
+        el.innerText = await res.text();
+      } catch(e) { el.innerText = '分析暫時無法執行'; }
     }
 
     init();
