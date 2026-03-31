@@ -9,7 +9,7 @@
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; -webkit-font-smoothing: antialiased; }
     .admin-container { max-width: 450px; margin: 0 auto; min-height: 100vh; }
     .tabs { display: flex; background: #FFFFFF; border-bottom: 1px solid #EEEEEE; position: sticky; top: 0; z-index: 10; }
-    .tab { flex: 1; text-align: center; padding: 15px; color: #999999; cursor: pointer; font-size: 15px; }
+    .tab { flex: 1; text-align: center; padding: 15px; color: #999999; cursor: pointer; }
     .tab.active { color: #06C755; border-bottom: 2px solid #06C755; }
     .list-area { padding: 15px; }
     .dealer-card { background: #FFFFFF; padding: 20px; border-bottom: 1px solid #F0F0F0; margin-bottom: 1px; }
@@ -17,11 +17,10 @@
     .dealer-brand { font-size: 15px; color: #06C755; margin-bottom: 10px; }
     .dealer-info { font-size: 15px; color: #666666; margin-bottom: 15px; line-height: 1.5; }
     .action-row { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
-    .sid-input { flex: 1; padding: 10px 0; border: none; border-bottom: 1px solid #EEEEEE; font-size: 15px; color: #007AFF; outline: none; background: transparent; border-radius: 0; }
+    .sid-input { flex: 1; padding: 10px 0; border: none; border-bottom: 1px solid #EEEEEE; font-size: 15px; color: #007AFF; outline: none; background: transparent; }
     .btn-approve { padding: 10px 20px; background: #06C755; color: white; border: none; font-size: 15px; cursor: pointer; border-radius: 4px; }
     .link-box { margin-top: 15px; padding: 15px; background: #F9F9F9; color: #007AFF; font-size: 15px; word-break: break-all; border-left: 3px solid #06C755; }
-    #message { padding: 20px; text-align: center; color: #999999; font-size: 15px; }
-    .error-text { color: #FF4D4F; }
+    #message { padding: 40px 20px; text-align: center; color: #999999; }
   </style>
 </head>
 <body>
@@ -40,18 +39,18 @@
     let adminUid = '';
     let currentTab = '待審核';
 
-    async function initLiff() {
+    async function init() {
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         adminUid = profile.userId;
         if (adminUid !== 'Uf729764dbb5b652a5a90a467320bea29') {
-          document.getElementById('message').innerHTML = '<span class="error-text">權限不足</span>';
+          document.getElementById('message').innerText = '權限不足';
           return;
         }
         loadDealers();
-      } catch (err) { document.getElementById('message').innerText = 'LIFF 初始化失敗'; }
+      } catch (err) { document.getElementById('message').innerText = '初始化失敗'; }
     }
 
     function switchTab(status) {
@@ -64,7 +63,7 @@
     async function loadDealers() {
       const container = document.getElementById('list-container');
       const msg = document.getElementById('message');
-      msg.innerText = '載入名單中...';
+      msg.innerText = '讀取名單中...';
       container.innerHTML = '';
 
       try {
@@ -75,24 +74,24 @@
         });
         const result = await res.json();
         
-        if (result.status === 'success' && result.data) {
+        if (result.status === 'success') {
           msg.innerText = '';
-          const dealerList = result.data.data;
+          const dealers = result.data.data;
           const suggestedSid = result.data.suggestedSid;
 
-          if (!dealerList || dealerList.length === 0) {
-            msg.innerText = `無${currentTab}申請案`;
+          if (!dealers || dealers.length === 0) {
+            msg.innerText = `目前無${currentTab}申請案`;
             return;
           }
 
-          dealerList.forEach((item, index) => {
+          dealers.forEach((item, index) => {
             const card = document.createElement('div');
             card.className = 'dealer-card';
             const displaySid = item.sid || suggestedSid;
             card.innerHTML = `
               <div class="dealer-name">負責人：${item.name}</div>
               <div class="dealer-brand">品牌：${item.brand || item.company}</div>
-              <div class="dealer-info">電話：${item.phone} | 管道：${item.channel}</div>
+              <div class="dealer-info">電話：${item.phone}<br>管道：${item.channel}</div>
               <div class="action-row">
                 <input type="text" id="sid_${item.uid}" class="sid-input" value="${displaySid}">
                 <button class="btn-approve" onclick="approve('${item.uid}')">核准</button>
@@ -102,7 +101,7 @@
             container.appendChild(card);
           });
         } else {
-          msg.innerHTML = `<span class="error-text">錯誤：${result.message || '無法讀取數據'}</span>`;
+          msg.innerText = '系統錯誤：' + result.message;
         }
       } catch (e) { msg.innerText = '連線失敗'; }
     }
@@ -111,24 +110,23 @@
       const sid = document.getElementById(`sid_${targetUid}`).value;
       const resBox = document.getElementById(`res_${targetUid}`);
       resBox.style.display = 'block';
-      resBox.innerText = '處理中...';
+      resBox.innerText = '正在核准並分配專屬資料庫...';
       try {
-        const response = await fetch(WORKER_URL, {
+        const res = await fetch(WORKER_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'approve_dealer', admin_uid: adminUid, target_uid: targetUid, sid: sid })
         });
-        const result = await response.json();
-        if (result.status === 'success' && result.data) {
+        const result = await res.json();
+        if (result.status === 'success') {
           resBox.className = 'link-box';
-          resBox.innerText = '連結：' + result.data.link;
+          resBox.innerText = '核准完成！連結：' + result.data.link;
         } else {
-          resBox.innerText = '核准失敗：' + (result.message || '未知錯誤');
+          resBox.innerText = '核准失敗：' + result.message;
         }
       } catch (e) { resBox.innerText = '連線異常'; }
     }
-
-    initLiff();
+    init();
   </script>
 </body>
 </html>
