@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>行政後台</title>
+  <title>行政審核後台</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -11,12 +11,12 @@
     .tab-item { flex: 1; text-align: center; padding: 15px 0; font-size: 14px; color: #999; cursor: pointer; border-bottom: 1.5px solid #f2f2f2; }
     .tab-active { color: #06C755; border-bottom-color: #06C755; }
     .dealer-card { padding: 20px; border-bottom: 1px solid #f9f9f9; }
-    .btn-approve { background: #06C755; color: white; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: none; }
-    .btn-copy { background: #f5f5f5; color: #666; padding: 5px 10px; border-radius: 4px; font-size: 11px; border: none; margin-top: 8px; }
+    .btn-approve { background: #06C755; color: white; padding: 6px 14px; border-radius: 6px; font-size: 13px; border: none; cursor: pointer; }
+    .btn-copy { background: #f5f5f5; color: #666; padding: 5px 10px; border-radius: 4px; font-size: 11px; border: none; margin-top: 8px; cursor: pointer; }
     .modal { background: rgba(0,0,0,0.5); display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; padding: 20px; }
     .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 320px; padding: 24px; }
     input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 8px; font-size: 15px; margin-top: 10px; outline: none; background: #fafafa; }
-    .url-link { font-size: 11px; color: #007aff; display: block; word-break: break-all; margin-top: 6px; text-decoration: none; }
+    .url-link { font-size: 11px; color: #007aff; display: block; word-break: break-all; margin-top: 6px; text-decoration: none; line-height: 1.4; }
   </style>
 </head>
 <body>
@@ -24,7 +24,7 @@
 <div class="max-w-[480px] mx-auto min-h-screen">
   <header class="p-5 flex justify-between items-center">
     <h2 class="text-xl font-medium">經銷商審核</h2>
-    <span class="text-[10px] text-gray-300">ADMINISTRATOR</span>
+    <span id="admin-info" class="text-[10px] text-gray-300">ADMIN</span>
   </header>
 
   <nav class="flex">
@@ -37,12 +37,11 @@
   </div>
 </div>
 
-<!-- 核准對話框 -->
 <div id="approve-modal" class="modal">
   <div class="modal-content">
-    <h3 class="text-lg font-medium">指派商店編號</h3>
-    <p class="text-xs text-gray-400 mt-1">請為經銷商建立專屬 SID</p>
-    <input type="text" id="assign-sid" placeholder="例如: ST_001">
+    <h3 class="text-lg font-medium">核准經銷商</h3>
+    <p class="text-xs text-gray-400 mt-1">請為該店指定專屬 SID</p>
+    <input type="text" id="assign-sid" placeholder="例: ST_001">
     <div class="flex gap-4 mt-8">
       <button onclick="closeModal()" class="flex-1 text-sm text-gray-400">取消</button>
       <button onclick="confirmApprove()" class="flex-1 py-3 bg-[#06C755] text-white rounded-lg text-sm">確認核准</button>
@@ -56,10 +55,15 @@
   let uid = '', currentTab = '待審核', selectedUid = '', suggestedSid = '';
 
   async function init() {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) { liff.login(); return; }
-    uid = (await liff.getProfile()).userId;
-    loadDealers();
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) { liff.login(); return; }
+      const profile = await liff.getProfile();
+      uid = profile.userId;
+      loadDealers();
+    } catch (e) {
+      document.getElementById('dealer-list').innerHTML = `<div class="p-10 text-red-400 text-center">LIFF 初始化失敗</div>`;
+    }
   }
 
   function switchTab(status) {
@@ -74,12 +78,13 @@
     container.innerHTML = '<div class="p-20 text-center text-gray-300 text-sm">讀取中...</div>';
     
     try {
-      const res = await fetch(WORKER_URL, {
+      const response = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get_dealers', admin_uid: uid, targetStatus: currentTab })
       });
-      const result = await res.json();
+      
+      const result = await response.json();
       
       if (result.status === 'success') {
         suggestedSid = result.suggestedSid;
@@ -88,7 +93,7 @@
         container.innerHTML = `<div class="p-20 text-center text-red-300 text-sm">${result.message}</div>`;
       }
     } catch (e) {
-      container.innerHTML = '<div class="p-20 text-center text-red-400 text-sm">網路連線異常</div>';
+      container.innerHTML = `<div class="p-20 text-center text-red-400 text-sm">網路連線異常</div>`;
     }
   }
 
@@ -110,8 +115,8 @@
               ${currentTab === '已核准' ? `
                 <div class="mt-2">
                   <span class="text-[10px] bg-gray-50 px-2 py-0.5 rounded text-gray-500">ID: ${item.sid}</span>
-                  <a href="${url}" class="url-link">${url}</a>
-                  <button onclick="copyUrl('${url}')" class="btn-copy">複製專屬連結</button>
+                  <a href="${url}" class="url-link" target="_blank">${url}</a>
+                  <button onclick="copyText('${url}')" class="btn-copy">複製專屬連結</button>
                 </div>
               ` : ''}
             </div>
@@ -123,14 +128,14 @@
     }).join('');
   }
 
-  function copyUrl(text) {
+  function copyText(text) {
     const el = document.createElement('textarea');
     el.value = text;
     document.body.appendChild(el);
     el.select();
     document.execCommand('copy');
     document.body.removeChild(el);
-    alert('連結已複製');
+    alert('已複製到剪貼簿');
   }
 
   function openModal(targetUid) {
