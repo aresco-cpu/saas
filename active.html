@@ -3,150 +3,360 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>管理後台</title>
+  <link rel="icon" href="data:,">
+  <title>active.html</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { font-family: -apple-system, sans-serif; margin: 0; background: #FFFFFF; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
-    .page-container { max-width: 450px; margin: 0 auto; }
+    /* 全局規範：15px, 不加粗, LINE 原生風格, 移除方框與陰影 */
+    body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 100px; -webkit-font-smoothing: antialiased; }
+    .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    header { padding: 25px 20px; border-bottom: 1px solid #F0F0F0; }
-    header h1 { margin: 0; font-size: 20px; font-weight: 400; color: #1A202C; }
-    header p { margin: 5px 0 0 0; font-size: 15px; color: #718096; }
+    header { background: #06C755; color: white; padding: 30px 20px; text-align: center; }
+    header h2 { margin: 0; font-size: 15px; font-weight: 400; letter-spacing: 1px; }
 
-    .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 20px; }
+    .user-profile { background: #FFFFFF; padding: 20px; display: flex; align-items: center; border-bottom: 1px solid #EEEEEE; }
+    .user-avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; object-fit: cover; }
+    .user-info { flex: 1; }
+    .user-name { margin: 0; font-size: 15px; color: #333333; }
+    .user-role { font-size: 15px; color: #06C755; margin-top: 4px; display: block; }
+
+    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
+
+    /* 活動模組分段選擇器 */
+    .tab-selector { display: flex; background: #F7FAFC; border-radius: 8px; padding: 4px; margin: 15px 20px; }
     .tab-item { flex: 1; text-align: center; padding: 10px 0; border-radius: 6px; cursor: pointer; color: #718096; font-size: 15px; }
     .tab-item.active { background: #FFFFFF; color: #06C755; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
-    .content-view { padding: 0 20px; }
-    .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; color: #4A5568; font-size: 15px; }
-    input, textarea, select { width: 100%; border: 1px solid #E2E8F0; border-radius: 4px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
-    
-    .list-item { padding: 15px 0; border-bottom: 1px solid #F9F9F9; display: flex; justify-content: space-between; align-items: center; }
-    .list-info { flex: 1; }
-    .list-title { font-size: 15px; color: #333333; margin-bottom: 2px; }
-    
-    .btn-tag { font-size: 13px; padding: 6px 12px; border-radius: 4px; border: 1px solid #E2E8F0; color: #718096; cursor: pointer; }
-    .btn-tag.active { background: #06C755; color: white; border-color: #06C755; }
+    /* 清單選單樣式 */
+    .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
+    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item:active { background: #F8F8F8; }
+    .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
+    .menu-item p { margin: 0; font-size: 15px; color: #999999; line-height: 1.4; }
 
-    .upload-box { border: 1px dashed #CBD5E0; border-radius: 8px; padding: 30px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin-bottom: 20px; }
+    /* 表單欄位：移除多餘邊框 */
+    .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
+    .field-label { font-size: 15px; color: #666666; margin-bottom: 8px; display: block; }
+    .field-input, select { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; color: #333333; background: transparent; -webkit-appearance: none; border-radius: 0; }
+    .field-textarea { width: 100%; border: none; font-size: 15px; padding: 5px 0; outline: none; height: 120px; resize: none; color: #333333; background: transparent; line-height: 1.5; }
 
-    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 85px; left: 50%; transform: translateX(-50%); z-index: 100; }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; text-decoration: none; }
+    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 15px; background: #06C755; color: white; border: none; font-size: 15px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 4px; display: block; }
+    .btn-dark { background: #333333; }
+
+    /* 底部 6 格導覽列 */
+    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
-    .nav-item i { margin-bottom: 6px; width: 22px; height: 22px; }
+    .nav-item i { width: 22px; height: 22px; margin-bottom: 5px; }
     .nav-text { font-size: 13px; }
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
-    .btn-main { width: 100%; padding: 16px; background: #06C755; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 10px; }
-    .hidden { display: none; }
+    /* 載入遮罩 */
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
+    .hidden { display: none !important; }
+
+    .ai-result-box { background: #FFFFFF; padding: 20px; line-height: 1.6; white-space: pre-wrap; font-size: 15px; color: #333333; }
+    .batch-item { border-bottom: 1px solid #F0F0F0; padding-bottom: 10px; margin-bottom: 15px; }
+    .upload-box { border: 1px dashed #CBD5E0; border-radius: 8px; padding: 30px 20px; text-align: center; background: #F8FAFC; cursor: pointer; margin: 20px; }
   </style>
 </head>
 <body>
-  <div class="page-container">
-    <header>
-      <h1 id="view-title">建立新活動</h1>
-      <p id="view-desc">部署您的專屬活動流程。</p>
-    </header>
+  <div id="loader" class="loading-overlay">
+    <div id="loader-text">系統連線中...</div>
+    <div id="loader-error" style="margin-top:20px; color:#999; font-size:12px;"></div>
+  </div>
 
-    <!-- [建立] -->
-    <div id="view-create" class="content-view">
-      <div class="form-group"><label>活動名稱</label><input type="text" id="act-name" placeholder="輸入標題"></div>
-      <div class="form-group"><label>名單匯入 (每行一位)</label><textarea id="act-list" style="height:120px;" placeholder="貼上名單..."></textarea></div>
-      <button class="btn-main" onclick="submitActivity()">確認發布</button>
+  <div class="app-container">
+    <header><h2 id="brand-name">管理後台</h2></header>
+
+    <div class="user-profile">
+      <img id="user-avatar" class="user-avatar" src="">
+      <div class="user-info">
+        <p id="user-display-name" class="user-name">辨識身份中...</p>
+        <span id="role-text" class="user-role">管理權限已開啟</span>
+      </div>
     </div>
 
-    <!-- [核銷] -->
-    <div id="view-checkin" class="content-view hidden">
-      <div class="form-group"><label>選擇活動</label><select id="event-selector" onchange="loadCheckInList()"></select></div>
-      <div id="checkin-list"></div>
-    </div>
+    <main id="main-content">
+      <!-- 1. 建立：包含三個活動模組 -->
+      <div id="view-create">
+        <div class="tab-selector">
+          <div id="create-tab-quick" class="tab-item active" onclick="switchCreateMode('quick')">快速匯入</div>
+          <div id="create-tab-full" class="tab-item" onclick="switchCreateMode('full')">詳細發布</div>
+          <div id="create-tab-batch" class="tab-item" onclick="switchCreateMode('batch')">系列梯次</div>
+        </div>
 
-    <!-- [CRM] -->
-    <div id="view-crm" class="content-view hidden">
-      <div id="crm-list"></div>
-    </div>
+        <div id="create-form">
+          <div class="field-group">
+            <label class="field-label" id="label-act-name">活動名稱</label>
+            <input id="act-name" class="field-input" placeholder="輸入活動標題">
+          </div>
 
-    <!-- [配對] -->
-    <div id="view-matching" class="content-view hidden">
-      <div id="ai-match-result" style="background:#F8FAFC; padding:15px; border-radius:8px; line-height:1.6;">點擊按鈕開始分析。</div>
-      <button class="btn-main" onclick="runAiMatch()">開始 AI 智能配對</button>
-    </div>
+          <!-- 快速匯入 -->
+          <div id="group-quick">
+            <div class="field-group">
+              <label class="field-label">名單內容 (每行一位)</label>
+              <textarea id="act-list" class="field-textarea" placeholder="在此貼上參與者姓名..."></textarea>
+            </div>
+          </div>
 
-    <!-- [名片] -->
-    <div id="view-card" class="content-view hidden">
-      <div class="upload-box" onclick="document.getElementById('ocr-file').click()"><p>掃描紙本名片 (AI 辨識)</p></div>
-      <input type="file" id="ocr-file" class="hidden" accept="image/*" onchange="handleOcr(this)">
-      <div class="form-group"><label>姓名</label><input id="card-name"></div>
-      <button class="btn-main">儲存至資料庫</button>
-    </div>
+          <!-- 詳細發布 -->
+          <div id="group-full" class="hidden">
+            <div class="field-group"><label class="field-label">開始時間</label><input type="datetime-local" id="act-start" class="field-input"></div>
+            <div class="field-group"><label class="field-label">結束時間</label><input type="datetime-local" id="act-end" class="field-input"></div>
+            <div class="field-group"><label class="field-label">活動詳情</label><textarea id="act-desc" class="field-textarea" placeholder="描述活動內容..."></textarea></div>
+          </div>
 
-    <!-- [參數] -->
-    <div id="view-settings" class="content-view hidden">
-      <div class="form-group"><label>Telegram Bot Token</label><input id="set-tg-token"></div>
-      <div class="form-group"><label>Telegram Chat ID</label><input id="set-tg-chatid"></div>
-      <button class="btn-main" onclick="saveSettings()">儲存設定</button>
-    </div>
+          <!-- 系列梯次 -->
+          <div id="group-batch" class="hidden">
+            <div class="field-group"><label class="field-label">系列描述</label><textarea id="batch-desc" class="field-textarea" placeholder="此系列活動的共通說明..."></textarea></div>
+            <div id="batch-items-container">
+              <div class="field-group batch-item">
+                <label class="field-label">梯次 1 名稱與時間</label>
+                <input type="text" class="field-input batch-name" placeholder="例：第一梯次" style="margin-bottom:8px; border-bottom:1px solid #EEE">
+                <input type="datetime-local" class="field-input batch-time">
+              </div>
+            </div>
+            <div style="padding:0 20px"><button onclick="addBatchRow()" style="width:100%; padding:10px; background:none; border:1px dashed #CCC; font-size:14px; color:#999">+ 新增梯次</button></div>
+          </div>
 
-    <nav>
+          <button class="btn-action" onclick="submitActivity()">確認建立並發布</button>
+        </div>
+      </div>
+
+      <!-- 2. 核銷 -->
+      <div id="view-checkin" class="hidden">
+        <div class="section-title">簽到核銷</div>
+        <div class="field-group">
+          <select id="event-selector" onchange="loadRegistrants()"><option value="">讀取活動中...</option></select>
+        </div>
+        <div id="registrant-list" class="menu-list"></div>
+      </div>
+
+      <!-- 3. CRM -->
+      <div id="view-crm" class="hidden">
+        <div class="section-title">會員參與統計</div>
+        <div id="crm-container" class="menu-list"></div>
+      </div>
+
+      <!-- 4. 配對 -->
+      <div id="view-ai" class="hidden">
+        <div class="section-title">AI 智能配對</div>
+        <div id="ai-content" class="ai-result-box">啟動 AI 媒合分析，尋找潛在商機。</div>
+        <button class="btn-action btn-dark" onclick="getAiMatches()">執行 AI 媒合</button>
+      </div>
+
+      <!-- 5. 名片 (含 OCR) -->
+      <div id="view-card" class="hidden">
+        <div class="section-title">名片通訊錄管理</div>
+        <div class="upload-box" onclick="document.getElementById('ocr-file').click()">
+          <i data-lucide="camera"></i><p>掃描紙本名片 (AI 辨識)</p>
+        </div>
+        <input type="file" id="ocr-file" class="hidden" accept="image/*" onchange="handleOcr(this)">
+        <div class="field-group"><label class="field-label">姓名</label><input id="card-name" class="field-input"></div>
+        <div class="field-group"><label class="field-label">公司</label><input id="card-company" class="field-input"></div>
+        <div class="field-group"><label class="field-label">職稱</label><input id="card-job" class="field-input"></div>
+        <button class="btn-action">儲存至名片盒</button>
+      </div>
+
+      <!-- 6. 參數 -->
+      <div id="view-settings" class="hidden">
+        <div class="section-title">系統連線設定</div>
+        <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="field-input"></div>
+        <div class="field-group"><label class="field-label">Telegram Chat ID</label><input id="set-tg-chatid" class="field-input"></div>
+        <button class="btn-action btn-dark" onclick="saveSettings()">儲存設定</button>
+      </div>
+    </main>
+
+    <!-- 底部 6 格導覽列 -->
+    <nav id="bottom-nav">
       <div class="nav-item active" id="nav-create" onclick="switchNav('create')"><div class="icon-box"><i data-lucide="plus-circle"></i></div><span class="nav-text">建立</span></div>
       <div class="nav-item" id="nav-checkin" onclick="switchNav('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
       <div class="nav-item" id="nav-crm" onclick="switchNav('crm')"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
-      <div class="nav-item" id="nav-matching" onclick="switchNav('matching')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
-      <div class="nav-item" id="nav-card" onclick="switchNav('card')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
-      <div class="nav-item" id="nav-settings" onclick="switchNav('settings')"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
+      <div class="nav-item" id="nav-ai" onclick="switchView('ai')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
+      <div class="nav-item" id="nav-card" onclick="switchView('card')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
+      <div class="nav-item" id="nav-settings" onclick="switchView('settings')"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
     </nav>
   </div>
 
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-    let uid = '', p = '';
+    let uid = '', p = '', createMode = 'quick';
+
+    const safetyTimeout = setTimeout(() => showLoader(false), 6000);
 
     async function init() {
       lucide.createIcons();
       const urlParams = new URLSearchParams(window.location.search);
       p = urlParams.get('p');
-      await liff.init({ liffId: LIFF_ID });
-      if (!liff.isLoggedIn()) { liff.login(); return; }
-      const profile = await liff.getProfile();
-      uid = profile.userId;
+      if (!p) { document.getElementById('loader-text').innerText = '缺少商店參數 p'; return; }
+
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) { liff.login(); return; }
+        const profile = await liff.getProfile();
+        uid = profile.userId;
+        document.getElementById('user-avatar').src = profile.pictureUrl || '';
+        document.getElementById('user-display-name').innerText = profile.displayName;
+        await loadHubData();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        clearTimeout(safetyTimeout);
+        showLoader(false);
+      }
     }
 
-    function switchNav(view) {
-      document.querySelectorAll('.content-view').forEach(el => el.classList.add('hidden'));
-      document.getElementById('view-' + view).classList.remove('hidden');
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('nav-' + view).classList.add('active');
+    async function loadHubData() {
+      const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
+      const result = await res.json();
+      if (result.status === 'success') {
+        const d = result.data;
+        document.getElementById('brand-name').innerText = d.brandName || "管理中心";
+        const sel = document.getElementById('event-selector');
+        if (sel && d.activities) {
+          sel.innerHTML = '<option value="">選擇活動...</option>' + d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+        }
+      }
+    }
+
+    function switchNav(v) {
+      document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById('view-' + v);
+      if (target) target.classList.remove('hidden');
       
-      const titles = { create: "建立新活動", checkin: "現場核銷簽到", crm: "會員 CRM 總覽", matching: "AI 商業配對", card: "名片辨識管理", settings: "系統參數設定" };
-      document.getElementById('view-title').innerText = titles[view];
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.remove('active');
+        const box = el.querySelector('.icon-box');
+        if (box) {
+          const content = box.innerHTML;
+          el.removeChild(box);
+          el.insertAdjacentHTML('afterbegin', content);
+        }
+      });
 
-      if (view === 'checkin') loadEvents();
-      if (view === 'crm') loadCrm();
-      if (view === 'settings') loadSettings();
+      const activeNav = document.getElementById('nav-' + v);
+      if (activeNav) {
+        activeNav.classList.add('active');
+        const content = activeNav.innerHTML;
+        const iconPart = content.split('<span')[0];
+        const textPart = content.includes('<span') ? '<span' + content.split('<span')[1] : '';
+        activeNav.innerHTML = `<div class="icon-box">${iconPart}</div>${textPart}`;
+      }
+      
+      if (v === 'crm') loadCrmData();
+      if (v === 'settings') loadSettings();
+      window.scrollTo(0, 0);
+      lucide.createIcons();
     }
 
-    // 核心 API 功能請確保 Code.gs 已更新至 v1.3.6 版本
-    async function loadEvents() {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
-      const result = await res.json();
-      const select = document.getElementById('event-selector');
-      select.innerHTML = '<option value="">請選擇活動...</option>';
-      result.data.activities.forEach(act => select.innerHTML += `<option value="${act.name}">${act.name}</option>`);
+    function switchCreateMode(m) {
+      createMode = m;
+      ['quick', 'full', 'batch'].forEach(mode => {
+        document.getElementById('create-tab-' + mode).classList.toggle('active', mode === m);
+        document.getElementById('group-' + mode).classList.toggle('hidden', mode !== m);
+      });
+      document.getElementById('label-act-name').innerText = m === 'batch' ? '系列名稱' : '活動名稱';
     }
 
-    async function loadCrm() {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
-      const result = await res.json();
-      document.getElementById('crm-list').innerHTML = result.data.map(u => `<div class="list-item"><div class="list-info"><div class="list-title">${u.name}</div></div><div style="color:#06C755;">參與 ${u.attended} 次</div></div>`).join('');
+    function addBatchRow() {
+      const container = document.getElementById('batch-items-container');
+      const count = container.querySelectorAll('.batch-item').length + 1;
+      const div = document.createElement('div');
+      div.className = 'field-group batch-item';
+      div.innerHTML = `<label class="field-label">梯次 ${count} 名稱與時間</label>
+        <input type="text" class="field-input batch-name" placeholder="例：第 ${count} 梯次" style="margin-bottom:8px; border-bottom:1px solid #EEE">
+        <input type="datetime-local" class="field-input batch-time">`;
+      container.appendChild(div);
     }
 
     async function submitActivity() {
-      const payload = { action: 'create_activity', p, uid, mode: 'quick', name: document.getElementById('act-name').value, names: document.getElementById('act-list').value.split('\n') };
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
-      alert('活動已發布');
+      const name = document.getElementById('act-name').value;
+      if (!name) return alert('填寫標題');
+      showLoader(true);
+      try {
+        let payload = { action: 'create_activity', p, uid, mode: createMode, name: name };
+        if (createMode === 'quick') payload.names = document.getElementById('act-list').value.split('\n');
+        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify(payload) });
+        alert('發布完成');
+        switchNav('checkin');
+      } finally { showLoader(false); }
+    }
+
+    async function loadRegistrants() {
+      const act = document.getElementById('event-selector').value;
+      if (!act) return;
+      showLoader(true);
+      try {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: act }) });
+        const result = await res.json();
+        document.getElementById('registrant-list').innerHTML = result.data.map(r => `<div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
+          <h3>${r.姓名}</h3><p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊核銷'}</p></div>`).join('');
+      } finally { showLoader(false); }
+    }
+
+    async function toggleCheckIn(act, row, status) {
+      showLoader(true);
+      try {
+        await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'toggle_checkin', p, activityName: act, rowId: row, status: status }) });
+        await loadRegistrants();
+      } finally { showLoader(false); }
+    }
+
+    async function loadCrmData() {
+      showLoader(true);
+      try {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
+        const result = await res.json();
+        document.getElementById('crm-container').innerHTML = result.data.map(u => `<div class="menu-item"><h3>${u.name}</h3><p>累計出席：${u.attended} 次</p></div>`).join('');
+      } finally { showLoader(false); }
+    }
+
+    async function getAiMatches() {
+      const el = document.getElementById('ai-content');
+      el.innerText = 'AI 媒合中...';
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
+      el.innerText = await res.text();
+    }
+
+    async function handleOcr(input) {
+      const file = input.files[0];
+      if (!file) return;
+      showLoader(true);
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'recognizeCard', base64Image: e.target.result }) });
+        const result = await res.json();
+        document.getElementById('card-name').value = result.data.Name || '';
+        document.getElementById('card-company').value = result.data.CompanyName || '';
+        document.getElementById('card-job').value = result.data.Title || '';
+        showLoader(false);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function loadSettings() {
+      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_settings', p }) });
+      const result = await res.json();
+      document.getElementById('set-tg-token').value = result.data.TG_BOT_TOKEN || '';
+      document.getElementById('set-tg-chatid').value = result.data.TG_CHAT_ID || '';
+    }
+
+    async function saveSettings() {
+      showLoader(true);
+      const s = { TG_BOT_TOKEN: document.getElementById('set-tg-token').value, TG_CHAT_ID: document.getElementById('set-tg-chatid').value };
+      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_settings', p, settings: s }) });
+      alert('已儲存');
+      showLoader(false);
+    }
+
+    function showLoader(s) {
+      const l = document.getElementById('loader');
+      if (s) { l.classList.remove('hidden'); l.style.opacity = '1'; }
+      else { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
     }
 
     init();
