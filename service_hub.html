@@ -23,7 +23,7 @@
 
     .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
 
-    /* 清單選單樣式 (去框、扁平化) */
+    /* 扁平化選單 */
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
     .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; position: relative; }
     .menu-item:last-child { border-bottom: none; }
@@ -40,96 +40,97 @@
     .btn-action { width: calc(100% - 40px); margin: 20px; padding: 15px; background: #06C755; color: white; border: none; font-size: 15px; font-weight: 400; cursor: pointer; text-align: center; border-radius: 4px; display: block; }
     .btn-dark { background: #333333; }
 
-    /* 底部導覽列 (六格核心導航) */
-    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 100; }
+    /* 底部 6 格導覽列 */
+    nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
     .nav-item i { width: 22px; height: 22px; margin-bottom: 5px; }
     .nav-text { font-size: 13px; }
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
-    /* AI 與 載入狀態 */
+    /* 載入遮罩 */
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
+    .hidden { display: none !important; opacity: 0; pointer-events: none; }
+
     .ai-result-box { background: #FFFFFF; padding: 20px; line-height: 1.6; white-space: pre-wrap; font-size: 15px; color: #333333; }
-    .hidden { display: none !important; }
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.3s; }
-    
-    .status-msg { font-size: 14px; text-align: center; padding: 20px; color: #FF4D4F; background: #FFF; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">系統連線中...</div>
+  <!-- 修復後的載入畫面 -->
+  <div id="loader" class="loading-overlay">
+    <div id="loader-text">系統連線中...</div>
+    <div id="loader-error" style="margin-top:20px; color:#999; font-size:12px;"></div>
+  </div>
 
   <div class="app-container">
     <header><h2 id="brand-name">服務中心</h2></header>
 
     <div class="user-profile">
-      <img id="user-avatar" class="user-avatar" src="">
+      <img id="user-avatar" class="user-avatar" src="https://via.placeholder.com/55">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">正在識別身份...</p>
+        <p id="user-display-name" class="user-name">辨識身分中...</p>
         <span id="role-text" class="user-role" style="display:none;">管理權限已開啟</span>
       </div>
     </div>
 
-    <!-- 各功能視圖區域 -->
     <main id="main-content">
-      <!-- 1. 建立活動 (Admin) -->
+      <!-- 1. 建立 -->
       <div id="view-create" class="hidden">
-        <div class="section-title">快速活動發布</div>
-        <div class="field-group"><label class="field-label">活動名稱</label><input id="act-name" class="field-input" placeholder="輸入活動標題"></div>
-        <div class="field-group"><label class="field-label">名單內容 (每行一位)</label><textarea id="act-list" class="field-textarea" placeholder="貼上參與者姓名..."></textarea></div>
-        <button class="btn-action" onclick="submitActivity()">確認並建立活動</button>
+        <div class="section-title">活動發布</div>
+        <div class="field-group"><label class="field-label">活動名稱</label><input id="act-name" class="field-input" placeholder="輸入標題"></div>
+        <div class="field-group"><label class="field-label">名單內容 (每行一位)</label><textarea id="act-list" class="field-textarea" placeholder="貼上姓名..."></textarea></div>
+        <button class="btn-action" onclick="submitActivity()">確認建立活動</button>
       </div>
 
-      <!-- 2. 核銷簽到 (Admin) -->
+      <!-- 2. 核銷 -->
       <div id="view-checkin" class="hidden">
-        <div class="section-title">現場核銷清單</div>
+        <div class="section-title">簽到核銷</div>
         <div class="field-group">
-          <label class="field-label">選擇活動</label>
           <select id="event-selector" onchange="loadRegistrants()"><option value="">讀取活動中...</option></select>
         </div>
         <div id="registrant-list" class="menu-list"></div>
       </div>
 
-      <!-- 3. CRM 會員 (Admin) -->
+      <!-- 3. CRM -->
       <div id="view-crm" class="hidden">
-        <div class="section-title">中心成員參與統計</div>
+        <div class="section-title">會員資料總覽</div>
         <div id="crm-container" class="menu-list"></div>
       </div>
 
-      <!-- 4. 配對 (User/Admin) -->
+      <!-- 4. 配對 -->
       <div id="view-ai" class="hidden">
         <div class="section-title">AI 智能商業配對</div>
-        <div id="ai-content" class="ai-result-box">點擊按鈕，啟動 AI 媒合分析。</div>
-        <button class="btn-action btn-dark" onclick="getAiMatches()">開始 AI 智能配對</button>
+        <div id="ai-content" class="ai-result-box">分析會員資料中，請點擊按鈕啟動。</div>
+        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
       </div>
 
-      <!-- 5. 名片 (User/Admin) - 預設顯示 -->
+      <!-- 5. 名片 (預設顯示) -->
       <div id="view-profile">
-        <div class="section-title">我的數位名片設定</div>
+        <div class="section-title">個人數位名片</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="field-input"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="field-input"></div>
         <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="field-input"></div>
         <div class="field-group"><label class="field-label">我的資源</label><textarea id="f-resource" class="field-textarea"></textarea></div>
         <div class="field-group"><label class="field-label">我的需求</label><textarea id="f-need" class="field-textarea"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">儲存並更新名片</button>
+        <button class="btn-action" onclick="saveProfile()">儲存名片設定</button>
       </div>
 
-      <!-- 6. 參數 (Admin) -->
+      <!-- 6. 參數 -->
       <div id="view-settings" class="hidden">
-        <div class="section-title">系統參數設定</div>
+        <div class="section-title">系統參數</div>
         <div class="field-group"><label class="field-label">Telegram Bot Token</label><input id="set-tg-token" class="field-input"></div>
         <div class="field-group"><label class="field-label">Telegram Chat ID</label><input id="set-tg-chatid" class="field-input"></div>
-        <button class="btn-action btn-dark" onclick="saveSettings()">儲存設定</button>
+        <button class="btn-action btn-dark" onclick="saveSettings()">儲存</button>
       </div>
     </main>
 
-    <!-- 底部六格導覽列 -->
+    <!-- 底部 6 格導覽列 -->
     <nav id="bottom-nav">
       <div class="nav-item" id="nav-create" onclick="switchView('create')"><i data-lucide="plus-circle"></i><span class="nav-text">建立</span></div>
       <div class="nav-item" id="nav-checkin" onclick="switchView('checkin')"><i data-lucide="check-square"></i><span class="nav-text">核銷</span></div>
       <div class="nav-item" id="nav-crm" onclick="switchView('crm')"><i data-lucide="users"></i><span class="nav-text">CRM</span></div>
       <div class="nav-item" id="nav-ai" onclick="switchView('ai')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
-      <div class="nav-item active" id="nav-profile" onclick="switchView('profile')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
+      <div class="nav-item active" id="nav-profile" onclick="switchView('profile')"><div class="icon-box"><i data-lucide="contact"></i></div><span class="nav-text">名片</span></div>
       <div class="nav-item" id="nav-settings" onclick="switchView('settings')"><i data-lucide="settings"></i><span class="nav-text">參數</span></div>
     </nav>
   </div>
@@ -139,49 +140,63 @@
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
     let uid = '', p = '', isAdmin = false;
 
+    // 安全超時機制
+    const safetyTimeout = setTimeout(() => {
+      showLoader(false);
+      const errorEl = document.getElementById('loader-error');
+      if (errorEl) errorEl.innerText = '連線較慢，請檢查網路狀況';
+    }, 6000);
+
     async function init() {
       lucide.createIcons();
       const urlParams = new URLSearchParams(window.location.search);
       p = urlParams.get('p');
-      if (!p) { 
-        document.getElementById('loader').innerText = '缺少商店代碼參數 p';
-        return; 
-      }
       
+      if (!p) {
+        const textEl = document.getElementById('loader-text');
+        if (textEl) textEl.innerText = '錯誤：網址缺少店家代碼 p';
+        return;
+      }
+
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        document.getElementById('user-avatar').src = profile.pictureUrl || '';
-        document.getElementById('user-display-name').innerText = profile.displayName;
+        const avatarEl = document.getElementById('user-avatar');
+        const nameEl = document.getElementById('user-display-name');
+        if (avatarEl) avatarEl.src = profile.pictureUrl || '';
+        if (nameEl) nameEl.innerText = profile.displayName;
+        
         await loadHubData();
-      } catch (e) { 
-        console.error(e);
-        document.getElementById('brand-name').innerText = '連線超時，請重新整理';
+      } catch (err) {
+        console.error("Init Error:", err);
       } finally {
+        clearTimeout(safetyTimeout);
         showLoader(false);
       }
     }
 
     async function loadHubData() {
       try {
-        const res = await fetch(WORKER_URL, { 
-          method: 'POST', 
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_service_hub', p, uid }) 
+          body: JSON.stringify({ action: 'get_service_hub', p, uid })
         });
         const result = await res.json();
         
         if (result.status === 'success') {
           const d = result.data;
           isAdmin = d.isAdmin;
-          document.getElementById('brand-name').innerText = d.brandName || "服務中心";
+          const brandEl = document.getElementById('brand-name');
+          if (brandEl) brandEl.innerText = d.brandName || "服務中心";
           
+          const roleEl = document.getElementById('role-text');
           if (isAdmin) {
-            document.getElementById('role-text').style.display = 'block';
+            if (roleEl) roleEl.style.display = 'block';
           } else {
-            // 非管理員隱藏管理按鈕
+            // 非管理員隱藏按鈕
             ['create', 'checkin', 'crm', 'settings'].forEach(id => {
               const el = document.getElementById('nav-' + id);
               if (el) el.style.display = 'none';
@@ -189,23 +204,25 @@
           }
           
           if (d.myProfile) {
-            document.getElementById('f-name').value = d.myProfile.name || '';
-            document.getElementById('f-job').value = d.myProfile.job || '';
-            document.getElementById('f-industry').value = d.myProfile.industry || '';
-            document.getElementById('f-resource').value = d.myProfile.resource || '';
-            document.getElementById('f-need').value = d.myProfile.need || '';
+            const fields = { 'f-name': 'name', 'f-job': 'job', 'f-industry': 'industry', 'f-resource': 'resource', 'f-need': 'need' };
+            for(let id in fields) {
+              const el = document.getElementById(id);
+              if (el) el.value = d.myProfile[fields[id]] || '';
+            }
           }
           
           const sel = document.getElementById('event-selector');
-          if (d.activities && Array.isArray(d.activities)) {
-            sel.innerHTML = '<option value="">請選擇活動...</option>' + 
-              d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
-          } else {
-            sel.innerHTML = '<option value="">尚無活動</option>';
+          if (sel) {
+            if (d.activities && Array.isArray(d.activities)) {
+              sel.innerHTML = '<option value="">請選擇活動...</option>' + 
+                d.activities.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+            } else {
+              sel.innerHTML = '<option value="">尚無活動</option>';
+            }
           }
         }
       } catch (e) {
-        console.error("Hub Data Load Error", e);
+        console.error("Load Data Error:", e);
       }
     }
 
@@ -214,9 +231,30 @@
       const targetView = document.getElementById('view-' + v);
       if (targetView) targetView.classList.remove('hidden');
       
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      const targetNav = document.getElementById('nav-' + v);
-      if (targetNav) targetNav.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.remove('active');
+        const box = el.querySelector('.icon-box');
+        if (box) {
+          // 還原圖示層級
+          const icon = box.querySelector('i');
+          if (icon) {
+            el.prepend(icon);
+            el.removeChild(box);
+          }
+        }
+      });
+
+      const activeNav = document.getElementById('nav-' + v);
+      if (activeNav) {
+        activeNav.classList.add('active');
+        const icon = activeNav.querySelector('i');
+        if (icon) {
+          const box = document.createElement('div');
+          box.className = 'icon-box';
+          activeNav.prepend(box);
+          box.appendChild(icon);
+        }
+      }
       
       if (v === 'crm') loadCrmData();
       if (v === 'settings') loadSettings();
@@ -247,12 +285,15 @@
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_registrants', p, activityName: act }) });
         const result = await res.json();
-        document.getElementById('registrant-list').innerHTML = result.data.map(r => `
-          <div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
-            <h3>${r.姓名}</h3>
-            <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊簽到'}</p>
-          </div>
-        `).join('');
+        const listContainer = document.getElementById('registrant-list');
+        if (listContainer) {
+          listContainer.innerHTML = result.data.map(r => `
+            <div class="menu-item" onclick="toggleCheckIn('${act}', ${r.rowId}, ${r.checkedIn})">
+              <h3>${r.姓名}</h3>
+              <p style="color: ${r.checkedIn ? '#06C755' : '#999'}">${r.checkedIn ? '✅ 已簽到' : '⭕ 點擊核銷'}</p>
+            </div>
+          `).join('');
+        }
       } finally {
         showLoader(false);
       }
@@ -273,12 +314,15 @@
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_crm_data', p }) });
         const result = await res.json();
-        document.getElementById('crm-container').innerHTML = result.data.map(u => `
-          <div class="menu-item">
-            <h3>${u.name}</h3>
-            <p>累積參與：${u.attended} 次</p>
-          </div>
-        `).join('');
+        const container = document.getElementById('crm-container');
+        if (container) {
+          container.innerHTML = result.data.map(u => `
+            <div class="menu-item">
+              <h3>${u.name}</h3>
+              <p>累積參與：${u.attended} 次</p>
+            </div>
+          `).join('');
+        }
       } finally {
         showLoader(false);
       }
@@ -286,12 +330,12 @@
 
     async function getAiMatches() {
       const content = document.getElementById('ai-content');
-      content.innerText = 'AI 分析中...';
+      if (content) content.innerText = 'AI 分析中...';
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_ai_matches', p, uid }) });
-        content.innerText = await res.text();
+        if (content) content.innerText = await res.text();
       } catch (e) {
-        content.innerText = '連線失敗';
+        if (content) content.innerText = '連線失敗。';
       }
     }
 
@@ -300,6 +344,7 @@
       try {
         const prof = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: prof }) });
+        alert('設定已儲存');
       } finally {
         showLoader(false);
       }
@@ -309,8 +354,10 @@
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_settings', p }) });
         const result = await res.json();
-        document.getElementById('set-tg-token').value = result.data.TG_BOT_TOKEN || '';
-        document.getElementById('set-tg-chatid').value = result.data.TG_CHAT_ID || '';
+        const tk = document.getElementById('set-tg-token');
+        const id = document.getElementById('set-tg-chatid');
+        if (tk) tk.value = result.data.TG_BOT_TOKEN || '';
+        if (id) id.value = result.data.TG_CHAT_ID || '';
       } catch (e) {}
     }
 
@@ -319,15 +366,22 @@
       try {
         const s = { TG_BOT_TOKEN: document.getElementById('set-tg-token').value, TG_CHAT_ID: document.getElementById('set-tg-chatid').value };
         await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_settings', p, settings: s }) });
+        alert('設定儲存成功');
       } finally {
         showLoader(false);
       }
     }
 
-    function showLoader(s) { 
+    function showLoader(s) {
       const loader = document.getElementById('loader');
-      if (s) loader.classList.remove('hidden');
-      else loader.classList.add('hidden');
+      if (!loader) return;
+      if (s) {
+        loader.classList.remove('hidden');
+        loader.style.opacity = '1';
+      } else {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.classList.add('hidden'), 500);
+      }
     }
 
     init();
