@@ -9,11 +9,11 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 全局規範：15px, 不加粗, LINE 原生風格, 扁平化 */
+    /* 全局規範：15px, 不加粗, LINE 原生風格 */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    /* 頂部標頭 */
+    /* 頂部標頭 - LINE 綠色 (#06C755) */
     header { background: #06C755; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .header-left { display: flex; align-items: center; gap: 8px; }
     .header-title { font-size: 17px; font-weight: 400; }
@@ -28,16 +28,13 @@
 
     .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; font-weight: 400; }
 
-    /* 清單選單樣式 */
+    /* 清單樣式 (無包框) */
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
     .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
     .menu-item:last-child { border-bottom: none; }
     .menu-item:active { background: #F8F8F8; }
     .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
     .menu-item p { margin: 0; font-size: 14px; color: #999999; line-height: 1.4; font-weight: 400; }
-
-    /* 錯誤診斷區 */
-    .diag-box { background: #FFF1F0; border: 1px solid #FFA39E; padding: 15px; margin: 15px 20px; border-radius: 8px; font-size: 12px; color: #CF1322; word-break: break-all; font-weight: 400; line-height: 1.6; }
 
     /* 表單欄位 */
     .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
@@ -48,7 +45,7 @@
     .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; font-weight: 400; }
     .btn-dark { background: #333333; }
 
-    /* 底部導覽列 */
+    /* 底部導覽 */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
@@ -58,10 +55,13 @@
 
     .hidden { display: none !important; }
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
+    
+    /* 診斷訊息區 */
+    .diag-box { background: #FFF1F0; border: 1px solid #FFA39E; padding: 15px; margin: 15px 20px; border-radius: 8px; font-size: 12px; color: #CF1322; word-break: break-all; font-weight: 400; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">正在載入中心資料...</div>
+  <div id="loader" class="loading-overlay">正在獲取中心資訊...</div>
 
   <div class="app-container">
     <header>
@@ -71,17 +71,18 @@
       </div>
       <div class="header-right">
         <img id="user-avatar-top" class="user-avatar-top" src="">
+        <!-- 回後台箭頭按鈕：僅管理員見 -->
         <i id="btn-switch-admin" data-lucide="arrow-left-right" class="hidden" style="color: white; width: 20px; height: 20px; cursor: pointer;" onclick="switchToAdmin()"></i>
       </div>
     </header>
 
-    <!-- 診斷訊息容器 -->
+    <!-- 錯誤診斷區 -->
     <div id="diag-container" class="hidden"></div>
 
     <div class="user-profile">
       <img id="user-avatar-mid" class="user-avatar-mid" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">辨識身份中...</p>
+        <p id="user-display-name" class="user-name">正在載入帳戶...</p>
         <span id="role-text" class="user-role">管理權限已開啟</span>
       </div>
     </div>
@@ -90,29 +91,30 @@
       <div id="view-home">
         <div class="section-title">功能選單</div>
         <div class="menu-list">
-          <div class="menu-item" onclick="switchView('profile')"><h3>📇 我的數位名片</h3><p>設定您的產業資源，開啟 AI 商機配對。</p></div>
-          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動報名中心</h3><p>查看並參加商圈最新的活動內容。</p></div>
-          <div class="menu-item" onclick="switchView('ai')"><h3>🤖 AI 智能配對</h3><p>分析資源與需求，尋找中心內的優質夥伴。</p></div>
+          <div class="menu-item" onclick="switchView('profile')"><h3>📇 我的商務名片</h3><p>設定產業與需求，開啟 AI 媒合。</p></div>
+          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動與報名</h3><p>查看當前商圈最新的活動內容。</p></div>
+          <div class="menu-item" onclick="switchView('ai')"><h3>🤖 AI 智能配對</h3><p>分析名片數據，尋找最佳合作夥伴。</p></div>
         </div>
       </div>
 
       <div id="view-activity" class="hidden">
-        <div class="section-title">可參加的活動</div>
-        <div id="activity-list-container" class="menu-list"><div style="padding:40px; text-align:center; color:#999;">讀取中...</div></div>
+        <div class="section-title">活動列表</div>
+        <div id="activity-list-container" class="menu-list"><div style="padding:40px; text-align:center; color:#999;">正在同步數據...</div></div>
       </div>
 
       <div id="view-profile" class="hidden">
-        <div class="section-title">名片資訊設定</div>
+        <div class="section-title">名片設定</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
+        <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="input-box"></div>
         <div class="field-group"><label class="field-label">提供資源</label><textarea id="f-resource" class="textarea-box"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">儲存更新</button>
+        <button class="btn-action" onclick="saveProfile()">更新名片</button>
       </div>
 
       <div id="view-ai" class="hidden">
-        <div class="section-title">AI 智能媒合分析</div>
-        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">點擊啟動分析...</div>
-        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
+        <div class="section-title">AI 智能媒合</div>
+        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">準備分析全中心資料...</div>
+        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合</button>
       </div>
     </main>
 
@@ -134,15 +136,14 @@
       lucide.createIcons();
       const params = new URLSearchParams(window.location.search);
       p = params.get('p');
-      if (!p) { document.getElementById('loader').innerText = '缺少 p 參數'; return; }
+      if (!p) { document.getElementById('loader').innerText = '缺少商店代碼 p'; return; }
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        const avatar = profile.pictureUrl || '';
-        document.getElementById('user-avatar-top').src = avatar;
-        document.getElementById('user-avatar-mid').src = avatar;
+        document.getElementById('user-avatar-top').src = profile.pictureUrl || '';
+        document.getElementById('user-avatar-mid').src = profile.pictureUrl || '';
         document.getElementById('user-display-name').innerText = profile.displayName;
         await loadHubData();
       } catch (err) { console.error(err); } 
@@ -168,18 +169,17 @@
           if (d.myProfile) {
             document.getElementById('f-name').value = d.myProfile.name || '';
             document.getElementById('f-job').value = d.myProfile.job || '';
+            document.getElementById('f-industry').value = d.myProfile.industry || '';
             document.getElementById('f-resource').value = d.myProfile.resource || '';
           }
           renderActivities(d.activities);
         } else {
-          // 通訊診斷邏輯
+          // 顯示詳細通訊報錯
           const diag = document.getElementById('diag-container');
           diag.classList.remove('hidden');
-          diag.innerHTML = `<div class="diag-box">通訊報錯：${result.message}<br><br>原始內容摘要：<br>${result.debug || '無詳細內容'}</div>`;
+          diag.innerHTML = `<div class="diag-box"><strong>通訊診斷</strong><br>訊息：${result.message}<br>摘要：${result.debug || '無內容'}</div>`;
         }
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (e) { console.error(e); }
     }
 
     function renderActivities(list) {
@@ -209,9 +209,9 @@
     function switchToAdmin() { window.location.href = `active.html?p=${p}`; }
 
     async function saveProfile() {
-      const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, resource: document.getElementById('f-resource').value };
+      const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value };
       await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
-      alert('已更新名片');
+      alert('已存入資料庫');
     }
 
     init();
