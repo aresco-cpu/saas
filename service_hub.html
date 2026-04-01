@@ -9,24 +9,24 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 全局規範：15px, 不加粗, LINE 原生風格 */
+    /* 全局規範：15px, 不加粗, LINE 原生風格, 扁平化 */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    /* 頂部標頭 - LINE 綠色 (#06C755) */
+    /* 頂部標頭 */
     header { background: #06C755; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .header-left { display: flex; align-items: center; gap: 8px; }
-    .header-title { font-size: 17px; font-weight: 400; letter-spacing: 0.5px; }
+    .header-title { font-size: 17px; font-weight: 400; }
     .header-right { display: flex; align-items: center; gap: 12px; }
     .user-avatar-top { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #EEE; }
 
     .user-profile { background: #FFFFFF; padding: 20px; display: flex; align-items: center; border-bottom: 1px solid #EEEEEE; }
     .user-avatar-mid { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; object-fit: cover; }
     .user-info { flex: 1; }
-    .user-name { margin: 0; font-size: 15px; color: #333333; }
-    .user-role { font-size: 15px; color: #06C755; margin-top: 4px; display: none; }
+    .user-name { margin: 0; font-size: 15px; color: #333333; font-weight: 400; }
+    .user-role { font-size: 14px; color: #06C755; margin-top: 4px; display: none; font-weight: 400; }
 
-    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
+    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; font-weight: 400; }
 
     /* 清單選單樣式 */
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
@@ -34,15 +34,18 @@
     .menu-item:last-child { border-bottom: none; }
     .menu-item:active { background: #F8F8F8; }
     .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
-    .menu-item p { margin: 0; font-size: 14px; color: #999999; line-height: 1.4; }
+    .menu-item p { margin: 0; font-size: 14px; color: #999999; line-height: 1.4; font-weight: 400; }
+
+    /* 錯誤診斷區 */
+    .diag-box { background: #FFF1F0; border: 1px solid #FFA39E; padding: 15px; margin: 15px 20px; border-radius: 8px; font-size: 12px; color: #CF1322; word-break: break-all; font-weight: 400; line-height: 1.6; }
 
     /* 表單欄位 */
     .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
-    .field-label { font-size: 15px; color: #333333; margin-bottom: 8px; display: block; }
-    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; }
-    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; font-size: 15px; outline: none; height: 120px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
+    .field-label { font-size: 15px; color: #333333; margin-bottom: 8px; display: block; font-weight: 400; }
+    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; font-weight: 400; }
+    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; font-size: 15px; outline: none; height: 120px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; font-weight: 400; }
 
-    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
+    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; font-weight: 400; }
     .btn-dark { background: #333333; }
 
     /* 底部導覽列 */
@@ -50,15 +53,15 @@
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
     .nav-item i { width: 22px; height: 22px; margin-bottom: 5px; }
-    .nav-text { font-size: 12px; }
+    .nav-text { font-size: 12px; font-weight: 400; }
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
     .hidden { display: none !important; }
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">系統載入中...</div>
+  <div id="loader" class="loading-overlay">正在載入中心資料...</div>
 
   <div class="app-container">
     <header>
@@ -68,10 +71,12 @@
       </div>
       <div class="header-right">
         <img id="user-avatar-top" class="user-avatar-top" src="">
-        <!-- 管理員切換按鈕：僅在 isAdmin 為 true 時顯示 -->
         <i id="btn-switch-admin" data-lucide="arrow-left-right" class="hidden" style="color: white; width: 20px; height: 20px; cursor: pointer;" onclick="switchToAdmin()"></i>
       </div>
     </header>
+
+    <!-- 診斷訊息容器 -->
+    <div id="diag-container" class="hidden"></div>
 
     <div class="user-profile">
       <img id="user-avatar-mid" class="user-avatar-mid" src="">
@@ -82,44 +87,31 @@
     </div>
 
     <main id="main-content">
-      <!-- 1. 首頁選單 -->
       <div id="view-home">
-        <div class="section-title">商圈服務</div>
+        <div class="section-title">功能選單</div>
         <div class="menu-list">
-          <div class="menu-item" onclick="switchView('profile')">
-            <h3>📇 數位名片設定</h3>
-            <p>填寫產業與資源，開啟 AI 商機配對。</p>
-          </div>
-          <div class="menu-item" onclick="switchView('activity')">
-            <h3>📅 活動報名中心</h3>
-            <p>查看並參加商圈最新的優質活動。</p>
-          </div>
+          <div class="menu-item" onclick="switchView('profile')"><h3>📇 我的數位名片</h3><p>設定您的產業資源，開啟 AI 商機配對。</p></div>
+          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動報名中心</h3><p>查看並參加商圈最新的活動內容。</p></div>
+          <div class="menu-item" onclick="switchView('ai')"><h3>🤖 AI 智能配對</h3><p>分析資源與需求，尋找中心內的優質夥伴。</p></div>
         </div>
       </div>
 
-      <!-- 2. 活動報名區 -->
       <div id="view-activity" class="hidden">
-        <div class="section-title">進行中的活動</div>
-        <div id="activity-list-container" class="menu-list">
-          <div style="padding: 40px; color: #999; text-align: center;">正在獲取最新活動...</div>
-        </div>
+        <div class="section-title">可參加的活動</div>
+        <div id="activity-list-container" class="menu-list"><div style="padding:40px; text-align:center; color:#999;">讀取中...</div></div>
       </div>
 
-      <!-- 3. 名片設定區 -->
       <div id="view-profile" class="hidden">
-        <div class="section-title">我的商務名片</div>
+        <div class="section-title">名片資訊設定</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
-        <div class="field-group"><label class="field-label">產業</label><input id="f-industry" class="input-box"></div>
         <div class="field-group"><label class="field-label">提供資源</label><textarea id="f-resource" class="textarea-box"></textarea></div>
-        <div class="field-group"><label class="field-label">尋求需求</label><textarea id="f-need" class="textarea-box"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">更新名片內容</button>
+        <button class="btn-action" onclick="saveProfile()">儲存更新</button>
       </div>
 
-      <!-- 4. AI 配對區 -->
       <div id="view-ai" class="hidden">
-        <div class="section-title">AI 智能配對分析</div>
-        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">完善名片資料後，點擊啟動媒合分析。</div>
+        <div class="section-title">AI 智能媒合分析</div>
+        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">點擊啟動分析...</div>
         <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合分析</button>
       </div>
     </main>
@@ -135,6 +127,7 @@
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
+    const SUPER_ADMIN = 'Uf729764dbb5b652a5a90a467320bea29';
     let uid = '', p = '', isAdmin = false;
 
     async function init() {
@@ -147,51 +140,52 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        document.getElementById('user-avatar-top').src = profile.pictureUrl || '';
-        document.getElementById('user-avatar-mid').src = profile.pictureUrl || '';
+        const avatar = profile.pictureUrl || '';
+        document.getElementById('user-avatar-top').src = avatar;
+        document.getElementById('user-avatar-mid').src = avatar;
         document.getElementById('user-display-name').innerText = profile.displayName;
         await loadHubData();
       } catch (err) { console.error(err); } 
-      finally { document.getElementById('loader').classList.add('hidden'); }
+      finally { setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500); }
     }
 
     async function loadHubData() {
-      const res = await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'get_service_hub', p, uid }) });
-      const result = await res.json();
-      if (result.status === 'success') {
-        const d = result.data;
-        isAdmin = d.isAdmin;
-        document.getElementById('brand-name-header').innerText = d.brandName || "服務中心";
-        
-        // 關鍵：管理員權限同步，顯示返回管理後台的按鈕
-        if (isAdmin) {
-          document.getElementById('btn-switch-admin').classList.remove('hidden');
-          document.getElementById('role-text').style.display = 'block';
+      try {
+        const res = await fetch(WORKER_URL, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_service_hub', p, uid }) 
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          const d = result.data;
+          isAdmin = d.isAdmin;
+          document.getElementById('brand-name-header').innerText = d.brandName || "服務中心";
+          if (isAdmin || uid === SUPER_ADMIN) {
+            document.getElementById('btn-switch-admin').classList.remove('hidden');
+            document.getElementById('role-text').style.display = 'block';
+          }
+          if (d.myProfile) {
+            document.getElementById('f-name').value = d.myProfile.name || '';
+            document.getElementById('f-job').value = d.myProfile.job || '';
+            document.getElementById('f-resource').value = d.myProfile.resource || '';
+          }
+          renderActivities(d.activities);
+        } else {
+          // 通訊診斷邏輯
+          const diag = document.getElementById('diag-container');
+          diag.classList.remove('hidden');
+          diag.innerHTML = `<div class="diag-box">通訊報錯：${result.message}<br><br>原始內容摘要：<br>${result.debug || '無詳細內容'}</div>`;
         }
-
-        if (d.myProfile) {
-          document.getElementById('f-name').value = d.myProfile.name || '';
-          document.getElementById('f-job').value = d.myProfile.job || '';
-          document.getElementById('f-industry').value = d.myProfile.industry || '';
-          document.getElementById('f-resource').value = d.myProfile.resource || '';
-          document.getElementById('f-need').value = d.myProfile.need || '';
-        }
-        renderActivities(d.activities);
+      } catch (err) {
+        console.error(err);
       }
     }
 
     function renderActivities(list) {
       const container = document.getElementById('activity-list-container');
-      if (!list || list.length === 0) {
-        container.innerHTML = '<div style="padding: 40px; color: #CCC; text-align: center;">目前尚無公開活動</div>';
-        return;
-      }
-      container.innerHTML = list.map(act => `
-        <div class="menu-item">
-          <h3>${act.name}</h3>
-          <p>${act.type} | ${act.desc || '點擊查看詳情'}</p>
-        </div>
-      `).join('');
+      if (!list || list.length === 0) { container.innerHTML = '<div style="padding:40px; text-align:center; color:#CCC;">目前無活動</div>'; return; }
+      container.innerHTML = list.map(act => `<div class="menu-item"><h3>${act.name}</h3><p>${act.type}</p></div>`).join('');
     }
 
     function switchView(v) {
@@ -205,22 +199,20 @@
       const target = document.getElementById('nav-' + v);
       if (target) {
         target.classList.add('active');
-        const icon = target.innerHTML.split('<span')[0];
-        const span = target.innerHTML.includes('<span') ? '<span' + target.innerHTML.split('<span')[1] : '';
-        target.innerHTML = `<div class="icon-box">${icon}</div>${span}`;
+        const iconPart = target.innerHTML.split('<span')[0];
+        const textPart = target.innerHTML.includes('<span') ? '<span' + target.innerHTML.split('<span')[1] : '';
+        target.innerHTML = `<div class="icon-box">${iconPart}</div>${textPart}`;
       }
-      window.scrollTo(0, 0);
-      lucide.createIcons();
+      window.scrollTo(0, 0); lucide.createIcons();
     }
+
+    function switchToAdmin() { window.location.href = `active.html?p=${p}`; }
 
     async function saveProfile() {
-      const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, industry: document.getElementById('f-industry').value, resource: document.getElementById('f-resource').value, need: document.getElementById('f-need').value };
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
-      alert('名片資料已成功更新');
+      const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, resource: document.getElementById('f-resource').value };
+      await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
+      alert('已更新名片');
     }
-
-    // 回到後台功能
-    function switchToAdmin() { window.location.href = `active.html?p=${p}`; }
 
     init();
   </script>
