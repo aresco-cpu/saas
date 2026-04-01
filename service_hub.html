@@ -3,198 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="icon" href="data:,">
   <title>service_hub.html</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 全局規範：15px, 完全不加粗, LINE 原生風格, 扁平化 */
+    /* 全局規範：15px, 不加粗, LINE 原生風格, 扁平化 */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
-    
     header { background: #06C755; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-    .header-left { display: flex; align-items: center; gap: 8px; }
     .header-title { font-size: 17px; font-weight: 400; }
-    .header-right { display: flex; align-items: center; gap: 12px; }
-    .user-avatar-top { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #EEE; }
-
-    .user-profile { background: #FFFFFF; padding: 20px; display: flex; align-items: center; border-bottom: 1px solid #EEEEEE; }
-    .user-avatar-mid { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; object-fit: cover; }
-    .user-info { flex: 1; }
-    .user-name { margin: 0; font-size: 15px; color: #333333; }
-    .user-role { font-size: 14px; color: #06C755; margin-top: 4px; display: none; }
-
-    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
-
+    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; font-weight: 400; }
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
-    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+    .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; color: inherit; text-decoration: none; }
     .menu-item:last-child { border-bottom: none; }
-    .menu-item:active { background: #F8F8F8; }
     .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
-    .menu-item p { margin: 0; font-size: 14px; color: #999999; line-height: 1.4; }
-
-    .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
-    .field-label { font-size: 15px; color: #333333; margin-bottom: 8px; display: block; }
-    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; }
-    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; font-size: 15px; outline: none; height: 120px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
-
-    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
-    
+    .menu-item p { margin: 0; font-size: 14px; color: #999999; line-height: 1.4; font-weight: 400; }
+    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; font-weight: 400; }
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; }
     .nav-item.active { color: #1A202C; }
-    .nav-item i { width: 22px; height: 22px; margin-bottom: 5px; }
-    .nav-text { font-size: 12px; }
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
-
+    .nav-text { font-size: 12px; font-weight: 400; margin-top: 4px; }
     .hidden { display: none !important; }
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
-    .diag-box { background: #1A202C; color: #00FF00; padding: 20px; margin: 15px 20px; border-radius: 12px; font-size: 11px; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; line-height: 1.5; }
+    .diag-box { background: #1A202C; color: #00FF00; padding: 20px; margin: 15px 20px; border-radius: 12px; font-size: 11px; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; font-weight: 400; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">正在同步中心數據...</div>
-
+  <div id="loader" class="fixed inset-0 bg-white z-[9999] flex items-center justify-center">正在開啟服務中心...</div>
   <div class="app-container">
     <header>
-      <div class="header-left">
-        <i data-lucide="home" style="width: 20px; height: 20px;"></i>
-        <span id="brand-name-header" class="header-title">服務中心</span>
-      </div>
-      <div class="header-right">
-        <img id="user-avatar-top" class="user-avatar-top" src="">
-        <i id="btn-switch-admin" data-lucide="arrow-left-right" class="hidden" style="color: white; width: 20px; height: 20px; cursor: pointer;" onclick="switchToAdmin()"></i>
-      </div>
+      <div class="flex items-center gap-2"><i data-lucide="home" style="width:18px;"></i><span id="brand-name" class="header-title">服務中心</span></div>
+      <i id="btn-admin" data-lucide="arrow-left-right" class="hidden" style="cursor:pointer; width:20px;" onclick="location.href='active.html?p='+p"></i>
     </header>
-
     <div id="diag-panel" class="diag-box hidden"></div>
-
-    <div class="user-profile">
-      <img id="user-avatar-mid" class="user-avatar-mid" src="">
-      <div class="user-info">
-        <p id="user-display-name" class="user-name">正在辨識身份...</p>
-        <span id="role-text" class="user-role">管理員模式已啟動</span>
-      </div>
-    </div>
-
     <main id="main-content">
       <div id="view-home">
-        <div class="section-title">功能模組</div>
+        <div class="section-title">功能選單</div>
         <div class="menu-list">
-          <div class="menu-item" onclick="switchView('profile')"><h3>📇 我的數位名片</h3><p>設定您的產業資源，開啟 AI 媒合。</p></div>
-          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動報名中心</h3><p>查看並參加商圈最新的活動內容。</p></div>
+          <div class="menu-item" onclick="switchView('profile')"><h3>📇 我的商務名片</h3><p>設定您的產業資源，開啟 AI 媒合。</p></div>
+          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動報名</h3><p>查看並參加商圈最新的活動內容。</p></div>
         </div>
       </div>
-
       <div id="view-activity" class="hidden">
-        <div class="section-title">可參加活動</div>
-        <div id="activity-list-container" class="menu-list"><div style="padding:40px; text-align:center; color:#999;">正在讀取活動列表...</div></div>
+        <div class="section-title">進行中活動</div>
+        <div id="act-list" class="menu-list"></div>
       </div>
-
       <div id="view-profile" class="hidden">
-        <div class="section-title">名片資訊編輯</div>
-        <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
-        <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
-        <div class="field-group"><label class="field-label">提供資源</label><textarea id="f-resource" class="textarea-box"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">更新名片內容</button>
+        <div class="section-title">編輯名片</div>
+        <div class="bg-white px-5 py-4 border-b border-gray-50"><label class="block text-gray-500 mb-2">姓名</label><input id="f-name" class="w-full border-b border-gray-100 py-2 outline-none"></div>
+        <div class="bg-white px-5 py-4 border-b border-gray-50"><label class="block text-gray-500 mb-2">職稱</label><input id="f-job" class="w-full border-b border-gray-100 py-2 outline-none"></div>
+        <button class="btn-action" onclick="saveProfile()">儲存同步</button>
       </div>
     </main>
-
-    <nav id="bottom-nav">
+    <nav>
       <div class="nav-item active" id="nav-home" onclick="switchView('home')"><div class="icon-box"><i data-lucide="home"></i></div><span class="nav-text">首頁</span></div>
       <div class="nav-item" id="nav-profile" onclick="switchView('profile')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
       <div class="nav-item" id="nav-activity" onclick="switchView('activity')"><i data-lucide="calendar"></i><span class="nav-text">活動</span></div>
     </nav>
   </div>
-
   <script>
     const LIFF_ID = '2009367829-5bIWGL8O';
     const WORKER_URL = 'https://saas.ares-co2026.workers.dev/';
-    const SUPER_ADMIN = 'Uf729764dbb5b652a5a90a467320bea29';
-    let uid = '', p = '', isAdmin = false;
-
+    let uid = '', p = '';
     async function init() {
       lucide.createIcons();
-      const params = new URLSearchParams(window.location.search);
-      p = params.get('p');
-      if (!p) { document.getElementById('loader').innerText = '缺少代號參數 p'; return; }
+      p = new URLSearchParams(window.location.search).get('p');
+      if (!p) { document.getElementById('loader').innerText = '缺少代碼 p'; return; }
       try {
         await liff.init({ liffId: LIFF_ID });
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        const avatar = profile.pictureUrl || '';
-        document.getElementById('user-avatar-top').src = avatar;
-        document.getElementById('user-avatar-mid').src = avatar;
-        document.getElementById('user-display-name').innerText = profile.displayName;
-        await loadHubData();
-      } catch (err) { console.error(err); } 
-      finally { setTimeout(() => document.getElementById('loader').classList.add('hidden'), 500); }
+        await loadData();
+      } catch (err) { console.error(err); }
+      finally { document.getElementById('loader').classList.add('hidden'); }
     }
-
-    async function loadHubData() {
+    async function loadData() {
       try {
-        const res = await fetch(WORKER_URL, { 
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_service_hub', p, uid }) 
-        });
+        const res = await fetch(WORKER_URL, { method:'POST', body: JSON.stringify({ action:'get_service_hub', p, uid }) });
         const result = await res.json();
         if (result.status === 'success') {
           const d = result.data;
-          isAdmin = d.isAdmin;
-          document.getElementById('brand-name-header').innerText = d.brandName || "服務中心";
-          if (isAdmin || uid === SUPER_ADMIN) {
-            document.getElementById('btn-switch-admin').classList.remove('hidden');
-            document.getElementById('role-text').style.display = 'block';
-          }
-          if (d.myProfile) {
-            document.getElementById('f-name').value = d.myProfile.name || '';
-            document.getElementById('f-job').value = d.myProfile.job || '';
-            document.getElementById('f-resource').value = d.myProfile.resource || '';
-          }
-          renderActivities(d.activities);
-        } else {
-          const panel = document.getElementById('diag-panel');
-          panel.classList.remove('hidden');
-          panel.innerText = `[診斷報錯]\n訊息：${result.message}\n\n伺服器回應：\n${result.debug || '無詳細內容'}`;
-        }
-      } catch (e) { console.error(e); }
+          document.getElementById('brand-name').innerText = d.brandName;
+          if (d.isAdmin) document.getElementById('btn-admin').classList.remove('hidden');
+          renderActs(d.activities);
+        } else { showDiag(result.message + '\n' + (result.debug || '')); }
+      } catch (e) { showDiag('連線失敗: ' + e.message); }
     }
-
-    function renderActivities(list) {
-      const container = document.getElementById('activity-list-container');
-      if (!list || list.length === 0) { container.innerHTML = '<div style="padding:40px; text-align:center; color:#CCC;">目前無活動</div>'; return; }
-      container.innerHTML = list.map(act => `<div class="menu-item"><h3>${act.name}</h3><p>${act.type}</p></div>`).join('');
+    function renderActs(list) {
+      const container = document.getElementById('act-list');
+      if (!list || list.length === 0) { container.innerHTML = '<div class="p-10 text-center text-gray-400">目前無活動</div>'; return; }
+      container.innerHTML = list.map(a => `<div class="menu-item"><h3>${a.name}</h3><p>${a.type}</p></div>`).join('');
     }
-
+    function showDiag(msg) {
+      const panel = document.getElementById('diag-panel');
+      panel.classList.remove('hidden');
+      panel.innerText = `[系統診斷]\n${msg}`;
+    }
     function switchView(v) {
       document.querySelectorAll('#main-content > div').forEach(el => el.classList.add('hidden'));
       document.getElementById('view-' + v).classList.remove('hidden');
-      document.querySelectorAll('.nav-item').forEach(el => {
-        el.classList.remove('active');
-        const box = el.querySelector('.icon-box');
-        if (box) { el.removeChild(box); el.insertAdjacentHTML('afterbegin', box.innerHTML); }
-      });
-      const target = document.getElementById('nav-' + v);
-      if (target) {
-        target.classList.add('active');
-        const iconPart = target.innerHTML.split('<span')[0];
-        const textPart = target.innerHTML.includes('<span') ? '<span' + target.innerHTML.split('<span')[1] : '';
-        target.innerHTML = `<div class="icon-box">${iconPart}</div>${textPart}`;
-      }
-      window.scrollTo(0, 0); lucide.createIcons();
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('nav-' + v).classList.add('active');
+      lucide.createIcons();
     }
-
-    function switchToAdmin() { window.location.href = `active.html?p=${p}`; }
-
-    async function saveProfile() {
-      const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, resource: document.getElementById('f-resource').value };
-      await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
-      alert('已更新名片');
-    }
-
     init();
   </script>
 </body>
