@@ -50,10 +50,13 @@
 
     .hidden { display: none !important; }
     .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
+    
+    /* 診斷面板 */
+    .diagnostic-panel { background: #1a202c; color: #00ff00; padding: 20px; margin: 15px 20px; border-radius: 12px; font-size: 11px; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 250px; overflow-y: auto; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">正在獲取中心資訊...</div>
+  <div id="loader" class="loading-overlay">正在讀取中心資料...</div>
 
   <div class="app-container">
     <header>
@@ -63,35 +66,37 @@
       </div>
       <div class="header-right">
         <img id="user-avatar-top" class="user-avatar-top" src="">
-        <!-- 回後台箭頭按鈕：僅管理員見 -->
         <i id="btn-switch-admin" data-lucide="arrow-left-right" class="hidden" style="color: white; width: 20px; height: 20px; cursor: pointer;" onclick="switchToAdmin()"></i>
       </div>
     </header>
 
+    <!-- 僅在出錯時顯示 -->
+    <div id="diag-panel" class="diagnostic-panel hidden"></div>
+
     <div class="user-profile">
       <img id="user-avatar-mid" class="user-avatar-mid" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">正在載入帳戶...</p>
+        <p id="user-display-name" class="user-name">辨識身份中...</p>
         <span id="role-text" class="user-role">管理權限已開啟</span>
       </div>
     </div>
 
     <main id="main-content">
       <div id="view-home">
-        <div class="section-title">功能選單</div>
+        <div class="section-title">功能導航</div>
         <div class="menu-list">
-          <div class="menu-item" onclick="switchView('profile')"><h3>📇 我的商務名片</h3><p>設定產業與需求，開啟 AI 媒合。</p></div>
-          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動與報名</h3><p>查看當前商圈最新的活動內容。</p></div>
+          <div class="menu-item" onclick="switchView('profile')"><h3>📇 數位名片設定</h3><p>填寫資源與需求，開啟 AI 媒合。</p></div>
+          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動報名</h3><p>查看並報名此商圈最新的活動。</p></div>
         </div>
       </div>
 
       <div id="view-activity" class="hidden">
-        <div class="section-title">活動列表</div>
-        <div id="activity-list-container" class="menu-list"><div style="padding:40px; text-align:center; color:#999;">正在同步數據...</div></div>
+        <div class="section-title">進行中活動</div>
+        <div id="activity-list-container" class="menu-list"><div style="padding:40px; text-align:center; color:#999;">載入中...</div></div>
       </div>
 
       <div id="view-profile" class="hidden">
-        <div class="section-title">名片設定</div>
+        <div class="section-title">名片資訊設定</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
         <div class="field-group"><label class="field-label">提供資源</label><textarea id="f-resource" class="textarea-box"></textarea></div>
@@ -152,13 +157,18 @@
             document.getElementById('f-resource').value = d.myProfile.resource || '';
           }
           renderActivities(d.activities);
+        } else {
+          // 診斷視窗啟動
+          const panel = document.getElementById('diag-panel');
+          panel.classList.remove('hidden');
+          panel.innerText = `[LOG]\nMsg: ${result.message}\n\nResponse:\n${result.debug || 'Null'}`;
         }
       } catch (e) { console.error(e); }
     }
 
     function renderActivities(list) {
       const container = document.getElementById('activity-list-container');
-      if (!list || list.length === 0) { container.innerHTML = '<div style="padding:40px; text-align:center; color:#CCC;">目前無活動</div>'; return; }
+      if (!list || list.length === 0) { container.innerHTML = '<div style="padding:40px; text-align:center; color:#CCC;">目前無公開活動</div>'; return; }
       container.innerHTML = list.map(act => `<div class="menu-item"><h3>${act.name}</h3><p>${act.type}</p></div>`).join('');
     }
 
@@ -185,7 +195,7 @@
     async function saveProfile() {
       const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, resource: document.getElementById('f-resource').value };
       await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
-      alert('已更新名片');
+      alert('已同步更新');
     }
 
     init();
