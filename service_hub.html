@@ -9,11 +9,10 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* 全局規範：15px, 不加粗, LINE 原生風格 */
+    /* 全局規範：15px, 不加粗, LINE 原生風格, 扁平化 */
     body { font-family: -apple-system, sans-serif; margin: 0; background: #F4F4F4; color: #333333; font-size: 15px; font-weight: 400; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
     .app-container { max-width: 450px; margin: 0 auto; min-height: 100vh; position: relative; }
     
-    /* 頂部標頭 - LINE 綠色 */
     header { background: #06C755; color: white; padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
     .header-left { display: flex; align-items: center; gap: 8px; }
     .header-title { font-size: 17px; font-weight: 400; }
@@ -23,44 +22,38 @@
     .user-profile { background: #FFFFFF; padding: 20px; display: flex; align-items: center; border-bottom: 1px solid #EEEEEE; }
     .user-avatar-mid { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #F0F0F0; object-fit: cover; }
     .user-info { flex: 1; }
-    .user-name { margin: 0; font-size: 15px; color: #333333; font-weight: 400; }
-    .user-role { font-size: 14px; color: #06C755; margin-top: 4px; display: none; font-weight: 400; }
+    .user-name { margin: 0; font-size: 15px; color: #333333; }
+    .user-role { font-size: 14px; color: #06C755; margin-top: 4px; display: none; }
 
-    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; font-weight: 400; }
+    .section-title { padding: 20px 20px 10px 20px; font-size: 15px; color: #999999; }
 
-    /* 清單選單樣式 */
     .menu-list { background: #FFFFFF; border-bottom: 1px solid #EEEEEE; }
     .menu-item { padding: 20px; border-bottom: 1px solid #F9F9F9; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: inherit; }
     .menu-item:last-child { border-bottom: none; }
+    .menu-item:active { background: #F8F8F8; }
     .menu-item h3 { margin: 0 0 6px 0; font-size: 15px; font-weight: 400; color: #333333; }
-    .menu-item p { margin: 0; font-size: 14px; color: #999999; line-height: 1.4; font-weight: 400; }
+    .menu-item p { margin: 0; font-size: 14px; color: #999999; line-height: 1.4; }
 
-    /* 表單欄位 */
     .field-group { background: #FFFFFF; padding: 15px 20px; border-bottom: 1px solid #F9F9F9; }
-    .field-label { font-size: 15px; color: #333333; margin-bottom: 8px; display: block; font-weight: 400; }
-    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; font-weight: 400; }
-    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; font-size: 15px; outline: none; height: 120px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; font-weight: 400; }
+    .field-label { font-size: 15px; color: #333333; margin-bottom: 8px; display: block; }
+    .input-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; font-size: 15px; outline: none; box-sizing: border-box; background: transparent; color: #333333; }
+    .textarea-box { width: 100%; border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; font-size: 15px; outline: none; height: 120px; resize: none; box-sizing: border-box; background: #FFFFFF; color: #333333; }
 
-    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; font-weight: 400; }
-    .btn-dark { background: #333333; }
+    .btn-action { width: calc(100% - 40px); margin: 20px; padding: 16px; background: #06C755; color: white; border: none; font-size: 16px; cursor: pointer; text-align: center; border-radius: 8px; display: block; }
 
-    /* 底部導覽列 */
     nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #FFFFFF; display: flex; border-top: 1px solid #EEEEEE; height: 80px; left: 50%; transform: translateX(-50%); z-index: 1000; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #4A5568; cursor: pointer; padding-top: 10px; }
     .nav-item.active { color: #1A202C; }
     .nav-item i { width: 22px; height: 22px; margin-bottom: 5px; }
-    .nav-text { font-size: 12px; font-weight: 400; }
+    .nav-text { font-size: 12px; }
     .nav-item.active .icon-box { border: 1.5px solid #1A202C; border-radius: 10px; padding: 6px; display: flex; align-items: center; justify-content: center; }
 
     .hidden { display: none !important; }
-    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; }
-    
-    /* 錯誤診斷視窗 */
-    .diagnostic-console { background: #1A202C; color: #F7FAFC; padding: 20px; margin: 15px 20px; border-radius: 12px; font-size: 12px; font-family: monospace; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; }
+    .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #FFFFFF; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 15px; color: #06C755; transition: opacity 0.5s; }
   </style>
 </head>
 <body>
-  <div id="loader" class="loading-overlay">載入中心...</div>
+  <div id="loader" class="loading-overlay">正在獲取中心資訊...</div>
 
   <div class="app-container">
     <header>
@@ -70,49 +63,39 @@
       </div>
       <div class="header-right">
         <img id="user-avatar-top" class="user-avatar-top" src="">
-        <!-- 核心：管理員雙向切換按鈕 -->
+        <!-- 回後台箭頭按鈕：僅管理員見 -->
         <i id="btn-switch-admin" data-lucide="arrow-left-right" class="hidden" style="color: white; width: 20px; height: 20px; cursor: pointer;" onclick="switchToAdmin()"></i>
       </div>
     </header>
 
-    <!-- 僅在出錯時噴出診斷訊息 -->
-    <div id="diag-box" class="diagnostic-console hidden"></div>
-
     <div class="user-profile">
       <img id="user-avatar-mid" class="user-avatar-mid" src="">
       <div class="user-info">
-        <p id="user-display-name" class="user-name">辨識身份中...</p>
+        <p id="user-display-name" class="user-name">正在載入帳戶...</p>
         <span id="role-text" class="user-role">管理權限已開啟</span>
       </div>
     </div>
 
     <main id="main-content">
       <div id="view-home">
-        <div class="section-title">商務選單</div>
+        <div class="section-title">功能選單</div>
         <div class="menu-list">
-          <div class="menu-item" onclick="switchView('profile')"><h3>📇 數位名片設定</h3><p>設定產業與需求，開啟 AI 媒合功能。</p></div>
-          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動報名</h3><p>查看並報名此商圈最新的活動。</p></div>
-          <div class="menu-item" onclick="switchView('ai')"><h3>🤖 AI 智能配對</h3><p>分析資源與需求，尋找最佳夥伴。</p></div>
+          <div class="menu-item" onclick="switchView('profile')"><h3>📇 我的商務名片</h3><p>設定產業與需求，開啟 AI 媒合。</p></div>
+          <div class="menu-item" onclick="switchView('activity')"><h3>📅 活動與報名</h3><p>查看當前商圈最新的活動內容。</p></div>
         </div>
       </div>
 
       <div id="view-activity" class="hidden">
-        <div class="section-title">進行中活動</div>
-        <div id="activity-list-container" class="menu-list"><div style="padding:40px; text-align:center; color:#999;">數據讀取中...</div></div>
+        <div class="section-title">活動列表</div>
+        <div id="activity-list-container" class="menu-list"><div style="padding:40px; text-align:center; color:#999;">正在同步數據...</div></div>
       </div>
 
       <div id="view-profile" class="hidden">
-        <div class="section-title">名片資訊編輯</div>
+        <div class="section-title">名片設定</div>
         <div class="field-group"><label class="field-label">姓名</label><input id="f-name" class="input-box"></div>
         <div class="field-group"><label class="field-label">職稱</label><input id="f-job" class="input-box"></div>
         <div class="field-group"><label class="field-label">提供資源</label><textarea id="f-resource" class="textarea-box"></textarea></div>
-        <button class="btn-action" onclick="saveProfile()">儲存並同步</button>
-      </div>
-
-      <div id="view-ai" class="hidden">
-        <div class="section-title">AI 智能媒合分析</div>
-        <div id="ai-content" style="background:#FFF; padding:20px; line-height:1.6; color:#444;">點擊啟動分析...</div>
-        <button class="btn-action btn-dark" onclick="getAiMatches()">啟動 AI 媒合</button>
+        <button class="btn-action" onclick="saveProfile()">更新名片</button>
       </div>
     </main>
 
@@ -120,7 +103,6 @@
       <div class="nav-item active" id="nav-home" onclick="switchView('home')"><div class="icon-box"><i data-lucide="home"></i></div><span class="nav-text">首頁</span></div>
       <div class="nav-item" id="nav-profile" onclick="switchView('profile')"><i data-lucide="contact"></i><span class="nav-text">名片</span></div>
       <div class="nav-item" id="nav-activity" onclick="switchView('activity')"><i data-lucide="calendar"></i><span class="nav-text">活動</span></div>
-      <div class="nav-item" id="nav-ai" onclick="switchView('ai')"><i data-lucide="brain-circuit"></i><span class="nav-text">配對</span></div>
     </nav>
   </div>
 
@@ -140,9 +122,8 @@
         if (!liff.isLoggedIn()) { liff.login(); return; }
         const profile = await liff.getProfile();
         uid = profile.userId;
-        const avatar = profile.pictureUrl || '';
-        document.getElementById('user-avatar-top').src = avatar;
-        document.getElementById('user-avatar-mid').src = avatar;
+        document.getElementById('user-avatar-top').src = profile.pictureUrl || '';
+        document.getElementById('user-avatar-mid').src = profile.pictureUrl || '';
         document.getElementById('user-display-name').innerText = profile.displayName;
         await loadHubData();
       } catch (err) { console.error(err); } 
@@ -171,11 +152,6 @@
             document.getElementById('f-resource').value = d.myProfile.resource || '';
           }
           renderActivities(d.activities);
-        } else {
-          // 診斷顯示：將 Google 回傳的錯誤噴出來
-          const box = document.getElementById('diag-box');
-          box.classList.remove('hidden');
-          box.innerText = `[診斷報錯]\n訊息：${result.message}\n\n伺服器回應：\n${result.debug || '空無一物'}`;
         }
       } catch (e) { console.error(e); }
     }
@@ -208,8 +184,8 @@
 
     async function saveProfile() {
       const data = { name: document.getElementById('f-name').value, job: document.getElementById('f-job').value, resource: document.getElementById('f-resource').value };
-      await fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
-      alert('更新成功');
+      await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save_profile', p, uid, profile: data }) });
+      alert('已更新名片');
     }
 
     init();
